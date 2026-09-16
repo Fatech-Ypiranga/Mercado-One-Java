@@ -1,0 +1,2 @@
+-- Baseline controlada do Mercado One.
+-- As tabelas de dominio entram em migracoes futuras, junto com os primeiros casos de uso.

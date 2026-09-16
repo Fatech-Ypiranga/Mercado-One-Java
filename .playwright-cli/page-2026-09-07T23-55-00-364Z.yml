@@ -1,0 +1,19 @@
+- main [ref=e4]:
+  - region [ref=e5]:
+    - generic [ref=e6]:
+      - generic [aria-hidden] [ref=e7]: M1
+      - generic [ref=e8]:
+        - strong [ref=e9]: Mercado One
+        - generic [ref=e10]: Administrativo
+    - generic [ref=e11]:
+      - paragraph [ref=e12]: Acesso seguro
+      - heading "Entrar no admin" [level=1] [ref=e13]
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - text: Login ou email
+        - textbox "Login ou email" [ref=e16]: admin
+      - generic [ref=e17]:
+        - text: Senha
+        - textbox "Senha" [ref=e18]
+      - button "Entrar" [ref=e19] [cursor=pointer]
+    - paragraph [ref=e20]: "Admin inicial de desenvolvimento: admin"

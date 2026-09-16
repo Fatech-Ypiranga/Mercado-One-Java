@@ -1,0 +1,28 @@
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Java
+target/
+*.class
+*.log
+
+# Node/Angular
+node_modules/
+dist/
+.angular/
+coverage/
+npm-debug.log*
+output/
+
+# Local config
+.env
+.env.*
+!.env.example
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3

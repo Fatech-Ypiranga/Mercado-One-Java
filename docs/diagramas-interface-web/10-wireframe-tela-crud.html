@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wireframe Padrão de Tela CRUD - Mercado One</title>
+  <style>
+    :root {
+      --paper: #f5f5f5;
+      --ink: #2d3142;
+      --muted: #4f5d75;
+      --soft: #7a8399;
+      --accent: #eb6c36;
+      --link: #2e5aa8;
+      --rule: #d9dbe2;
+      --white: #ffffff;
+    }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, Arial, sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-size: 28px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+      margin: 0 0 20px;
+      max-width: 900px;
+    }
+    .frame {
+      background: var(--white);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--paper);
+    }
+    .node-title {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-body {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .tag {
+      fill: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .edge-label {
+      fill: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .label-bg {
+      fill: var(--paper);
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+    .arrow {
+      fill: none;
+      stroke: var(--link);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .dash {
+      fill: none;
+      stroke: var(--soft);
+      stroke-width: 2;
+      stroke-dasharray: 7 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .line {
+      fill: none;
+      stroke: var(--rule);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .wire {
+      fill: var(--white);
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-soft {
+      fill: #eef2f7;
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-accent {
+      fill: #fff0e8;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+    .placeholder {
+      fill: #d9dbe2;
+      stroke: none;
+    }
+    .placeholder-soft {
+      fill: #eef2f7;
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Wireframe</div>
+    <h1>Wireframe Padrão de Tela CRUD</h1>
+    <p>Modelo inicial de tela para usuários, produtos, categorias, clientes e fornecedores.</p>
+    <div class="frame">
+      <svg role="img" aria-labelledby="10-wireframe-tela-crud-title 10-wireframe-tela-crud-desc" viewBox="0 0 1120 760" xmlns="http://www.w3.org/2000/svg">
+        <title id="10-wireframe-tela-crud-title">Wireframe Padrão de Tela CRUD</title>
+        <desc id="10-wireframe-tela-crud-desc">Modelo inicial de tela para usuários, produtos, categorias, clientes e fornecedores.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#2e5aa8"/>
+          </marker>
+          <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#7a8399"/>
+          </marker>
+        </defs>
+<rect x="56" y="72" width="1008" height="584" rx="8" class="wire"/>
+<rect x="96" y="112" width="416" height="52" rx="8" class="wire-accent"/>
+<text x="304" y="144" class="label" text-anchor="middle">Título da tela e contador</text>
+<rect x="828" y="112" width="188" height="52" rx="8" class="wire-accent"/>
+<text x="922" y="144" class="label" text-anchor="middle">Novo / Salvar</text>
+<rect x="96" y="196" width="920" height="132" rx="8" class="wire-soft"/>
+<text x="556" y="232" class="label" text-anchor="middle">Formulário de cadastro ou edição</text>
+<rect x="128" y="256" width="208" height="40" rx="6" class="wire"/>
+<rect x="360" y="256" width="208" height="40" rx="6" class="wire"/>
+<rect x="592" y="256" width="176" height="40" rx="6" class="wire"/>
+<rect x="792" y="256" width="176" height="40" rx="6" class="wire"/>
+<rect x="96" y="364" width="920" height="216" rx="8" class="wire"/>
+<text x="556" y="404" class="label" text-anchor="middle">Tabela de registros</text>
+<rect x="128" y="424" width="856" height="36" rx="6" class="wire-soft"/>
+<text x="212" y="448" class="note" text-anchor="middle">código</text>
+<text x="408" y="448" class="note" text-anchor="middle">nome</text>
+<text x="632" y="448" class="note" text-anchor="middle">status</text>
+<text x="820" y="448" class="note" text-anchor="middle">atualizado</text>
+<text x="944" y="448" class="note" text-anchor="middle">ações</text>
+<path d="M 128 460 L 984 460" class="line"/>
+<path d="M 128 496 L 984 496" class="line"/>
+<path d="M 128 532 L 984 532" class="line"/>
+<path d="M 296 432 L 296 560" class="line"/>
+<path d="M 520 432 L 520 560" class="line"/>
+<path d="M 744 432 L 744 560" class="line"/>
+<path d="M 900 432 L 900 560" class="line"/>
+<rect x="160" y="476" width="72" height="12" rx="4" class="placeholder"/>
+<rect x="328" y="476" width="148" height="12" rx="4" class="placeholder"/>
+<rect x="568" y="472" width="80" height="20" rx="6" class="placeholder-soft"/>
+<rect x="776" y="476" width="92" height="12" rx="4" class="placeholder"/>
+<rect x="920" y="472" width="16" height="16" rx="4" class="placeholder"/>
+<rect x="948" y="472" width="16" height="16" rx="4" class="placeholder"/>
+<rect x="160" y="512" width="72" height="12" rx="4" class="placeholder"/>
+<rect x="328" y="512" width="132" height="12" rx="4" class="placeholder"/>
+<rect x="568" y="508" width="80" height="20" rx="6" class="placeholder-soft"/>
+<rect x="776" y="512" width="92" height="12" rx="4" class="placeholder"/>
+<rect x="920" y="508" width="16" height="16" rx="4" class="placeholder"/>
+<rect x="948" y="508" width="16" height="16" rx="4" class="placeholder"/>
+<rect x="160" y="548" width="72" height="12" rx="4" class="placeholder"/>
+<rect x="328" y="548" width="160" height="12" rx="4" class="placeholder"/>
+<rect x="568" y="544" width="80" height="20" rx="6" class="placeholder-soft"/>
+<rect x="776" y="548" width="92" height="12" rx="4" class="placeholder"/>
+<rect x="920" y="544" width="16" height="16" rx="4" class="placeholder"/>
+<rect x="948" y="544" width="16" height="16" rx="4" class="placeholder"/>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

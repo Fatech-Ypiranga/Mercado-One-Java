@@ -1,0 +1,32 @@
+server:
+  port: ${MERCADO_ONE_API_PORT:8080}
+
+spring:
+  application:
+    name: mercado-one-backend-api
+  datasource:
+    url: ${MERCADO_ONE_DATABASE_URL:jdbc:postgresql://localhost:5432/mercado_one}
+    username: ${MERCADO_ONE_DB_USER:mercado_one}
+    password: ${MERCADO_ONE_DB_PASSWORD:mercado_one_dev}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+mercado-one:
+  security:
+    jwt-secret: ${MERCADO_ONE_JWT_SECRET}
+    jwt-expiration-minutes: ${MERCADO_ONE_JWT_EXPIRATION_MINUTES:480}
+    seed-admin:
+      enabled: ${MERCADO_ONE_SEED_ADMIN_ENABLED:false}
+      name: ${MERCADO_ONE_SEED_ADMIN_NAME:}
+      login: ${MERCADO_ONE_SEED_ADMIN_LOGIN:}
+      password: ${MERCADO_ONE_SEED_ADMIN_PASSWORD:}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

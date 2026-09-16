@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:18
+    container_name: mercado-one-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${MERCADO_ONE_DB_NAME:-mercado_one}
+      POSTGRES_USER: ${MERCADO_ONE_DB_USER:-mercado_one}
+      POSTGRES_PASSWORD: ${MERCADO_ONE_DB_PASSWORD:-mercado_one_dev}
+    ports:
+      - "${MERCADO_ONE_DB_PORT:-5432}:5432"
+    volumes:
+      - postgres18-data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MERCADO_ONE_DB_USER:-mercado_one} -d ${MERCADO_ONE_DB_NAME:-mercado_one}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres18-data:

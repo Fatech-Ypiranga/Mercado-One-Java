@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fluxo de Estoque - Mercado One</title>
+  <style>
+    :root {
+      --paper: #f5f5f5;
+      --ink: #2d3142;
+      --muted: #4f5d75;
+      --soft: #7a8399;
+      --accent: #eb6c36;
+      --link: #2e5aa8;
+      --rule: #d9dbe2;
+      --white: #ffffff;
+    }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, Arial, sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-size: 28px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+      margin: 0 0 20px;
+      max-width: 900px;
+    }
+    .frame {
+      background: var(--white);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--paper);
+    }
+    .node-title {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-body {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .tag {
+      fill: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .edge-label {
+      fill: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .label-bg {
+      fill: var(--paper);
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+    .arrow {
+      fill: none;
+      stroke: var(--link);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .dash {
+      fill: none;
+      stroke: var(--soft);
+      stroke-width: 2;
+      stroke-dasharray: 7 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .line {
+      fill: none;
+      stroke: var(--rule);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .wire {
+      fill: var(--white);
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-soft {
+      fill: #eef2f7;
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-accent {
+      fill: #fff0e8;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Fluxograma</div>
+    <h1>Fluxo de Estoque</h1>
+    <p>Como a tela de estoque registra entradas, ajustes e impactos operacionais em saldo e relatórios.</p>
+    <div class="frame">
+      <svg role="img" aria-labelledby="06-fluxo-estoque-title 06-fluxo-estoque-desc" viewBox="0 0 1120 760" xmlns="http://www.w3.org/2000/svg">
+        <title id="06-fluxo-estoque-title">Fluxo de Estoque</title>
+        <desc id="06-fluxo-estoque-desc">Como a tela de estoque registra entradas, ajustes e impactos operacionais em saldo e relatórios.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#2e5aa8"/>
+          </marker>
+          <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#7a8399"/>
+          </marker>
+        </defs>
+<path d="M 176 184 L 296 184" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 496 184 L 620 184" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 820 184 L 944 184" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 720 256 L 720 372" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 820 436 L 936 436" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 1032 256 L 1032 372" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 576 584 L 1012 584 Q 1020 584 1020 576 L 1020 516" class="dash" marker-end="url(#arrow-muted)"/>
+<rect x="696" y="540" width="128" height="24" rx="6" class="label-bg"/>
+<text x="760" y="559" class="edge-label" text-anchor="middle">impacta saldo</text>
+<rect x="48" y="156" width="128" height="56" rx="28" fill="#fff0e8" stroke="#eb6c36" stroke-width="2"/>
+<text x="112" y="190" class="node-title" text-anchor="middle">/estoque</text>
+<rect x="296" y="132" width="200" height="104" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="396" y="164" class="node-title" text-anchor="middle">Escolher Produto</text>
+<text x="396" y="192" class="node-body" text-anchor="middle">busca por catálogo</text>
+<text x="396" y="212" class="node-body" text-anchor="middle">saldo atual</text>
+<rect x="620" y="132" width="200" height="104" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="720" y="164" class="node-title" text-anchor="middle">Tipo de Movimento</text>
+<text x="720" y="192" class="node-body" text-anchor="middle">entrada</text>
+<text x="720" y="212" class="node-body" text-anchor="middle">ajuste</text>
+<rect x="944" y="132" width="160" height="104" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="1024" y="164" class="node-title" text-anchor="middle">Entrada</text>
+<text x="1024" y="192" class="node-body" text-anchor="middle">fornecedor</text>
+<text x="1024" y="212" class="node-body" text-anchor="middle">quantidade</text>
+<rect x="620" y="372" width="200" height="104" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="720" y="404" class="node-title" text-anchor="middle">Ajuste</text>
+<text x="720" y="432" class="node-body" text-anchor="middle">motivo</text>
+<text x="720" y="452" class="node-body" text-anchor="middle">responsável</text>
+<rect x="936" y="404" width="168" height="112" rx="8" fill="#fff0e8" stroke="#eb6c36" stroke-width="2"/>
+<text x="1020" y="436" class="node-title" text-anchor="middle">Saldo Atualizado</text>
+<text x="1020" y="464" class="node-body" text-anchor="middle">movimento registrado</text>
+<text x="1020" y="484" class="node-body" text-anchor="middle">histórico preservado</text>
+<rect x="360" y="536" width="216" height="96" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="468" y="568" class="node-title" text-anchor="middle">Saídas por Venda</text>
+<text x="468" y="596" class="node-body" text-anchor="middle">vendas reduzem estoque</text>
+<text x="468" y="616" class="node-body" text-anchor="middle">e aparecem nos relatórios</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

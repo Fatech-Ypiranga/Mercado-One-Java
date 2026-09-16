@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Mercado One",
+    "output": "mercado-one-arquitetura.html",
+    "quality_profile": "showcase",
+    "viewBox": [1220, 680]
+  },
+  "components": [
+    {
+      "id": "administrador",
+      "type": "external",
+      "label": "Administrador",
+      "sublabel": "Gestao do mercado",
+      "pos": [60, 150],
+      "size": [150, 70]
+    },
+    {
+      "id": "operadorCaixa",
+      "type": "external",
+      "label": "Operador de Caixa",
+      "sublabel": "Venda presencial",
+      "pos": [60, 390],
+      "size": [150, 70]
+    },
+    {
+      "id": "adminWeb",
+      "type": "frontend",
+      "label": "admin-web",
+      "sublabel": "Angular 22",
+      "tag": "cookie HttpOnly",
+      "pos": [310, 145],
+      "size": [170, 80]
+    },
+    {
+      "id": "pdvDesktop",
+      "type": "frontend",
+      "label": "pdv-desktop",
+      "sublabel": "JavaFX offline-first",
+      "tag": "fila offline",
+      "pos": [310, 385],
+      "size": [170, 80]
+    },
+    {
+      "id": "backendApi",
+      "type": "backend",
+      "label": "backend-api",
+      "sublabel": "Spring Boot 4.1 / Java 25",
+      "tag": "API REST",
+      "pos": [610, 270],
+      "size": [190, 86]
+    },
+    {
+      "id": "access",
+      "type": "security",
+      "label": "access",
+      "sublabel": "JWT, perfis e usuarios",
+      "pos": [620, 80],
+      "size": [170, 74]
+    },
+    {
+      "id": "businessModules",
+      "type": "backend",
+      "label": "Modulos MVP",
+      "sublabel": "MVP funcional",
+      "pos": [875, 270],
+      "size": [210, 86]
+    },
+    {
+      "id": "postgres",
+      "type": "database",
+      "label": "PostgreSQL",
+      "sublabel": "schema servidor via Flyway",
+      "pos": [925, 510],
+      "size": [180, 76]
+    },
+    {
+      "id": "sqliteLocal",
+      "type": "database",
+      "label": "SQLite local",
+      "sublabel": "catalogo local e fila offline",
+      "pos": [310, 545],
+      "size": [180, 76]
+    },
+    {
+      "id": "infraLocal",
+      "type": "cloud",
+      "label": "infra",
+      "sublabel": "Docker Compose local",
+      "pos": [655, 510],
+      "size": [180, 76]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Monorepo Mercado One",
+      "wraps": ["adminWeb", "pdvDesktop", "backendApi", "access", "businessModules", "postgres", "sqliteLocal", "infraLocal"],
+      "pad": 28
+    },
+    {
+      "kind": "security-group",
+      "label": "Sessao e autorizacao",
+      "wraps": ["adminWeb", "access", "backendApi"],
+      "pad": 22
+    }
+  ],
+  "connections": [
+    {
+      "id": "administrador-admin",
+      "from": "administrador",
+      "to": "adminWeb",
+      "label": "cadastros e relatorios",
+      "variant": "emphasis",
+      "labelDy": 59
+    },
+    {
+      "id": "admin-api",
+      "from": "adminWeb",
+      "to": "backendApi",
+      "label": "HTTP /api com cookie"
+    },
+    {
+      "id": "operador-pdv",
+      "from": "operadorCaixa",
+      "to": "pdvDesktop",
+      "label": "registra venda",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pdv-api",
+      "from": "pdvDesktop",
+      "to": "backendApi",
+      "label": "login, busca e sync"
+    },
+    {
+      "id": "pdv-sqlite",
+      "from": "pdvDesktop",
+      "to": "sqliteLocal",
+      "label": "preserva venda antes do envio",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "api-access",
+      "from": "backendApi",
+      "to": "access",
+      "label": "valida sessao e perfil",
+      "variant": "security"
+    },
+    {
+      "id": "api-modules",
+      "from": "backendApi",
+      "to": "businessModules",
+      "label": "orquestra regras e auditoria do MVP",
+      "labelDy": 67
+    },
+    {
+      "id": "modules-postgres",
+      "from": "businessModules",
+      "to": "postgres",
+      "label": "JPA + Flyway",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "infra-postgres",
+      "from": "infraLocal",
+      "to": "postgres",
+      "label": "provisiona banco local",
+      "variant": "dashed",
+      "labelDy": 62
+    }
+  ]
+}

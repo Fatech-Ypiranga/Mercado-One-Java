@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mapa de Navegação do Admin Web - Mercado One</title>
+  <style>
+    :root {
+      --paper: #f5f5f5;
+      --ink: #2d3142;
+      --muted: #4f5d75;
+      --soft: #7a8399;
+      --accent: #eb6c36;
+      --link: #2e5aa8;
+      --rule: #d9dbe2;
+      --white: #ffffff;
+    }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, Arial, sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-size: 28px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+      margin: 0 0 20px;
+      max-width: 900px;
+    }
+    .frame {
+      background: var(--white);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--paper);
+    }
+    .node-title {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-body {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .tag {
+      fill: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .edge-label {
+      fill: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .label-bg {
+      fill: var(--paper);
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+    .arrow {
+      fill: none;
+      stroke: var(--link);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .dash {
+      fill: none;
+      stroke: var(--soft);
+      stroke-width: 2;
+      stroke-dasharray: 7 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .line {
+      fill: none;
+      stroke: var(--rule);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .wire {
+      fill: var(--white);
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-soft {
+      fill: #eef2f7;
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-accent {
+      fill: #fff0e8;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Mapa de Navegação</div>
+    <h1>Mapa de Navegação do Admin Web</h1>
+    <p>Estrutura das rotas atuais e agrupamentos de telas entregáveis para o planejamento da interface.</p>
+    <div class="frame">
+      <svg role="img" aria-labelledby="02-mapa-navegacao-admin-web-title 02-mapa-navegacao-admin-web-desc" viewBox="0 0 1120 800" xmlns="http://www.w3.org/2000/svg">
+        <title id="02-mapa-navegacao-admin-web-title">Mapa de Navegação do Admin Web</title>
+        <desc id="02-mapa-navegacao-admin-web-desc">Estrutura das rotas atuais e agrupamentos de telas entregáveis para o planejamento da interface.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#2e5aa8"/>
+          </marker>
+          <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#7a8399"/>
+          </marker>
+        </defs>
+<path d="M 560 140 L 560 196" class="line"/>
+<path d="M 132 196 L 984 196" class="line"/>
+<path d="M 132 196 L 132 244" class="line"/>
+<path d="M 340 196 L 340 244" class="line"/>
+<path d="M 552 196 L 552 244" class="line"/>
+<path d="M 764 196 L 764 244" class="line"/>
+<path d="M 984 196 L 984 244" class="line"/>
+<path d="M 132 356 L 132 400 Q 132 408 132 416 L 132 424" class="line"/>
+<path d="M 132 408 L 132 532" class="line"/>
+<path d="M 340 356 L 340 400 Q 340 408 340 416 L 340 424" class="line"/>
+<path d="M 340 408 L 340 532" class="line"/>
+<path d="M 552 356 L 552 400 Q 552 408 552 416 L 552 424" class="line"/>
+<path d="M 552 408 L 552 532" class="line"/>
+<path d="M 552 408 L 552 636" class="line"/>
+<path d="M 764 356 L 764 400 Q 764 408 764 416 L 764 424" class="line"/>
+<path d="M 764 408 L 764 532" class="line"/>
+<path d="M 984 356 L 984 400 Q 984 408 984 416 L 984 424" class="line"/>
+<rect x="432" y="76" width="256" height="64" rx="32" fill="#fff0e8" stroke="#eb6c36" stroke-width="2"/>
+<text x="560" y="114" class="node-title" text-anchor="middle">Admin Web</text>
+<rect x="48" y="244" width="168" height="112" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="68" y="268" class="tag" text-anchor="start">GRUPO</text>
+<text x="132" y="296" class="node-title" text-anchor="middle">Entrada</text>
+<text x="132" y="324" class="node-body" text-anchor="middle">login público</text>
+<text x="132" y="344" class="node-body" text-anchor="middle">formulário</text>
+<rect x="256" y="244" width="168" height="112" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="276" y="268" class="tag" text-anchor="start">GRUPO</text>
+<text x="340" y="296" class="node-title" text-anchor="middle">Catálogo</text>
+<text x="340" y="324" class="node-body" text-anchor="middle">ADMIN</text>
+<text x="340" y="344" class="node-body" text-anchor="middle">GERENTE</text>
+<rect x="468" y="244" width="168" height="112" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="488" y="268" class="tag" text-anchor="start">GRUPO</text>
+<text x="552" y="296" class="node-title" text-anchor="middle">Operação</text>
+<text x="552" y="324" class="node-body" text-anchor="middle">dashboard</text>
+<text x="552" y="344" class="node-body" text-anchor="middle">estoque, vendas</text>
+<rect x="680" y="244" width="168" height="112" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="700" y="268" class="tag" text-anchor="start">GRUPO</text>
+<text x="764" y="296" class="node-title" text-anchor="middle">Relacionamento</text>
+<text x="764" y="324" class="node-body" text-anchor="middle">ADMIN</text>
+<text x="764" y="344" class="node-body" text-anchor="middle">GERENTE</text>
+<rect x="900" y="244" width="168" height="112" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="920" y="268" class="tag" text-anchor="start">GRUPO</text>
+<text x="984" y="296" class="node-title" text-anchor="middle">Administração</text>
+<text x="984" y="324" class="node-body" text-anchor="middle">usuários</text>
+<text x="984" y="344" class="node-body" text-anchor="middle">perfis</text>
+<rect x="48" y="424" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="132" y="456" class="node-title" text-anchor="middle">/login</text>
+<text x="132" y="484" class="node-body" text-anchor="middle">autenticação</text>
+<rect x="48" y="532" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="132" y="564" class="node-title" text-anchor="middle">/</text>
+<text x="132" y="592" class="node-body" text-anchor="middle">dashboard</text>
+<rect x="256" y="424" width="168" height="80" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="340" y="456" class="node-title" text-anchor="middle">/produtos</text>
+<text x="340" y="484" class="node-body" text-anchor="middle">lista e formulário</text>
+<rect x="256" y="532" width="168" height="80" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="340" y="564" class="node-title" text-anchor="middle">/categorias</text>
+<text x="340" y="592" class="node-body" text-anchor="middle">classificação</text>
+<rect x="468" y="424" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="552" y="456" class="node-title" text-anchor="middle">/estoque</text>
+<text x="552" y="484" class="node-body" text-anchor="middle">movimentos</text>
+<rect x="468" y="532" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="552" y="564" class="node-title" text-anchor="middle">/vendas</text>
+<text x="552" y="592" class="node-body" text-anchor="middle">relatório</text>
+<rect x="468" y="636" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="552" y="668" class="node-title" text-anchor="middle">/offline</text>
+<text x="552" y="696" class="node-body" text-anchor="middle">conflitos</text>
+<rect x="680" y="424" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="764" y="456" class="node-title" text-anchor="middle">/clientes</text>
+<text x="764" y="484" class="node-body" text-anchor="middle">cadastro</text>
+<rect x="680" y="532" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="764" y="564" class="node-title" text-anchor="middle">/fornecedores</text>
+<text x="764" y="592" class="node-body" text-anchor="middle">cadastro</text>
+<rect x="900" y="424" width="168" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="984" y="456" class="node-title" text-anchor="middle">/usuários</text>
+<text x="984" y="484" class="node-body" text-anchor="middle">ADMIN</text>
+<rect x="880" y="560" width="196" height="108" rx="8" fill="#fff0e8" stroke="#eb6c36" stroke-width="2"/>
+<text x="978" y="596" class="node-title" text-anchor="middle">Regra</text>
+<text x="978" y="624" class="node-body" text-anchor="middle">menu por perfil</text>
+<text x="978" y="644" class="node-body" text-anchor="middle">guardas de rota</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

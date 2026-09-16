@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "diagram_type": "dataflow",
+  "meta": {
+    "title": "Dataflow de Relatorios",
+    "output": "mercado-one-relatorios.html",
+    "quality_profile": "showcase",
+    "viewBox": [1080, 560]
+  },
+  "stages": [
+    { "label": "Operacao" },
+    { "label": "Contratos" },
+    { "label": "Dominio" },
+    { "label": "Persistencia" },
+    { "label": "Consumo" }
+  ],
+  "nodes": [
+    { "id": "pdvVenda", "type": "frontend", "label": "PDV", "sublabel": "venda", "stage": 0, "row": 1, "tag": "online/offline" },
+    { "id": "adminFiltros", "type": "frontend", "label": "Admin Web", "sublabel": "periodo e filtros", "stage": 0, "row": 0 },
+    { "id": "salesApi", "type": "backend", "label": "Sales API", "sublabel": "POST /api/sales", "stage": 1, "row": 1 },
+    { "id": "offlineApi", "type": "backend", "label": "Offline API", "sublabel": "sync de venda", "stage": 1, "row": 2 },
+    { "id": "salesModule", "type": "backend", "label": "sales", "sublabel": "vendas e pagamentos", "stage": 2, "row": 1 },
+    { "id": "inventoryModule", "type": "backend", "label": "inventory", "sublabel": "movimentacoes", "stage": 2, "row": 2 },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL", "sublabel": "vendas, itens, estoque", "stage": 3, "row": 1, "tag": "fonte servidora" },
+    { "id": "salesReport", "type": "backend", "label": "Relatorio de vendas", "sublabel": "paginado e CSV", "stage": 4, "row": 0 },
+    { "id": "topProducts", "type": "backend", "label": "Top produtos", "sublabel": "ranking por periodo", "stage": 4, "row": 1, "width": 150 },
+    { "id": "stockReport", "type": "backend", "label": "Saldo e movimentos", "sublabel": "estoque por periodo", "stage": 4, "row": 2 }
+  ],
+  "flows": [
+    { "id": "f1", "from": "pdvVenda", "to": "salesApi", "label": "online", "variant": "emphasis", "route": "straight", "labelDy": -28 },
+    { "id": "f2", "from": "pdvVenda", "to": "offlineApi", "label": "offline sync", "variant": "dashed", "labelDy": 82 },
+    { "id": "f3", "from": "salesApi", "to": "salesModule", "label": "payload", "variant": "emphasis", "route": "straight", "labelDy": -28 },
+    { "id": "f4", "from": "offlineApi", "to": "salesModule", "label": "aceita", "variant": "emphasis", "labelDy": 82 },
+    { "id": "f5", "from": "salesModule", "to": "inventoryModule", "label": "baixa", "variant": "emphasis", "labelDy": 24 },
+    { "id": "f6", "from": "salesModule", "to": "postgres", "label": "vendas", "variant": "emphasis", "route": "straight", "labelAt": [638, 238] },
+    { "id": "f7", "from": "inventoryModule", "to": "postgres", "label": "estoque", "variant": "dashed", "labelAt": [638, 428] },
+    { "id": "f8", "from": "adminFiltros", "to": "salesReport", "label": "filtros", "variant": "default", "route": "straight", "labelDy": -36 },
+    { "id": "f9", "from": "postgres", "to": "salesReport", "label": "vendas", "variant": "default", "labelDy": -80 },
+    { "id": "f10", "from": "postgres", "to": "topProducts", "label": "itens", "variant": "default", "labelAt": [910, 238] },
+    { "id": "f11", "from": "postgres", "to": "stockReport", "label": "saldo", "variant": "default", "labelAt": [853, 428] }
+  ]
+}

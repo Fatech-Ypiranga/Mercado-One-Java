@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Backend API por Modulos",
+    "output": "mercado-one-backend-modulos.html",
+    "quality_profile": "showcase",
+    "viewBox": [1220, 760]
+  },
+  "components": [
+    { "id": "clientesHttp", "type": "external", "label": "Clientes HTTP", "sublabel": "admin-web e pdv-desktop", "pos": [55, 300], "size": [160, 74] },
+    { "id": "apiCommon", "type": "backend", "label": "api/common", "sublabel": "envelope, erro e borda HTTP", "pos": [285, 300], "size": [190, 76] },
+    { "id": "access", "type": "security", "label": "access", "sublabel": "auth, usuarios e perfis", "pos": [535, 75], "size": [175, 74] },
+    { "id": "catalog", "type": "backend", "label": "catalog", "sublabel": "produtos e categorias", "pos": [535, 185], "size": [175, 74] },
+    { "id": "customer", "type": "backend", "label": "customer", "sublabel": "clientes e busca", "pos": [535, 295], "size": [175, 74] },
+    { "id": "supplier", "type": "backend", "label": "supplier", "sublabel": "fornecedores", "pos": [535, 405], "size": [175, 74] },
+    { "id": "system", "type": "backend", "label": "system", "sublabel": "info tecnica", "pos": [535, 515], "size": [175, 74] },
+    { "id": "inventory", "type": "backend", "label": "inventory", "sublabel": "saldos e movimentacoes", "pos": [785, 185], "size": [190, 74] },
+    { "id": "sales", "type": "backend", "label": "sales", "sublabel": "vendas e relatorios", "pos": [785, 295], "size": [190, 74] },
+    { "id": "offline", "type": "backend", "label": "offline", "sublabel": "sync e conflitos", "pos": [785, 405], "size": [190, 74] },
+    { "id": "audit", "type": "backend", "label": "audit", "sublabel": "eventos imutaveis", "pos": [785, 515], "size": [190, 74] },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL", "sublabel": "schema Flyway V1-V7", "pos": [1035, 320], "size": [160, 82] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "backend-api/src/main/java/.../modules", "wraps": ["access", "catalog", "customer", "inventory", "sales", "offline", "supplier", "audit", "system"], "pad": 24 }
+  ],
+  "connections": [
+    { "id": "clients-api", "from": "clientesHttp", "to": "apiCommon", "label": "HTTP /api", "variant": "emphasis" },
+    { "id": "common-access", "from": "apiCommon", "to": "access", "variant": "security" },
+    { "id": "common-domain", "from": "apiCommon", "to": "customer", "variant": "emphasis" },
+    { "id": "common-system", "from": "apiCommon", "to": "system" },
+    { "id": "catalog-inventory", "from": "catalog", "to": "inventory", "variant": "dashed" },
+    { "id": "supplier-inventory", "from": "supplier", "to": "inventory", "variant": "dashed" },
+    { "id": "sales-inventory", "from": "sales", "to": "inventory", "variant": "emphasis" },
+    { "id": "offline-sales", "from": "offline", "to": "sales", "variant": "emphasis" },
+    { "id": "offline-audit", "from": "offline", "to": "audit", "variant": "dashed" },
+    { "id": "sales-db", "from": "sales", "to": "postgres", "variant": "emphasis" },
+    { "id": "audit-db", "from": "audit", "to": "postgres", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Borda HTTP", "items": ["api/common mantem envelope e erro padrao", "SecurityConfig protege rotas por perfil"] },
+    { "dot": "emerald", "title": "Fatias funcionais", "items": ["access, catalog, customer, supplier, inventory, sales, offline, audit e system existem em codigo", "DTO publico nao deve expor entidade JPA"] },
+    { "dot": "amber", "title": "Persistencia", "items": ["PostgreSQL e fonte central via Flyway V1-V7", "SQLite local pertence ao PDV, nao ao backend"] }
+  ]
+}

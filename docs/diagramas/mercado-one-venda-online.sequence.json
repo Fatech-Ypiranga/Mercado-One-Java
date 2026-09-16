@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "Venda Online no PDV",
+    "output": "mercado-one-venda-online.html",
+    "quality_profile": "showcase",
+    "viewBox": [1120, 600],
+    "column_fit": "spread",
+    "legend": { "mode": "hidden" }
+  },
+  "participants": [
+    { "id": "operador", "type": "external", "label": "Operador" },
+    { "id": "pdv", "type": "frontend", "label": "pdv-desktop" },
+    { "id": "api", "type": "backend", "label": "backend-api" },
+    { "id": "access", "type": "security", "label": "access" },
+    { "id": "catalog", "type": "backend", "label": "catalog" },
+    { "id": "inventory", "type": "backend", "label": "inventory" },
+    { "id": "sales", "type": "backend", "label": "sales" },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL" }
+  ],
+  "segments": [
+    { "from": 150, "to": 260, "label": "Montagem" },
+    { "from": 280, "to": 470, "label": "Confirmacao" },
+    { "from": 480, "to": 532, "label": "Retorno" }
+  ],
+  "messages": [
+    { "id": "m1", "from": "operador", "to": "pdv", "y": 170, "label": "buscar produto", "variant": "emphasis" },
+    { "id": "m2", "from": "pdv", "to": "api", "y": 205, "label": "GET produtos/clientes" },
+    { "id": "m3", "from": "api", "to": "catalog", "y": 240, "label": "consultar ativos" },
+    { "id": "m4", "from": "catalog", "to": "api", "y": 275, "label": "dados vigentes", "variant": "return" },
+    { "id": "m5", "from": "pdv", "to": "api", "y": 305, "label": "POST /api/sales", "variant": "emphasis" },
+    { "id": "m6", "from": "api", "to": "access", "y": 338, "label": "validar operador", "variant": "security" },
+    { "id": "m7", "from": "api", "to": "inventory", "y": 370, "label": "verificar saldo" },
+    { "id": "m8", "from": "api", "to": "sales", "y": 405, "label": "registrar venda" },
+    { "id": "m9", "from": "sales", "to": "postgres", "y": 438, "label": "venda, itens e pagamentos", "variant": "emphasis" },
+    { "id": "m10", "from": "inventory", "to": "postgres", "y": 468, "label": "baixar estoque", "variant": "emphasis" },
+    { "id": "m11", "from": "api", "to": "pdv", "y": 500, "label": "201 venda confirmada", "variant": "return" },
+    { "id": "m12", "from": "pdv", "to": "operador", "y": 515, "label": "comprovante simples", "variant": "return" }
+  ],
+  "activations": [
+    { "participant": "pdv", "from": 164, "to": 522, "type": "frontend" },
+    { "participant": "api", "from": 199, "to": 508, "type": "backend" },
+    { "participant": "catalog", "from": 234, "to": 281, "type": "backend" },
+    { "participant": "access", "from": 332, "to": 351, "type": "security" },
+    { "participant": "inventory", "from": 364, "to": 475, "type": "backend" },
+    { "participant": "sales", "from": 399, "to": 444, "type": "backend" },
+    { "participant": "postgres", "from": 432, "to": 477, "type": "database" }
+  ]
+}

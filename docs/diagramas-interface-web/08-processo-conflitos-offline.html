@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Processo de Conflitos Offline - Mercado One</title>
+  <style>
+    :root {
+      --paper: #f5f5f5;
+      --ink: #2d3142;
+      --muted: #4f5d75;
+      --soft: #7a8399;
+      --accent: #eb6c36;
+      --link: #2e5aa8;
+      --rule: #d9dbe2;
+      --white: #ffffff;
+    }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, Arial, sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-size: 28px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+      margin: 0 0 20px;
+      max-width: 900px;
+    }
+    .frame {
+      background: var(--white);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--paper);
+    }
+    .node-title {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-body {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .tag {
+      fill: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .edge-label {
+      fill: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .label-bg {
+      fill: var(--paper);
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+    .arrow {
+      fill: none;
+      stroke: var(--link);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .dash {
+      fill: none;
+      stroke: var(--soft);
+      stroke-width: 2;
+      stroke-dasharray: 7 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .line {
+      fill: none;
+      stroke: var(--rule);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .wire {
+      fill: var(--white);
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-soft {
+      fill: #eef2f7;
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-accent {
+      fill: #fff0e8;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Processo</div>
+    <h1>Processo de Conflitos Offline</h1>
+    <p>Caminho da venda offline desde o PDV até a resolução ou o acompanhamento no Admin Web.</p>
+    <div class="frame">
+      <svg role="img" aria-labelledby="08-processo-conflitos-offline-title 08-processo-conflitos-offline-desc" viewBox="0 0 1120 760" xmlns="http://www.w3.org/2000/svg">
+        <title id="08-processo-conflitos-offline-title">Processo de Conflitos Offline</title>
+        <desc id="08-processo-conflitos-offline-desc">Caminho da venda offline desde o PDV até a resolução ou o acompanhamento no Admin Web.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#2e5aa8"/>
+          </marker>
+          <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#7a8399"/>
+          </marker>
+        </defs>
+<text x="164" y="84" class="label" text-anchor="middle">PDV Desktop</text>
+<text x="520" y="84" class="label" text-anchor="middle">Backend API</text>
+<text x="876" y="84" class="label" text-anchor="middle">Admin Web</text>
+<path d="M 64 108 L 1056 108" class="line"/>
+<path d="M 340 120 L 340 664" class="dash"/>
+<path d="M 700 120 L 700 664" class="dash"/>
+<path d="M 256 208 L 420 208" class="arrow" marker-end="url(#arrow)"/>
+<rect x="284" y="172" width="108" height="24" rx="6" class="label-bg"/>
+<text x="338" y="191" class="edge-label" text-anchor="middle">envia venda</text>
+<path d="M 520 268 L 520 320" class="arrow" marker-end="url(#arrow)"/>
+<rect x="544" y="276" width="116" height="24" rx="6" class="label-bg"/>
+<text x="602" y="295" class="edge-label" text-anchor="middle">valida regras</text>
+<path d="M 620 388 L 804 388" class="arrow" marker-end="url(#arrow)"/>
+<rect x="664" y="352" width="96" height="24" rx="6" class="label-bg"/>
+<text x="712" y="371" class="edge-label" text-anchor="middle">conflito</text>
+<path d="M 804 444 L 732 444 Q 724 444 724 452 L 724 588 Q 724 596 716 596 L 620 596" class="arrow" marker-end="url(#arrow)"/>
+<rect x="736" y="492" width="124" height="24" rx="6" class="label-bg"/>
+<text x="798" y="511" class="edge-label" text-anchor="middle">decisão final</text>
+<path d="M 420 596 L 328 596 Q 320 596 320 588 L 320 528 Q 320 520 312 520 L 256 520" class="arrow" marker-end="url(#arrow)"/>
+<rect x="288" y="548" width="112" height="24" rx="6" class="label-bg"/>
+<text x="344" y="567" class="edge-label" text-anchor="middle">retorna status</text>
+<rect x="72" y="160" width="184" height="96" rx="8" fill="#fff0e8" stroke="#eb6c36" stroke-width="2"/>
+<text x="164" y="192" class="node-title" text-anchor="middle">Venda Local</text>
+<text x="164" y="220" class="node-body" text-anchor="middle">SQLite</text>
+<text x="164" y="240" class="node-body" text-anchor="middle">pendente</text>
+<rect x="420" y="148" width="200" height="120" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="520" y="184" class="node-title" text-anchor="middle">Sincronização</text>
+<text x="520" y="212" class="node-body" text-anchor="middle">recebe lote offline</text>
+<text x="520" y="232" class="node-body" text-anchor="middle">identifica operação</text>
+<rect x="420" y="320" width="200" height="136" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="520" y="356" class="node-title" text-anchor="middle">Regras</text>
+<text x="520" y="384" class="node-body" text-anchor="middle">produto existe</text>
+<text x="520" y="404" class="node-body" text-anchor="middle">saldo disponível</text>
+<text x="520" y="424" class="node-body" text-anchor="middle">idempotência</text>
+<rect x="804" y="320" width="192" height="136" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="900" y="356" class="node-title" text-anchor="middle">/offline</text>
+<text x="900" y="384" class="node-body" text-anchor="middle">fila de conflitos</text>
+<text x="900" y="404" class="node-body" text-anchor="middle">análise do gestor</text>
+<text x="900" y="424" class="node-body" text-anchor="middle">resolver ou ignorar</text>
+<rect x="420" y="548" width="200" height="96" rx="8" fill="#fff0e8" stroke="#eb6c36" stroke-width="2"/>
+<text x="520" y="580" class="node-title" text-anchor="middle">Status Final</text>
+<text x="520" y="608" class="node-body" text-anchor="middle">sincronizado</text>
+<text x="520" y="628" class="node-body" text-anchor="middle">rejeitado ou resolvido</text>
+<rect x="72" y="480" width="184" height="80" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="164" y="512" class="node-title" text-anchor="middle">Retorno ao PDV</text>
+<text x="164" y="540" class="node-body" text-anchor="middle">atualiza pendência</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>

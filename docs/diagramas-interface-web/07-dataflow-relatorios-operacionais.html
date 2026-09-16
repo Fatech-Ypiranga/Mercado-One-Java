@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fluxo de Dados para Relatórios - Mercado One</title>
+  <style>
+    :root {
+      --paper: #f5f5f5;
+      --ink: #2d3142;
+      --muted: #4f5d75;
+      --soft: #7a8399;
+      --accent: #eb6c36;
+      --link: #2e5aa8;
+      --rule: #d9dbe2;
+      --white: #ffffff;
+    }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Inter, Arial, sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      margin: 0 0 8px;
+    }
+    h1 {
+      font-size: 28px;
+      line-height: 1.2;
+      margin: 0 0 8px;
+    }
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.45;
+      margin: 0 0 20px;
+      max-width: 900px;
+    }
+    .frame {
+      background: var(--white);
+      border: 1px solid var(--rule);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: var(--paper);
+    }
+    .node-title {
+      fill: var(--ink);
+      font-size: 17px;
+      font-weight: 700;
+    }
+    .node-body {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .label {
+      fill: var(--ink);
+      font-size: 15px;
+      font-weight: 650;
+    }
+    .note {
+      fill: var(--muted);
+      font-size: 13px;
+    }
+    .tag {
+      fill: var(--accent);
+      font-size: 11px;
+      font-weight: 800;
+    }
+    .edge-label {
+      fill: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .label-bg {
+      fill: var(--paper);
+      stroke: var(--rule);
+      stroke-width: 1;
+    }
+    .arrow {
+      fill: none;
+      stroke: var(--link);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .dash {
+      fill: none;
+      stroke: var(--soft);
+      stroke-width: 2;
+      stroke-dasharray: 7 7;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .line {
+      fill: none;
+      stroke: var(--rule);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .wire {
+      fill: var(--white);
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-soft {
+      fill: #eef2f7;
+      stroke: var(--rule);
+      stroke-width: 2;
+    }
+    .wire-accent {
+      fill: #fff0e8;
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="eyebrow">Fluxo de Dados</div>
+    <h1>Fluxo de Dados para Relatórios</h1>
+    <p>Fontes de dados e saídas visuais para dashboard, vendas, estoque e acompanhamento offline.</p>
+    <div class="frame">
+      <svg role="img" aria-labelledby="07-dataflow-relatorios-operacionais-title 07-dataflow-relatorios-operacionais-desc" viewBox="0 0 1120 760" xmlns="http://www.w3.org/2000/svg">
+        <title id="07-dataflow-relatorios-operacionais-title">Fluxo de Dados para Relatórios</title>
+        <desc id="07-dataflow-relatorios-operacionais-desc">Fontes de dados e saídas visuais para dashboard, vendas, estoque e acompanhamento offline.</desc>
+        <defs>
+          <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#2e5aa8"/>
+          </marker>
+          <marker id="arrow-muted" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+            <path d="M 2 2 L 10 6 L 2 10 Z" fill="#7a8399"/>
+          </marker>
+        </defs>
+<path d="M 240 148 L 356 148 Q 364 148 364 156 L 364 256 Q 364 264 372 264 L 420 264" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 240 292 L 420 292" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 240 436 L 356 436 Q 364 436 364 428 L 364 328 Q 364 320 372 320 L 420 320" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 620 292 L 720 292" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 852 264 L 876 264 Q 884 264 884 256 L 884 156 Q 884 148 892 148 L 900 148" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 852 292 L 900 292" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 852 320 L 876 320 Q 884 320 884 328 L 884 428 Q 884 436 892 436 L 900 436" class="arrow" marker-end="url(#arrow)"/>
+<path d="M 560 612 L 560 348" class="dash" marker-end="url(#arrow-muted)"/>
+<rect x="592" y="564" width="128" height="24" rx="6" class="label-bg"/>
+<text x="656" y="583" class="edge-label" text-anchor="middle">parâmetros</text>
+<rect x="80" y="104" width="160" height="88" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="160" y="136" class="node-title" text-anchor="middle">Vendas Online</text>
+<text x="160" y="164" class="node-body" text-anchor="middle">PDV conectado</text>
+<rect x="80" y="248" width="160" height="88" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="160" y="280" class="node-title" text-anchor="middle">Vendas Offline</text>
+<text x="160" y="308" class="node-body" text-anchor="middle">sincronização posterior</text>
+<rect x="80" y="392" width="160" height="88" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="160" y="424" class="node-title" text-anchor="middle">Estoque</text>
+<text x="160" y="452" class="node-body" text-anchor="middle">entradas e ajustes</text>
+<rect x="420" y="236" width="200" height="112" rx="8" fill="#fff0e8" stroke="#eb6c36" stroke-width="2"/>
+<text x="520" y="268" class="node-title" text-anchor="middle">PostgreSQL</text>
+<text x="520" y="296" class="node-body" text-anchor="middle">fonte consolidada</text>
+<text x="520" y="316" class="node-body" text-anchor="middle">consultas administrativas</text>
+<rect x="720" y="236" width="132" height="112" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="786" y="268" class="node-title" text-anchor="middle">Consultas</text>
+<text x="786" y="292" class="node-title" text-anchor="middle">Admin Web</text>
+<text x="786" y="320" class="node-body" text-anchor="middle">filtros</text>
+<text x="786" y="340" class="node-body" text-anchor="middle">agregações</text>
+<rect x="900" y="104" width="172" height="88" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="986" y="136" class="node-title" text-anchor="middle">/vendas</text>
+<text x="986" y="164" class="node-body" text-anchor="middle">lista filtrada</text>
+<text x="986" y="184" class="node-body" text-anchor="middle">totais</text>
+<rect x="900" y="248" width="172" height="88" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="986" y="280" class="node-title" text-anchor="middle">Dashboard</text>
+<text x="986" y="308" class="node-body" text-anchor="middle">indicadores</text>
+<text x="986" y="328" class="node-body" text-anchor="middle">resumos</text>
+<rect x="900" y="392" width="172" height="88" rx="8" fill="#ffffff" stroke="#d9dbe2" stroke-width="2"/>
+<text x="986" y="424" class="node-title" text-anchor="middle">/offline</text>
+<text x="986" y="452" class="node-body" text-anchor="middle">pendências</text>
+<text x="986" y="472" class="node-body" text-anchor="middle">conflitos</text>
+<rect x="384" y="612" width="352" height="84" rx="8" fill="#eef2f7" stroke="#d9dbe2" stroke-width="2"/>
+<text x="560" y="644" class="node-title" text-anchor="middle">Filtros Esperados</text>
+<text x="560" y="672" class="node-body" text-anchor="middle">período, status, produto</text>
+<text x="560" y="692" class="node-body" text-anchor="middle">operador e conflito</text>
+      </svg>
+    </div>
+  </main>
+</body>
+</html>
