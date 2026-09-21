@@ -41,7 +41,7 @@ describe('UsersPageComponent', () => {
     fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('senha com no minimo 6 caracteres');
+    expect(fixture.nativeElement.textContent).toContain('senha com no mínimo 6 caracteres');
   });
 
   it('allows editing a user without changing the password', () => {
@@ -83,7 +83,7 @@ describe('UsersPageComponent', () => {
     fixture.detectChanges();
 
     expect(update).toHaveBeenCalledWith(2, jasmine.objectContaining({ password: null }));
-    expect(fixture.nativeElement.textContent).toContain('Usuario salvo.');
+    expect(fixture.nativeElement.textContent).toContain('Usuário salvo.');
   });
 
   it('shows feedback when saving fails', () => {
@@ -109,6 +109,6 @@ describe('UsersPageComponent', () => {
     fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Revise os dados do usuario.');
+    expect(fixture.nativeElement.textContent).toContain('Revise os dados do usuário.');
   });
 });

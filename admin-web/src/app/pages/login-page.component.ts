@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { environment } from '../../environments/environment';
 import { AuthService } from '../core/auth.service';
 
 @Component({
@@ -12,7 +13,7 @@ import { AuthService } from '../core/auth.service';
   imports: [ReactiveFormsModule],
   template: `
     <main class="login-layout">
-      <section class="login-panel" aria-labelledby="login-title">
+      <section class="login-intro">
         <div class="brand-row">
           <span class="brand-mark" aria-hidden="true">M1</span>
           <span>
@@ -20,9 +21,14 @@ import { AuthService } from '../core/auth.service';
             <small>Administrativo</small>
           </span>
         </div>
+        <p class="eyebrow">Loja física</p>
+        <p class="display">Cadastros, estoque e vendas da loja.</p>
+        <p>Área interna para administrador, gerente e estoquista acompanharem a operação do mercado.</p>
+      </section>
 
+      <section class="login-panel" aria-labelledby="login-title">
         <header>
-          <p class="eyebrow">Acesso seguro</p>
+          <p class="eyebrow">Acesso</p>
           <h1 id="login-title">Entrar no admin</h1>
         </header>
 
@@ -52,7 +58,9 @@ import { AuthService } from '../core/auth.service';
           </button>
         </form>
 
-        <p class="login-hint">Admin inicial de desenvolvimento: admin</p>
+        @if (!production) {
+          <p class="login-hint">Admin inicial de desenvolvimento: admin</p>
+        }
       </section>
     </main>
   `,
@@ -64,6 +72,7 @@ export class LoginPageComponent {
 
   protected loading = false;
   protected errorMessage = '';
+  protected readonly production = environment.production;
   protected readonly form = this.fb.nonNullable.group({
     login: ['admin', Validators.required],
     password: ['', Validators.required],
@@ -91,8 +100,8 @@ export class LoginPageComponent {
 
   private loginErrorMessage(error: unknown): string {
     if (error instanceof HttpErrorResponse && error.status === 401) {
-      return 'Login ou senha invalidos.';
+      return 'Login ou senha inválidos.';
     }
-    return 'Nao foi possivel conectar a API. Verifique se o backend esta rodando.';
+    return 'Não foi possível conectar à API. Verifique se o backend está rodando.';
   }
 }

@@ -12,12 +12,12 @@ import { Supplier, SupplierRequest, SupplierService } from '../core/supplier.ser
   imports: [DatePipe, ReactiveFormsModule],
   template: `
     <section class="page-header">
-      <p>Fornecedores</p>
-      <h1>Cadastro de fornecedores</h1>
-      <span>Mantenha fornecedores reais para vincular entradas de estoque e consultar historico.</span>
+      <p>Estoque</p>
+      <h1>Fornecedores</h1>
+      <span>Cadastro usado para vincular entradas de estoque e consultar o histórico de recebimento.</span>
     </section>
 
-    <section class="toolbar">
+    <section class="filter-rule">
       <label>
         Buscar
         <input type="search" [formControl]="searchControl" placeholder="Nome, documento, telefone ou e-mail" />
@@ -30,12 +30,60 @@ import { Supplier, SupplierRequest, SupplierService } from '../core/supplier.ser
           <option value="false">Inativos</option>
         </select>
       </label>
-      <span></span>
       <button type="button" class="secondary-button" (click)="loadSuppliers()">Filtrar</button>
     </section>
 
-    <section class="content-grid wide">
-      <form class="form-panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <section class="workspace">
+      <section class="data-table">
+        @if (loading) {
+          <p class="state-message">Carregando fornecedores...</p>
+        } @else if (suppliers.length === 0) {
+          <p class="state-message">Nenhum fornecedor neste filtro. Cadastre um na ficha para usar nas entradas de estoque.</p>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Fornecedor</th>
+                  <th scope="col">Contato</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Criado em</th>
+                  <th scope="col">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (supplier of suppliers; track supplier.id) {
+                  <tr
+                    class="interactive"
+                    [class.selected]="editingSupplier?.id === supplier.id"
+                    (click)="edit(supplier)"
+                  >
+                    <td>
+                      <strong>{{ supplier.name }}</strong>
+                      <small class="mono">{{ supplier.document || 'Sem documento' }}</small>
+                    </td>
+                    <td>
+                      <strong>{{ supplier.phone || '—' }}</strong>
+                      <small>{{ supplier.email || '—' }}</small>
+                    </td>
+                    <td>
+                      <span class="status-stamp" [class.inactive]="!supplier.active">
+                        {{ supplier.active ? 'Ativo' : 'Inativo' }}
+                      </span>
+                    </td>
+                    <td class="numeric">{{ supplier.createdAt | date:'shortDate' }}</td>
+                    <td>
+                      <button type="button" class="ghost-button" (click)="edit(supplier); $event.stopPropagation()">Editar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
         <h2>{{ editingSupplier ? 'Editar fornecedor' : 'Novo fornecedor' }}</h2>
         <div class="form-grid">
           <label>
@@ -44,7 +92,7 @@ import { Supplier, SupplierRequest, SupplierService } from '../core/supplier.ser
           </label>
           <label>
             Documento
-            <input type="text" formControlName="document" />
+            <input class="mono" type="text" formControlName="document" />
           </label>
           <label>
             Telefone
@@ -56,7 +104,7 @@ import { Supplier, SupplierRequest, SupplierService } from '../core/supplier.ser
           </label>
         </div>
         <label>
-          Observacoes
+          Observações
           <textarea formControlName="notes" rows="3"></textarea>
         </label>
         <label class="check-row">
@@ -65,7 +113,7 @@ import { Supplier, SupplierRequest, SupplierService } from '../core/supplier.ser
         </label>
 
         @if (form.invalid && form.touched) {
-          <p class="field-error">Preencha o nome e use um e-mail valido.</p>
+          <p class="field-error">Preencha o nome e use um e-mail válido.</p>
         }
         @if (errorMessage) {
           <p class="form-error" role="alert">{{ errorMessage }}</p>
@@ -81,47 +129,6 @@ import { Supplier, SupplierRequest, SupplierService } from '../core/supplier.ser
           }
         </div>
       </form>
-
-      <section class="table-panel">
-        @if (loading) {
-          <p class="state-message">Carregando fornecedores...</p>
-        } @else if (suppliers.length === 0) {
-          <p class="state-message">Nenhum fornecedor encontrado.</p>
-        } @else {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Fornecedor</th>
-                  <th>Contato</th>
-                  <th>Status</th>
-                  <th>Criado em</th>
-                  <th>Acoes</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (supplier of suppliers; track supplier.id) {
-                  <tr>
-                    <td>
-                      <strong>{{ supplier.name }}</strong>
-                      <small>{{ supplier.document || 'Sem documento' }}</small>
-                    </td>
-                    <td>
-                      <strong>{{ supplier.phone || '-' }}</strong>
-                      <small>{{ supplier.email || '-' }}</small>
-                    </td>
-                    <td><span class="status-pill" [class.inactive]="!supplier.active">{{ supplier.active ? 'Ativo' : 'Inativo' }}</span></td>
-                    <td>{{ supplier.createdAt | date:'shortDate' }}</td>
-                    <td>
-                      <button type="button" class="ghost-button" (click)="edit(supplier)">Editar</button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
     </section>
   `,
 })
@@ -168,7 +175,7 @@ export class SuppliersPageComponent {
         this.syncView();
       },
       error: (error) => {
-        this.errorMessage = this.apiClient.errorMessage(error, 'Nao foi possivel carregar fornecedores.');
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar fornecedores.');
         this.syncView();
       },
     });

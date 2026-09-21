@@ -22,17 +22,17 @@ import { Supplier, SupplierService } from '../core/supplier.service';
   template: `
     <section class="page-header">
       <p>Estoque</p>
-      <h1>Saldos e movimentacoes</h1>
-      <span>Registre entradas e ajustes manuais com historico imutavel por produto.</span>
+      <h1>Saldos e movimentações</h1>
+      <span>Entradas e ajustes manuais com histórico imutável por produto.</span>
     </section>
 
-    <section class="toolbar">
+    <section class="filter-rule">
       <label>
         Buscar saldo
-        <input type="search" [formControl]="searchControl" placeholder="Produto, SKU ou codigo" />
+        <input type="search" [formControl]="searchControl" placeholder="Produto, SKU ou código" />
       </label>
       <label>
-        Status
+        Status do produto
         <select [formControl]="activeControl">
           <option value="">Todos</option>
           <option value="true">Ativos</option>
@@ -40,7 +40,7 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         </select>
       </label>
       <label>
-        Movimento
+        Tipo de movimento
         <select [formControl]="movementTypeControl">
           <option value="">Todos</option>
           <option value="ENTRY">Entradas</option>
@@ -62,15 +62,53 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         <input type="date" [formControl]="movementFromControl" />
       </label>
       <label>
-        Ate
+        Até
         <input type="date" [formControl]="movementToControl" />
       </label>
       <button type="button" class="secondary-button" (click)="load()">Filtrar</button>
     </section>
 
-    <section class="content-grid wide">
-      <form class="form-panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
-        <h2>Nova movimentacao</h2>
+    <section class="workspace">
+      <section class="data-table">
+        @if (loadingBalances) {
+          <p class="state-message">Carregando saldos...</p>
+        } @else if (balances.length === 0) {
+          <p class="state-message">Nenhum saldo neste filtro. Produtos só aparecem após a primeira movimentação.</p>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Produto</th>
+                  <th class="numeric" scope="col">Saldo</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Atualizado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (balance of balances; track balance.id) {
+                  <tr>
+                    <td>
+                      <strong>{{ balance.product.name }}</strong>
+                      <small class="mono">{{ balance.product.sku || balance.product.barcode || 'Sem código' }}</small>
+                    </td>
+                    <td class="numeric">{{ balance.quantity | number:'1.0-3' }} {{ balance.product.unit }}</td>
+                    <td>
+                      <span class="status-stamp" [class.inactive]="!balance.product.active">
+                        {{ balance.product.active ? 'Ativo' : 'Inativo' }}
+                      </span>
+                    </td>
+                    <td class="numeric">{{ balance.updatedAt | date:'short' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <h2>Nova movimentação</h2>
         <label>
           Tipo
           <select formControlName="type">
@@ -91,7 +129,7 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         @if (isEntry) {
           <label>
             Quantidade de entrada
-            <input type="number" min="0.001" step="0.001" formControlName="quantity" />
+            <input class="numeric" type="number" min="0.001" step="0.001" formControlName="quantity" />
           </label>
           <label>
             Fornecedor
@@ -104,12 +142,12 @@ import { Supplier, SupplierService } from '../core/supplier.service';
           </label>
           <label>
             Documento
-            <input type="text" formControlName="documentNumber" />
+            <input class="mono" type="text" formControlName="documentNumber" />
           </label>
         } @else {
           <label>
             Novo saldo
-            <input type="number" min="0" step="0.001" formControlName="newQuantity" />
+            <input class="numeric" type="number" min="0" step="0.001" formControlName="newQuantity" />
           </label>
           <label>
             Justificativa
@@ -118,12 +156,12 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         }
 
         <label>
-          Observacao
+          Observação
           <textarea formControlName="note" rows="3"></textarea>
         </label>
 
         @if (form.invalid && form.touched) {
-          <p class="field-error">Informe produto, quantidade valida e justificativa quando for ajuste.</p>
+          <p class="field-error">Informe produto, quantidade válida e justificativa quando for ajuste.</p>
         }
         @if (errorMessage) {
           <p class="form-error" role="alert">{{ errorMessage }}</p>
@@ -143,74 +181,38 @@ import { Supplier, SupplierService } from '../core/supplier.service';
           <p class="state-message compact">Cadastre um produto ativo antes de movimentar estoque.</p>
         }
       </form>
-
-      <section class="table-panel">
-        @if (loadingBalances) {
-          <p class="state-message">Carregando saldos...</p>
-        } @else if (balances.length === 0) {
-          <p class="state-message">Nenhum saldo encontrado.</p>
-        } @else {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Produto</th>
-                  <th>Saldo</th>
-                  <th>Status</th>
-                  <th>Atualizado</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (balance of balances; track balance.id) {
-                  <tr>
-                    <td>
-                      <strong>{{ balance.product.name }}</strong>
-                      <small>{{ balance.product.sku || balance.product.barcode || 'Sem codigo' }}</small>
-                    </td>
-                    <td>
-                      <strong>{{ balance.quantity | number:'1.0-3' }} {{ balance.product.unit }}</strong>
-                    </td>
-                    <td><span class="status-pill" [class.inactive]="!balance.product.active">{{ balance.product.active ? 'Ativo' : 'Inativo' }}</span></td>
-                    <td>{{ balance.updatedAt | date:'short' }}</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
     </section>
 
-    <section class="table-panel movement-panel">
-      <h2>Historico de movimentacoes</h2>
+    <section class="ledger-block">
+      <h2>Histórico de movimentações</h2>
       @if (loadingMovements) {
-        <p class="state-message">Carregando movimentacoes...</p>
+        <p class="state-message">Carregando movimentações...</p>
       } @else if (movements.length === 0) {
-        <p class="state-message">Nenhuma movimentacao registrada.</p>
+        <p class="state-message">Nenhuma movimentação no período. Altere as datas ou o tipo de movimento.</p>
       } @else {
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Data</th>
-                <th>Produto</th>
-                <th>Tipo</th>
-                <th>Antes</th>
-                <th>Depois</th>
-                <th>Motivo</th>
+                <th scope="col">Data</th>
+                <th scope="col">Produto</th>
+                <th scope="col">Tipo</th>
+                <th class="numeric" scope="col">Antes</th>
+                <th class="numeric" scope="col">Depois</th>
+                <th scope="col">Motivo</th>
               </tr>
             </thead>
             <tbody>
               @for (movement of movements; track movement.id) {
                 <tr>
-                  <td>{{ movement.createdAt | date:'short' }}</td>
+                  <td class="numeric">{{ movement.createdAt | date:'short' }}</td>
                   <td>
                     <strong>{{ movement.product.name }}</strong>
-                    <small>{{ movement.product.sku || movement.product.barcode || 'Sem codigo' }}</small>
+                    <small class="mono">{{ movement.product.sku || movement.product.barcode || 'Sem código' }}</small>
                   </td>
                   <td>{{ movementLabel(movement.type) }}</td>
-                  <td>{{ movement.quantityBefore | number:'1.0-3' }}</td>
-                  <td>
+                  <td class="numeric">{{ movement.quantityBefore | number:'1.0-3' }}</td>
+                  <td class="numeric">
                     <strong>{{ movement.quantityAfter | number:'1.0-3' }}</strong>
                     <small>{{ signedDelta(movement.quantityDelta) }}</small>
                   </td>
@@ -310,12 +312,12 @@ export class InventoryPageComponent {
       this.syncView();
     })).subscribe({
       next: () => {
-        this.successMessage = 'Movimentacao registrada.';
+        this.successMessage = 'Movimentação registrada.';
         this.resetForm();
         this.load();
       },
       error: () => {
-        this.errorMessage = 'Nao foi possivel registrar a movimentacao.';
+        this.errorMessage = 'Não foi possível registrar a movimentação.';
         this.syncView();
       },
     });
@@ -358,7 +360,7 @@ export class InventoryPageComponent {
         this.syncView();
       },
       error: () => {
-        this.errorMessage = 'Nao foi possivel carregar produtos.';
+        this.errorMessage = 'Não foi possível carregar produtos.';
         this.syncView();
       },
     });
@@ -371,7 +373,7 @@ export class InventoryPageComponent {
         this.syncView();
       },
       error: (error) => {
-        this.errorMessage = this.apiClient.errorMessage(error, 'Nao foi possivel carregar fornecedores.');
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar fornecedores.');
         this.syncView();
       },
     });
@@ -391,7 +393,7 @@ export class InventoryPageComponent {
         this.syncView();
       },
       error: () => {
-        this.errorMessage = 'Nao foi possivel carregar saldos.';
+        this.errorMessage = 'Não foi possível carregar saldos.';
         this.syncView();
       },
     });
@@ -416,7 +418,7 @@ export class InventoryPageComponent {
         this.syncView();
       },
       error: () => {
-        this.errorMessage = 'Nao foi possivel carregar movimentacoes.';
+        this.errorMessage = 'Não foi possível carregar movimentações.';
         this.syncView();
       },
     });

@@ -11,8 +11,9 @@ Implementado:
 - Shell lateral protegido com navegacao principal filtrada por perfil.
 - Guards por perfil para rotas administrativas conforme autorizacao da API.
 - Rotas para inicio, usuarios, produtos, categorias, estoque, vendas, conflitos offline, clientes e fornecedores.
-- Dashboard inicial com status da API e atalhos operacionais.
+- Dashboard inicial com briefing do dia, conflitos pendentes, totais de venda e indice por departamento.
 - Telas funcionais de usuarios, categorias, produtos, estoque, vendas, conflitos offline, clientes e fornecedores com filtros, periodo de movimentacoes, formularios e estados de loading, vazio, erro e sucesso.
+- Identidade visual de balcao: papel de talao, Petrona e IBM Plex, navegacao por departamento, tabelas como superficie principal e fichas contextuais.
 - `ApiClientService`, `AuthService`, `AccessService`, `CatalogService`, `InventoryService`, `SalesService`, `CustomerService`, `SupplierService` e `OfflineService` tipados para os contratos iniciais da API.
 - Ambiente local apontando para `http://localhost:8080`.
 - Teste minimo do shell administrativo.
@@ -22,7 +23,6 @@ Credencial inicial de desenvolvimento: `admin` / `admin123`.
 Ainda planejado:
 
 - Tratamento padronizado completo de erros de API em todas as telas.
-- Refinamentos de UX para operacao piloto.
 
 ## Rotas atuais
 

@@ -12,12 +12,12 @@ import { Customer, CustomerRequest, CustomerService } from '../core/customer.ser
   imports: [DatePipe, ReactiveFormsModule, RouterLink],
   template: `
     <section class="page-header">
-      <p>Clientes</p>
-      <h1>Cadastro de clientes</h1>
-      <span>Mantenha contatos ativos para vinculo opcional em vendas e historico de compras.</span>
+      <p>Relacionamento</p>
+      <h1>Clientes</h1>
+      <span>Contatos ativos para vínculo opcional em vendas e histórico de compras.</span>
     </section>
 
-    <section class="toolbar">
+    <section class="filter-rule">
       <label>
         Buscar
         <input type="search" [formControl]="searchControl" placeholder="Nome, telefone, e-mail ou documento" />
@@ -30,12 +30,63 @@ import { Customer, CustomerRequest, CustomerService } from '../core/customer.ser
           <option value="false">Inativos</option>
         </select>
       </label>
-      <span></span>
       <button type="button" class="secondary-button" (click)="loadCustomers()">Filtrar</button>
     </section>
 
-    <section class="content-grid wide">
-      <form class="form-panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <section class="workspace">
+      <section class="data-table">
+        @if (loading) {
+          <p class="state-message">Carregando clientes...</p>
+        } @else if (customers.length === 0) {
+          <p class="state-message">Nenhum cliente neste filtro. Cadastre um contato na ficha ou limpe a busca.</p>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Contato</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Criado em</th>
+                  <th scope="col">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (customer of customers; track customer.id) {
+                  <tr
+                    class="interactive"
+                    [class.selected]="editingCustomer?.id === customer.id"
+                    (click)="edit(customer)"
+                  >
+                    <td>
+                      <strong>{{ customer.name }}</strong>
+                      <small class="mono">{{ customer.document || 'Sem documento' }}</small>
+                    </td>
+                    <td>
+                      <strong>{{ customer.phone || '—' }}</strong>
+                      <small>{{ customer.email || '—' }}</small>
+                    </td>
+                    <td>
+                      <span class="status-stamp" [class.inactive]="!customer.active">
+                        {{ customer.active ? 'Ativo' : 'Inativo' }}
+                      </span>
+                    </td>
+                    <td class="numeric">{{ customer.createdAt | date:'shortDate' }}</td>
+                    <td>
+                      <div class="button-row">
+                        <button type="button" class="ghost-button" (click)="edit(customer); $event.stopPropagation()">Editar</button>
+                        <a class="ghost-button" [routerLink]="['/vendas']" [queryParams]="{ customerId: customer.id }" (click)="$event.stopPropagation()">Vendas</a>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
         <h2>{{ editingCustomer ? 'Editar cliente' : 'Novo cliente' }}</h2>
         <div class="form-grid">
           <label>
@@ -52,7 +103,7 @@ import { Customer, CustomerRequest, CustomerService } from '../core/customer.ser
           </label>
           <label>
             Documento
-            <input type="text" formControlName="document" />
+            <input class="mono" type="text" formControlName="document" />
           </label>
         </div>
         <label class="check-row">
@@ -65,7 +116,7 @@ import { Customer, CustomerRequest, CustomerService } from '../core/customer.ser
         </label>
 
         @if (form.invalid && form.touched) {
-          <p class="field-error">Preencha o nome e use um e-mail valido.</p>
+          <p class="field-error">Preencha o nome e use um e-mail válido.</p>
         }
         @if (errorMessage) {
           <p class="form-error" role="alert">{{ errorMessage }}</p>
@@ -81,50 +132,6 @@ import { Customer, CustomerRequest, CustomerService } from '../core/customer.ser
           }
         </div>
       </form>
-
-      <section class="table-panel">
-        @if (loading) {
-          <p class="state-message">Carregando clientes...</p>
-        } @else if (customers.length === 0) {
-          <p class="state-message">Nenhum cliente encontrado.</p>
-        } @else {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Contato</th>
-                  <th>Status</th>
-                  <th>Criado em</th>
-                  <th>Acoes</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (customer of customers; track customer.id) {
-                  <tr>
-                    <td>
-                      <strong>{{ customer.name }}</strong>
-                      <small>{{ customer.document || 'Sem documento' }}</small>
-                    </td>
-                    <td>
-                      <strong>{{ customer.phone || '-' }}</strong>
-                      <small>{{ customer.email || '-' }}</small>
-                    </td>
-                    <td><span class="status-pill" [class.inactive]="!customer.active">{{ customer.active ? 'Ativo' : 'Inativo' }}</span></td>
-                    <td>{{ customer.createdAt | date:'shortDate' }}</td>
-                    <td>
-                      <div class="button-row">
-                        <button type="button" class="ghost-button" (click)="edit(customer)">Editar</button>
-                        <a class="ghost-button" [routerLink]="['/vendas']" [queryParams]="{ customerId: customer.id }">Vendas</a>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
     </section>
   `,
 })
@@ -170,7 +177,7 @@ export class CustomersPageComponent {
         this.syncView();
       },
       error: () => {
-        this.errorMessage = 'Nao foi possivel carregar clientes.';
+        this.errorMessage = 'Não foi possível carregar clientes.';
         this.syncView();
       },
     });

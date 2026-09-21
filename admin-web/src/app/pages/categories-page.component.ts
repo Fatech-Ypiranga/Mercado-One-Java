@@ -10,12 +10,12 @@ import { Category, CatalogService } from '../core/catalog.service';
   imports: [ReactiveFormsModule],
   template: `
     <section class="page-header">
-      <p>Catalogo</p>
+      <p>Catálogo</p>
       <h1>Categorias</h1>
-      <span>Organize produtos por agrupamentos operacionais.</span>
+      <span>Agrupamentos operacionais usados para organizar produtos na loja.</span>
     </section>
 
-    <section class="toolbar">
+    <section class="filter-rule">
       <label>
         Buscar
         <input type="search" [formControl]="searchControl" placeholder="Nome da categoria" />
@@ -31,15 +31,52 @@ import { Category, CatalogService } from '../core/catalog.service';
       <button type="button" class="secondary-button" (click)="load()">Filtrar</button>
     </section>
 
-    <section class="content-grid">
-      <form class="form-panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <section class="workspace">
+      <section class="data-table">
+        @if (loading) {
+          <p class="state-message">Carregando categorias...</p>
+        } @else if (categories.length === 0) {
+          <p class="state-message">Nenhuma categoria neste filtro. Ajuste a busca ou cadastre a primeira à direita.</p>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Nome</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (category of categories; track category.id) {
+                  <tr
+                    class="interactive"
+                    [class.selected]="editingCategory?.id === category.id"
+                    (click)="edit(category)"
+                  >
+                    <td>{{ category.name }}</td>
+                    <td>
+                      <span class="status-stamp" [class.inactive]="!category.active">
+                        {{ category.active ? 'Ativa' : 'Inativa' }}
+                      </span>
+                    </td>
+                    <td><button type="button" class="ghost-button" (click)="edit(category); $event.stopPropagation()">Editar</button></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
         <h2>{{ editingCategory ? 'Editar categoria' : 'Nova categoria' }}</h2>
         <label>
           Nome
           <input type="text" formControlName="name" />
         </label>
         @if (form.controls.name.touched && form.controls.name.invalid) {
-          <p class="field-error">Informe um nome com ate 120 caracteres.</p>
+          <p class="field-error">Informe um nome com até 120 caracteres.</p>
         }
         <label class="check-row">
           <input type="checkbox" formControlName="active" />
@@ -60,35 +97,6 @@ import { Category, CatalogService } from '../core/catalog.service';
           }
         </div>
       </form>
-
-      <section class="table-panel">
-        @if (loading) {
-          <p class="state-message">Carregando categorias...</p>
-        } @else if (categories.length === 0) {
-          <p class="state-message">Nenhuma categoria encontrada.</p>
-        } @else {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Nome</th>
-                  <th>Status</th>
-                  <th>Acoes</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (category of categories; track category.id) {
-                  <tr>
-                    <td>{{ category.name }}</td>
-                    <td><span class="status-pill" [class.inactive]="!category.active">{{ category.active ? 'Ativa' : 'Inativa' }}</span></td>
-                    <td><button type="button" class="ghost-button" (click)="edit(category)">Editar</button></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
     </section>
   `,
 })
@@ -132,7 +140,7 @@ export class CategoriesPageComponent {
           this.syncView();
         },
         error: () => {
-          this.errorMessage = 'Nao foi possivel carregar categorias.';
+          this.errorMessage = 'Não foi possível carregar categorias.';
           this.syncView();
         },
       });

@@ -11,15 +11,15 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
   imports: [CurrencyPipe, ReactiveFormsModule],
   template: `
     <section class="page-header">
-      <p>Catalogo</p>
+      <p>Catálogo</p>
       <h1>Produtos</h1>
-      <span>Cadastre itens vendaveis com categoria, preco e dados fiscais preparatorios.</span>
+      <span>Itens vendáveis com categoria, preço de venda e dados fiscais preparatórios.</span>
     </section>
 
-    <section class="toolbar">
+    <section class="filter-rule">
       <label>
         Buscar
-        <input type="search" [formControl]="searchControl" placeholder="Nome, SKU ou codigo" />
+        <input type="search" [formControl]="searchControl" placeholder="Nome, SKU ou código" />
       </label>
       <label>
         Categoria
@@ -41,8 +41,54 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
       <button type="button" class="secondary-button" (click)="loadProducts()">Filtrar</button>
     </section>
 
-    <section class="content-grid wide">
-      <form class="form-panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <section class="workspace">
+      <section class="data-table">
+        @if (loading) {
+          <p class="state-message">Carregando produtos...</p>
+        } @else if (products.length === 0) {
+          <p class="state-message">Nenhum produto neste filtro. Confira a busca ou cadastre um item na ficha ao lado.</p>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Produto</th>
+                  <th scope="col">Categoria</th>
+                  <th class="numeric" scope="col">Preço</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (product of products; track product.id) {
+                  <tr
+                    class="interactive"
+                    [class.selected]="editingProduct?.id === product.id"
+                    (click)="edit(product)"
+                  >
+                    <td>
+                      <strong>{{ product.name }}</strong>
+                      <small class="mono">{{ product.sku || product.barcode || 'Sem código' }}</small>
+                    </td>
+                    <td>{{ product.category.name }}</td>
+                    <td class="numeric">{{ product.salePrice | currency:'BRL':'symbol':'1.2-2' }}</td>
+                    <td>
+                      <span class="status-stamp" [class.inactive]="!product.active">
+                        {{ product.active ? 'Ativo' : 'Inativo' }}
+                      </span>
+                    </td>
+                    <td>
+                      <button type="button" class="ghost-button" (click)="edit(product); $event.stopPropagation()">Editar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
         <h2>{{ editingProduct ? 'Editar produto' : 'Novo produto' }}</h2>
         <div class="form-grid">
           <label>
@@ -59,12 +105,12 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
             </select>
           </label>
           <label>
-            Codigo de barras
-            <input type="text" formControlName="barcode" />
+            Código de barras
+            <input class="mono" type="text" formControlName="barcode" />
           </label>
           <label>
             SKU
-            <input type="text" formControlName="sku" />
+            <input class="mono" type="text" formControlName="sku" />
           </label>
           <label>
             Unidade
@@ -76,20 +122,20 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
             </select>
           </label>
           <label>
-            Preco de venda
-            <input type="number" min="0.01" step="0.01" formControlName="salePrice" />
+            Preço de venda
+            <input class="numeric" type="number" min="0.01" step="0.01" formControlName="salePrice" />
           </label>
           <label>
             NCM
-            <input type="text" formControlName="ncm" />
+            <input class="mono" type="text" formControlName="ncm" />
           </label>
           <label>
             CEST
-            <input type="text" formControlName="cest" />
+            <input class="mono" type="text" formControlName="cest" />
           </label>
           <label>
-            CFOP padrao
-            <input type="text" formControlName="defaultCfop" />
+            CFOP padrão
+            <input class="mono" type="text" formControlName="defaultCfop" />
           </label>
           <label>
             Origem
@@ -97,7 +143,7 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
           </label>
         </div>
         <label>
-          Classificacao tributaria interna
+          Classificação tributária interna
           <input type="text" formControlName="taxClassification" />
         </label>
         <label class="check-row">
@@ -106,7 +152,7 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
         </label>
 
         @if (form.invalid && form.touched) {
-          <p class="field-error">Preencha nome, categoria, unidade e preco maior que zero.</p>
+          <p class="field-error">Preencha nome, categoria, unidade e preço maior que zero.</p>
         }
         @if (errorMessage) {
           <p class="form-error" role="alert">{{ errorMessage }}</p>
@@ -127,42 +173,6 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
           <p class="state-message compact">Crie uma categoria antes de cadastrar produtos.</p>
         }
       </form>
-
-      <section class="table-panel">
-        @if (loading) {
-          <p class="state-message">Carregando produtos...</p>
-        } @else if (products.length === 0) {
-          <p class="state-message">Nenhum produto encontrado.</p>
-        } @else {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Produto</th>
-                  <th>Categoria</th>
-                  <th>Preco</th>
-                  <th>Status</th>
-                  <th>Acoes</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (product of products; track product.id) {
-                  <tr>
-                    <td>
-                      <strong>{{ product.name }}</strong>
-                      <small>{{ product.sku || product.barcode || 'Sem codigo' }}</small>
-                    </td>
-                    <td>{{ product.category.name }}</td>
-                    <td>{{ product.salePrice | currency:'BRL':'symbol':'1.2-2' }}</td>
-                    <td><span class="status-pill" [class.inactive]="!product.active">{{ product.active ? 'Ativo' : 'Inativo' }}</span></td>
-                    <td><button type="button" class="ghost-button" (click)="edit(product)">Editar</button></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
     </section>
   `,
 })
@@ -224,7 +234,7 @@ export class ProductsPageComponent {
           this.syncView();
         },
         error: () => {
-          this.errorMessage = 'Nao foi possivel carregar produtos.';
+          this.errorMessage = 'Não foi possível carregar produtos.';
           this.syncView();
         },
       });
@@ -305,7 +315,7 @@ export class ProductsPageComponent {
         this.syncView();
       },
       error: () => {
-        this.errorMessage = 'Nao foi possivel carregar categorias.';
+        this.errorMessage = 'Não foi possível carregar categorias.';
         this.syncView();
       },
     });

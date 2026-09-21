@@ -41,7 +41,7 @@ describe('LoginPageComponent', () => {
     fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Login ou senha invalidos.');
+    expect(fixture.nativeElement.textContent).toContain('Login ou senha inválidos.');
   });
 
   it('re-enables login and explains when the API is unavailable', () => {
@@ -57,6 +57,6 @@ describe('LoginPageComponent', () => {
     const button = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
     expect(button.disabled).toBeFalse();
     expect(button.textContent).toContain('Entrar');
-    expect(fixture.nativeElement.textContent).toContain('Nao foi possivel conectar a API.');
+    expect(fixture.nativeElement.textContent).toContain('Não foi possível conectar à API.');
   });
 });

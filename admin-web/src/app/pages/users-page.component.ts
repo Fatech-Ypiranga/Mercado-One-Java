@@ -12,11 +12,11 @@ import { UserRole } from '../core/auth.service';
   template: `
     <section class="page-header">
       <p>Acesso</p>
-      <h1>Usuarios e perfis</h1>
-      <span>Gerencie acessos operacionais, perfil e status de uso do sistema.</span>
+      <h1>Usuários e perfis</h1>
+      <span>Contas operacionais, perfil de autorização e status de uso do sistema.</span>
     </section>
 
-    <section class="toolbar">
+    <section class="filter-rule">
       <label>
         Buscar
         <input type="search" [formControl]="searchControl" placeholder="Nome ou login" />
@@ -41,9 +41,53 @@ import { UserRole } from '../core/auth.service';
       <button type="button" class="secondary-button" (click)="loadUsers()">Filtrar</button>
     </section>
 
-    <section class="content-grid wide">
-      <form class="form-panel" [formGroup]="form" (ngSubmit)="save()" novalidate>
-        <h2>{{ editingUser ? 'Editar usuario' : 'Novo usuario' }}</h2>
+    <section class="workspace">
+      <section class="data-table">
+        @if (loading) {
+          <p class="state-message">Carregando usuários...</p>
+        } @else if (users.length === 0) {
+          <p class="state-message">Nenhum usuário neste filtro. Cadastre um acesso na ficha ou altere o perfil/status.</p>
+        } @else {
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Usuário</th>
+                  <th scope="col">Perfil</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (user of users; track user.id) {
+                  <tr
+                    class="interactive"
+                    [class.selected]="editingUser?.id === user.id"
+                    (click)="edit(user)"
+                  >
+                    <td>
+                      <strong>{{ user.nome }}</strong>
+                      <small class="mono">{{ user.login }}</small>
+                    </td>
+                    <td>{{ roleLabel(user.perfil) }}</td>
+                    <td>
+                      <span class="status-stamp" [class.inactive]="user.status === 'INACTIVE'">
+                        {{ user.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
+                      </span>
+                    </td>
+                    <td>
+                      <button type="button" class="ghost-button" (click)="edit(user); $event.stopPropagation()">Editar</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
+        <h2>{{ editingUser ? 'Editar usuário' : 'Novo usuário' }}</h2>
         <div class="form-grid">
           <label>
             Nome
@@ -51,7 +95,7 @@ import { UserRole } from '../core/auth.service';
           </label>
           <label>
             Login
-            <input type="text" formControlName="login" autocomplete="username" />
+            <input class="mono" type="text" formControlName="login" autocomplete="username" />
           </label>
           <label>
             Perfil
@@ -68,11 +112,11 @@ import { UserRole } from '../core/auth.service';
         </div>
         <label class="check-row">
           <input type="checkbox" formControlName="active" />
-          Usuario ativo
+          Usuário ativo
         </label>
 
         @if (form.invalid && form.touched) {
-          <p class="field-error">Preencha nome, login, perfil e senha com no minimo 6 caracteres.</p>
+          <p class="field-error">Preencha nome, login, perfil e senha com no mínimo 6 caracteres.</p>
         }
         @if (errorMessage) {
           <p class="form-error" role="alert">{{ errorMessage }}</p>
@@ -90,44 +134,6 @@ import { UserRole } from '../core/auth.service';
           }
         </div>
       </form>
-
-      <section class="table-panel">
-        @if (loading) {
-          <p class="state-message">Carregando usuarios...</p>
-        } @else if (users.length === 0) {
-          <p class="state-message">Nenhum usuario encontrado.</p>
-        } @else {
-          <div class="table-wrap">
-            <table>
-              <thead>
-                <tr>
-                  <th>Usuario</th>
-                  <th>Perfil</th>
-                  <th>Status</th>
-                  <th>Acoes</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (user of users; track user.id) {
-                  <tr>
-                    <td>
-                      <strong>{{ user.nome }}</strong>
-                      <small>{{ user.login }}</small>
-                    </td>
-                    <td>{{ roleLabel(user.perfil) }}</td>
-                    <td>
-                      <span class="status-pill" [class.inactive]="user.status === 'INACTIVE'">
-                        {{ user.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
-                      </span>
-                    </td>
-                    <td><button type="button" class="ghost-button" (click)="edit(user)">Editar</button></td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
     </section>
   `,
 })
@@ -179,7 +185,7 @@ export class UsersPageComponent {
           this.syncView();
         },
         error: () => {
-          this.errorMessage = 'Nao foi possivel carregar usuarios.';
+          this.errorMessage = 'Não foi possível carregar usuários.';
           this.syncView();
         },
       });
@@ -216,12 +222,12 @@ export class UsersPageComponent {
       this.syncView();
     })).subscribe({
       next: () => {
-        this.successMessage = 'Usuario salvo.';
+        this.successMessage = 'Usuário salvo.';
         this.resetForm();
         this.loadUsers();
       },
       error: () => {
-        this.errorMessage = 'Revise os dados do usuario.';
+        this.errorMessage = 'Revise os dados do usuário.';
         this.syncView();
       },
     });
@@ -264,7 +270,7 @@ export class UsersPageComponent {
         this.syncView();
       },
       error: () => {
-        this.errorMessage = 'Nao foi possivel carregar perfis.';
+        this.errorMessage = 'Não foi possível carregar perfis.';
         this.syncView();
       },
     });

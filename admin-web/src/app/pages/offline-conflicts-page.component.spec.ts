@@ -67,7 +67,7 @@ describe('OfflineConflictsPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('local-1');
     expect(fixture.nativeElement.textContent).toContain('Total offline');
     expect(fixture.nativeElement.textContent).toContain('Produto #1');
-    expect(fixture.nativeElement.textContent).toContain('CASH');
+    expect(fixture.nativeElement.textContent).toContain('Dinheiro');
     fixture.nativeElement.querySelector('.primary-button').click();
     fixture.detectChanges();
 
@@ -92,7 +92,7 @@ describe('OfflineConflictsPageComponent', () => {
     fixture.detectChanges();
 
     expect(resolve).not.toHaveBeenCalled();
-    expect(fixture.nativeElement.textContent).toContain('Informe uma observacao para rejeitar o conflito.');
+    expect(fixture.nativeElement.textContent).toContain('Informe uma observação para rejeitar o conflito.');
   });
 
   it('renders the loading state', () => {

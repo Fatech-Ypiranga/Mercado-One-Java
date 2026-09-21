@@ -10,13 +10,18 @@ interface NavigationItem {
   roles?: readonly UserRole[];
 }
 
+interface NavigationGroup {
+  label: string;
+  items: NavigationItem[];
+}
+
 @Component({
   selector: 'mo-admin-shell',
   standalone: true,
   imports: [RouterLink, RouterLinkActive, RouterOutlet],
   template: `
     <div class="app-shell">
-      <aside class="sidebar" aria-label="Navegacao principal">
+      <aside class="sidebar" aria-label="Navegação principal">
         <a class="brand" routerLink="/">
           <span class="brand-mark" aria-hidden="true">M1</span>
           <span>
@@ -26,19 +31,22 @@ interface NavigationItem {
         </a>
 
         <nav>
-          @for (item of visibleNavItems; track item.path) {
-            <a
-              [routerLink]="item.path"
-              routerLinkActive="active"
-              [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-            >
-              {{ item.label }}
-            </a>
+          @for (group of visibleNavGroups; track group.label) {
+            <p class="nav-department">{{ group.label }}</p>
+            @for (item of group.items; track item.path) {
+              <a
+                [routerLink]="item.path"
+                routerLinkActive="active"
+                [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+              >
+                {{ item.label }}
+              </a>
+            }
           }
         </nav>
 
-        <section class="user-panel" aria-label="Usuario autenticado">
-          <span>{{ auth.session()?.user?.nome ?? 'Sessao ativa' }}</span>
+        <section class="user-panel" aria-label="Usuário autenticado">
+          <span>{{ auth.session()?.user?.nome ?? 'Sessão ativa' }}</span>
           <small>{{ auth.session()?.user?.perfil ?? 'ADMIN' }}</small>
           <button type="button" class="ghost-button" (click)="logout()">Sair</button>
         </section>
@@ -54,20 +62,50 @@ export class AdminShellComponent {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected readonly navItems: NavigationItem[] = [
-    { label: 'Inicio', path: '/' },
-    { label: 'Usuarios', path: '/usuarios', roles: ['ADMIN'] },
-    { label: 'Produtos', path: '/produtos', roles: ['ADMIN', 'GERENTE'] },
-    { label: 'Categorias', path: '/categorias', roles: ['ADMIN', 'GERENTE'] },
-    { label: 'Estoque', path: '/estoque', roles: ['ADMIN', 'GERENTE', 'ESTOQUISTA'] },
-    { label: 'Vendas', path: '/vendas', roles: ['ADMIN', 'GERENTE'] },
-    { label: 'Offline', path: '/offline', roles: ['ADMIN', 'GERENTE'] },
-    { label: 'Clientes', path: '/clientes', roles: ['ADMIN', 'GERENTE'] },
-    { label: 'Fornecedores', path: '/fornecedores', roles: ['ADMIN', 'GERENTE'] },
+  protected readonly navGroups: NavigationGroup[] = [
+    {
+      label: 'Operação',
+      items: [
+        { label: 'Início', path: '/' },
+        { label: 'Vendas', path: '/vendas', roles: ['ADMIN', 'GERENTE'] },
+        { label: 'Offline', path: '/offline', roles: ['ADMIN', 'GERENTE'] },
+      ],
+    },
+    {
+      label: 'Catálogo',
+      items: [
+        { label: 'Produtos', path: '/produtos', roles: ['ADMIN', 'GERENTE'] },
+        { label: 'Categorias', path: '/categorias', roles: ['ADMIN', 'GERENTE'] },
+      ],
+    },
+    {
+      label: 'Estoque',
+      items: [
+        { label: 'Estoque', path: '/estoque', roles: ['ADMIN', 'GERENTE', 'ESTOQUISTA'] },
+        { label: 'Fornecedores', path: '/fornecedores', roles: ['ADMIN', 'GERENTE'] },
+      ],
+    },
+    {
+      label: 'Relacionamento',
+      items: [
+        { label: 'Clientes', path: '/clientes', roles: ['ADMIN', 'GERENTE'] },
+      ],
+    },
+    {
+      label: 'Acesso',
+      items: [
+        { label: 'Usuários', path: '/usuarios', roles: ['ADMIN'] },
+      ],
+    },
   ];
 
-  protected get visibleNavItems(): NavigationItem[] {
-    return this.navItems.filter((item) => item.roles === undefined || this.auth.hasAnyRole(item.roles));
+  protected get visibleNavGroups(): NavigationGroup[] {
+    return this.navGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => item.roles === undefined || this.auth.hasAnyRole(item.roles)),
+      }))
+      .filter((group) => group.items.length > 0);
   }
 
   protected logout(): void {

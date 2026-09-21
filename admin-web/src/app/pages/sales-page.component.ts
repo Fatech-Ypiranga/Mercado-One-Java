@@ -5,7 +5,7 @@ import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { ApiClientService } from '../core/api-client.service';
-import { ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '../core/sales.service';
+import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '../core/sales.service';
 
 @Component({
   selector: 'mo-sales-page',
@@ -13,23 +13,23 @@ import { ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '
   imports: [CurrencyPipe, DatePipe, ReactiveFormsModule],
   template: `
     <section class="page-header">
-      <p>Vendas</p>
-      <h1>Relatorio de vendas</h1>
-      <span>Consulte vendas online confirmadas por periodo, operador ou cliente.</span>
+      <p>Operação</p>
+      <h1>Relatório de vendas</h1>
+      <span>Vendas confirmadas por período, operador de caixa ou cliente.</span>
     </section>
 
-    <section class="toolbar">
+    <section class="filter-rule">
       <label>
         De
         <input type="date" [formControl]="fromControl" />
       </label>
       <label>
-        Ate
+        Até
         <input type="date" [formControl]="toControl" />
       </label>
       <label>
-        Operador ID
-        <input type="number" min="1" step="1" [formControl]="operatorIdControl" />
+        Operador (ID)
+        <input class="numeric" type="number" min="1" step="1" [formControl]="operatorIdControl" />
       </label>
       <label>
         Status
@@ -39,74 +39,84 @@ import { ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '
         </select>
       </label>
       <label>
-        Cliente ID
-        <input type="number" min="1" step="1" [formControl]="customerIdControl" />
+        Cliente (ID)
+        <input class="numeric" type="number" min="1" step="1" [formControl]="customerIdControl" />
       </label>
-      <button type="button" class="secondary-button" (click)="loadSales()">Filtrar</button>
-      <button type="button" class="ghost-button" (click)="exportCsv()" [disabled]="loading">CSV</button>
+      <div class="button-row">
+        <button type="button" class="secondary-button" (click)="loadSales()">Filtrar</button>
+        <button type="button" class="ghost-button" (click)="exportCsv()" [disabled]="loading">CSV</button>
+      </div>
     </section>
 
-    <section class="metric-grid">
-      <article class="metric-card">
-        <span>Vendas no periodo</span>
+    <section class="ledger-figures" aria-label="Totais do período">
+      <div>
+        <span>Vendas</span>
         <strong>{{ report?.totals?.saleCount ?? 0 }}</strong>
-        <small>{{ pageSummary }}</small>
-      </article>
-      <article class="metric-card">
+      </div>
+      <div>
         <span>Total vendido</span>
         <strong>{{ report?.totals?.totalAmount ?? 0 | currency:'BRL':'symbol':'1.2-2' }}</strong>
-        <small>Somatorio das vendas filtradas</small>
-      </article>
-      <article class="metric-card">
-        <span>Itens vendidos</span>
+      </div>
+      <div>
+        <span>Itens</span>
         <strong>{{ report?.totals?.totalItems ?? 0 }}</strong>
-        <small>Quantidade agregada</small>
-      </article>
-      <article class="metric-card">
-        <span>Pagamentos</span>
-        <strong>{{ paymentTotals }}</strong>
-        <small>Por forma de pagamento</small>
-      </article>
+      </div>
+      <div>
+        <span>Registros</span>
+        <strong>{{ pageSummary }}</strong>
+      </div>
     </section>
 
-    <section class="table-panel">
+    @if (paymentEntries.length > 0) {
+      <ul class="payment-breakdown" aria-label="Totais por forma de pagamento">
+        @for (entry of paymentEntries; track entry.method) {
+          <li>{{ entry.label }} {{ entry.amount | currency:'BRL':'symbol':'1.2-2' }}</li>
+        }
+      </ul>
+    }
+
+    <section class="data-table">
       @if (loading) {
         <p class="state-message">Carregando vendas...</p>
       } @else if (errorMessage) {
         <p class="form-error" role="alert">{{ errorMessage }}</p>
       } @else if (sales.length === 0) {
-        <p class="state-message">Nenhuma venda encontrada.</p>
+        <p class="state-message">Nenhuma venda neste filtro. Amplie o período ou remova operador e cliente.</p>
       } @else {
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Venda</th>
-                <th>Cliente</th>
-                <th>Itens</th>
-                <th>Pagamento</th>
-                <th>Total</th>
-                <th>Status</th>
+                <th scope="col">Venda</th>
+                <th scope="col">Cliente</th>
+                <th scope="col">Itens</th>
+                <th scope="col">Pagamento</th>
+                <th class="numeric" scope="col">Total</th>
+                <th scope="col">Status</th>
               </tr>
             </thead>
             <tbody>
               @for (sale of sales; track sale.id) {
                 <tr>
                   <td>
-                    <strong>#{{ sale.id }}</strong>
+                    <strong class="mono">#{{ sale.id }}</strong>
                     <small>{{ sale.createdAt | date:'short' }} · operador {{ sale.operatorUserId }}</small>
                   </td>
                   <td>
-                    <strong>{{ sale.customer?.name || 'Consumidor nao identificado' }}</strong>
-                    <small>{{ sale.customer?.phone || sale.customer?.document || '-' }}</small>
+                    <strong>{{ sale.customer?.name || 'Consumidor não identificado' }}</strong>
+                    <small>{{ sale.customer?.phone || sale.customer?.document || '—' }}</small>
                   </td>
                   <td>
                     <strong>{{ sale.items.length }} item(ns)</strong>
                     <small>{{ itemSummary(sale) }}</small>
                   </td>
                   <td>{{ paymentSummary(sale) }}</td>
-                  <td>{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
-                  <td><span class="status-pill" [class.inactive]="sale.status !== 'CONFIRMED'">{{ sale.status }}</span></td>
+                  <td class="numeric">{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
+                  <td>
+                    <span class="status-stamp" [class.inactive]="sale.status !== 'CONFIRMED'">
+                      {{ statusLabel(sale.status) }}
+                    </span>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -115,18 +125,18 @@ import { ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '
       }
     </section>
 
-    <section class="table-panel movement-panel">
+    <section class="ledger-block">
       <h2>Produtos mais vendidos</h2>
       @if (topProducts.length === 0) {
-        <p class="state-message">Nenhum produto vendido no filtro atual.</p>
+        <p class="state-message">Nenhum produto vendido neste filtro.</p>
       } @else {
         <div class="table-wrap">
           <table>
             <thead>
               <tr>
-                <th>Produto</th>
-                <th>Quantidade</th>
-                <th>Total</th>
+                <th scope="col">Produto</th>
+                <th class="numeric" scope="col">Quantidade</th>
+                <th class="numeric" scope="col">Total</th>
               </tr>
             </thead>
             <tbody>
@@ -134,10 +144,10 @@ import { ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '
                 <tr>
                   <td>
                     <strong>{{ product.name }}</strong>
-                    <small>{{ product.sku || product.barcode || 'Sem codigo' }}</small>
+                    <small class="mono">{{ product.sku || product.barcode || 'Sem código' }}</small>
                   </td>
-                  <td>{{ product.quantity }} {{ product.unit }}</td>
-                  <td>{{ product.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
+                  <td class="numeric">{{ product.quantity }} {{ product.unit }}</td>
+                  <td class="numeric">{{ product.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
                 </tr>
               }
             </tbody>
@@ -147,10 +157,10 @@ import { ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '
     </section>
 
     @if (report && report.page.totalPages > 1) {
-      <section class="toolbar">
+      <section class="filter-rule">
         <button type="button" class="ghost-button" (click)="previousPage()" [disabled]="currentPage === 0">Anterior</button>
-        <span class="state-message">Pagina {{ currentPage + 1 }} de {{ report.page.totalPages }}</span>
-        <button type="button" class="ghost-button" (click)="nextPage()" [disabled]="currentPage + 1 >= report.page.totalPages">Proxima</button>
+        <span class="state-message">Página {{ currentPage + 1 }} de {{ report.page.totalPages }}</span>
+        <button type="button" class="ghost-button" (click)="nextPage()" [disabled]="currentPage + 1 >= report.page.totalPages">Próxima</button>
       </section>
     }
   `,
@@ -202,7 +212,7 @@ export class SalesPageComponent {
         this.syncView();
       },
       error: (error) => {
-        this.errorMessage = this.apiClient.errorMessage(error, 'Nao foi possivel carregar vendas.');
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar vendas.');
         this.syncView();
       },
     });
@@ -223,7 +233,7 @@ export class SalesPageComponent {
         URL.revokeObjectURL(url);
       },
       error: (error) => {
-        this.errorMessage = this.apiClient.errorMessage(error, 'Nao foi possivel exportar vendas.');
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível exportar vendas.');
         this.syncView();
       },
     });
@@ -244,24 +254,44 @@ export class SalesPageComponent {
   }
 
   protected paymentSummary(sale: Sale): string {
-    return sale.payments.map((payment) => `${payment.method} ${payment.amount.toFixed(2)}`).join(', ');
+    return sale.payments
+      .map((payment) => `${this.paymentLabel(payment.method)} ${payment.amount.toFixed(2)}`)
+      .join(', ');
+  }
+
+  protected statusLabel(status: SaleStatus): string {
+    return status === 'CONFIRMED' ? 'Confirmada' : 'Cancelada';
   }
 
   protected get pageSummary(): string {
     if (!this.report) {
-      return 'Nenhum filtro carregado';
+      return '—';
     }
-    return `${this.report.page.totalElements} registro(s) encontrados`;
+    return `${this.report.page.totalElements}`;
   }
 
-  protected get paymentTotals(): string {
+  protected get paymentEntries(): { method: PaymentMethod; label: string; amount: number }[] {
     const totals = this.report?.totals.totalsByPaymentMethod;
-    if (!totals || Object.keys(totals).length === 0) {
-      return '-';
+    if (!totals) {
+      return [];
     }
-    return Object.entries(totals)
-      .map(([method, total]) => `${method} ${Number(total).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`)
-      .join(' | ');
+    return (Object.entries(totals) as [PaymentMethod, number][])
+      .filter(([, amount]) => amount != null)
+      .map(([method, amount]) => ({
+        method,
+        label: this.paymentLabel(method),
+        amount: Number(amount),
+      }));
+  }
+
+  private paymentLabel(method: string): string {
+    const labels: Record<string, string> = {
+      CASH: 'Dinheiro',
+      CARD: 'Cartão',
+      PIX: 'Pix',
+      STORE_CREDIT: 'Fiado',
+    };
+    return labels[method] ?? method;
   }
 
   private loadTopProducts(): void {

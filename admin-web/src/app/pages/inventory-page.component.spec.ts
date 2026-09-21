@@ -79,7 +79,7 @@ describe('InventoryPageComponent', () => {
     fixture.detectChanges();
 
     expect(entry).toHaveBeenCalledWith(jasmine.objectContaining({ productId: 10, quantity: 5 }));
-    expect(fixture.nativeElement.textContent).toContain('Movimentacao registrada.');
+    expect(fixture.nativeElement.textContent).toContain('Movimentação registrada.');
   });
 
   it('shows feedback when movement registration fails', () => {
@@ -96,7 +96,7 @@ describe('InventoryPageComponent', () => {
     fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Nao foi possivel registrar a movimentacao.');
+    expect(fixture.nativeElement.textContent).toContain('Não foi possível registrar a movimentação.');
   });
 
   it('converts movement period filters from local day boundaries', () => {
