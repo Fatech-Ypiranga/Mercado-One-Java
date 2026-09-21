@@ -4,6 +4,8 @@ Este documento reune diagramas versionaveis em Mermaid para explicar a arquitetu
 
 Use estes diagramas como ponto de entrada antes de abrir o codigo. Para detalhes normativos, consulte tambem `README.md`, `CONTEXT.md`, `docs/arquitetura.md`, `docs/api-contratos.md`, `docs/dados-e-migracoes.md` e `docs/offline-pdv-sync.md`.
 
+A fonte normativa e o Mermaid deste arquivo. JSON/HTML em `docs/diagramas/` sao copias visuais de verificacao e podem estar defasados (varios ainda mostram `POST /api/sales` saindo do PDV). `UML_drawio(1).xml` e sketch conceitual de estoque, nao diagrama de arquitetura atual.
+
 ## Indice
 
 1. [Componentes do sistema](#componentes-do-sistema)
@@ -11,8 +13,8 @@ Use estes diagramas como ponto de entrada antes de abrir o codigo. Para detalhes
 3. [Dominio principal](#dominio-principal)
 4. [Banco servidor](#banco-servidor)
 5. [Login e sessao](#login-e-sessao)
-6. [Venda online](#venda-online)
-7. [Venda offline e sincronizacao](#venda-offline-e-sincronizacao)
+6. [Venda confirmada no servidor](#venda-confirmada-no-servidor-post-apisales)
+7. [Venda no PDV](#venda-no-pdv-fila-local-e-sincronizacao)
 8. [Estado da venda offline local](#estado-da-venda-offline-local)
 9. [Fluxo de estoque](#fluxo-de-estoque)
 
@@ -215,7 +217,6 @@ classDiagram
     class SaleStatus {
         <<enumeration>>
         CONFIRMED
-        CANCELED
     }
 
     class OfflineConflictStatus {
@@ -415,14 +416,13 @@ sequenceDiagram
     end
 ```
 
-## Venda online
+## Venda confirmada no servidor (`POST /api/sales`)
 
-Use este diagrama para seguir a finalizacao de uma venda presencial quando ha comunicacao com a API no momento da operacao.
+Use este diagrama para o contrato HTTP de venda com preco vigente do servidor. A UI do PDV **nao** dispara este endpoint; o caixa atual usa o fluxo da secao seguinte. Testes de `SalesController` e `OnlineSaleClient.finalizeSale` exercitam este contrato.
 
 ```mermaid
 sequenceDiagram
-    actor Operador as Operador de Caixa
-    participant Pdv as PDV Desktop
+    actor ClienteHttp as Cliente HTTP (teste ou futuro)
     participant Api as Backend API
     participant Sales as SalesService
     participant Customers as CustomerService
@@ -431,8 +431,7 @@ sequenceDiagram
     participant Audit as AuditService
     participant Db as PostgreSQL
 
-    Operador->>Pdv: monta carrinho e pagamento
-    Pdv->>Api: POST /api/sales
+    ClienteHttp->>Api: POST /api/sales
     Api->>Sales: finalizeOnlineSale(dados, operador)
 
     opt cliente informado
@@ -459,13 +458,12 @@ sequenceDiagram
     Sales->>Audit: record(SALE_CONFIRMED)
     Audit->>Db: salvar AuditEvent
     Sales-->>Api: Sale CONFIRMED
-    Api-->>Pdv: ApiEnvelope<Sale>
-    Pdv-->>Operador: comprovante simples nao fiscal
+    Api-->>ClienteHttp: ApiEnvelope<Sale>
 ```
 
-## Venda offline e sincronizacao
+## Venda no PDV (fila local e sincronizacao)
 
-Use este diagrama para entender a regra mais importante do PDV: a venda e gravada localmente antes de qualquer tentativa de rede, e conflitos ou falhas nao apagam o registro original.
+Use este diagrama para o fluxo real da UI JavaFX: a venda e gravada localmente antes de qualquer tentativa de rede, inclusive quando a API esta no ar. Conflitos ou falhas nao apagam o registro original. `ACCEPT`/`REJECT` no admin nao alteram o SQLite do PDV.
 
 ```mermaid
 sequenceDiagram
@@ -524,11 +522,10 @@ stateDiagram-v2
     PENDING --> CONFLICT: API registra conflito
     PENDING --> ERROR: falha tecnica
 
-    ERROR --> PENDING: nova tentativa programada
-    ERROR --> SENT: reenvio aceito
-    ERROR --> CONFLICT: reenvio gera conflito
+    ERROR --> SENT: reenvio no login aceito
+    ERROR --> CONFLICT: reenvio no login gera conflito
 
-    CONFLICT --> CONFLICT: venda original preservada\naguarda revisao no Admin Web
+    CONFLICT --> CONFLICT: venda original preservada\nadmin resolve no servidor;\nSQLite permanece CONFLICT
     SENT --> [*]: venda sincronizada
 
     note right of PENDING
@@ -580,5 +577,5 @@ flowchart TB
 
 - Casos de uso detalhados: o backlog MVP ja comunica esse escopo com mais precisao.
 - Deployment cloud ou producao: a infraestrutura documentada hoje e local.
-- Diagramas de telas Angular ou JavaFX: as telas ainda sao simples e mais volateis que os fluxos de negocio.
+- Diagramas de telas Angular ou JavaFX: ha wireframes de planejamento em `docs/diagramas-interface-web/`; as telas reais mudam mais rapido que esses HTML.
 - Modulos fora do MVP, como NFC-e, NF-e, TEF, financeiro completo, multi-loja, e-commerce ou aplicativo mobile.

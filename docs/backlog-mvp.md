@@ -1,6 +1,6 @@
 # Backlog MVP
 
-Este backlog traduz os requisitos atuais em fatias implementaveis. Ele descreve trabalho planejado, nao funcionalidade ja existente.
+Este backlog traduz os requisitos atuais em fatias implementaveis. Itens marcados descrevem trabalho ja existente no codigo. Itens abertos descrevem lacunas reais, nao ideias novas.
 
 ## P1 - Base Operacional
 
@@ -16,7 +16,7 @@ Este backlog traduz os requisitos atuais em fatias implementaveis. Ele descreve 
 Aceite minimo:
 
 - Usuario inativo nao autentica.
-- Operador de caixa nao acessa area administrativa sensivel.
+- Operador de caixa nao acessa area administrativa sensivel (nao ha rotas de `OPERADOR_CAIXA` no admin web).
 - Produto ativo fica disponivel para consulta e venda.
 - Produto inativo nao aparece para nova venda.
 
@@ -29,36 +29,40 @@ Aceite minimo:
 - [x] Exibir saldo atual por produto.
 - [x] Exibir movimentacoes por produto.
 - [x] Exibir movimentacoes por periodo.
+- [ ] Entrada como documento com varios produtos em um unico POST (hoje `POST /api/inventory/entries` recebe um produto).
 
-Aceite minimo:
+Aceite minimo do que esta entregue:
 
 - Entrada confirmada aumenta saldo.
 - Ajuste manual exige justificativa.
 - Cada alteracao de saldo gera movimentacao.
 
-## P3 - Venda Online
+## P3 - Venda no PDV
 
-- [x] Criar fluxo minimo de venda online no PDV.
+- [x] Fluxo minimo de venda no PDV com persistencia local antes da rede.
 - [x] Adicionar produtos por codigo, SKU ou busca.
 - [x] Alterar quantidade e remover itens antes da finalizacao.
 - [x] Identificar cliente opcionalmente.
 - [x] Registrar pagamento manual em dinheiro, cartao, PIX ou fiado no contrato da API.
-- [x] Finalizar venda online minima.
-- [x] Baixar estoque apos confirmacao.
+- [x] Contrato `POST /api/sales` para venda confirmada com preco vigente do servidor.
+- [x] Baixar estoque apos confirmacao no servidor.
 - [x] Gerar comprovante simples sem valor fiscal.
+- [ ] A UI do PDV passar a usar `POST /api/sales` quando a API estiver disponivel (hoje sempre usa fila + `POST /api/offline/sales/sync`).
+- [ ] Desconto simples quando o perfil permitir (requisito conceitual, sem codigo).
+- [ ] Mais de um pagamento na mesma venda na UI do PDV (a API ja aceita lista).
 
-Aceite minimo:
+Aceite minimo do que esta entregue:
 
 - Venda finalizada possui itens, operador, pagamentos, totais e horario.
-- Estoque e reduzido para os produtos vendidos.
-- Venda aparece nos relatorios basicos.
+- Estoque e reduzido quando o servidor aceita a venda.
+- Venda aceita aparece nos relatorios basicos.
 
 ## P4 - Clientes e CRM Basico
 
 - [x] Cadastrar cliente com nome, telefone, email, documento opcional e consentimento de contato.
 - [x] Pesquisar cliente por nome, telefone ou documento.
 - [x] Vincular cliente a venda.
-- [x] Consultar historico de compras.
+- [x] Consultar historico de compras (`/vendas?customerId=` no admin).
 - [x] Inativar cliente.
 
 Aceite minimo:
@@ -83,16 +87,17 @@ Aceite minimo:
 - [x] Carregar catalogo local de produtos ativos e precos vigentes.
 - [x] Registrar venda offline com identificador local.
 - [x] Persistir venda em fila offline.
-- [x] Exibir status de sincronizacao.
-- [x] Enviar vendas pendentes quando a comunicacao retornar.
-- [x] Registrar conflitos de preco, produto ou estoque.
+- [x] Enviar vendas pendentes quando a comunicacao retornar (login reenvia `PENDING` e `ERROR`).
+- [x] Registrar conflitos de preco, produto, pagamento ou estoque.
 - [x] Preservar venda offline original em conflito ou falha.
+- [ ] Badge de sincronizacao no cabecalho do PDV (enum `SyncStatus` existe, mas nao e atualizado na tela).
+- [ ] Refletir no PDV o aceite/rejeicao feito no admin (o status local permanece `CONFLICT`).
 
-Aceite minimo:
+Aceite minimo do que esta entregue:
 
-- Venda offline nao depende de comunicacao imediata.
+- Venda no PDV nao depende de comunicacao imediata para ser preservada.
 - Venda pendente permanece preservada localmente.
-- Venda sincronizada baixa estoque no servidor.
+- Venda sincronizada e aceita baixa estoque no servidor.
 - Conflito nao apaga a venda original.
 
 ## P7 - Relatorios Operacionais
@@ -108,6 +113,15 @@ Aceite minimo:
 
 - Relatorios respeitam filtros basicos.
 - Operador de caixa nao acessa relatorios gerenciais salvo autorizacao explicita.
+
+## Lacunas em relacao aos requisitos conceituais
+
+Ainda nao ha codigo para:
+
+- Consulta administrativa de `audit_events`.
+- Auditoria de criacao e alteracao de produto.
+- Cancelamento pos-venda.
+- Fluxo dedicado de redefinicao de senha alem do `password` opcional em `PUT /api/access/users/{id}`.
 
 ## Fora do MVP
 

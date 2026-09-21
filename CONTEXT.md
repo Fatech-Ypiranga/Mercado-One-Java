@@ -29,7 +29,7 @@ Pessoa que consulta produtos e apoia entradas ou ajustes de estoque quando autor
 _Avoid_: Repositor
 
 **PDV**:
-Ponto de venda usado pelo operador de caixa para registrar itens, aplicar descontos permitidos, informar pagamento e finalizar uma venda presencial.
+Ponto de venda usado pelo operador de caixa para registrar itens, informar pagamento e finalizar uma venda presencial.
 _Avoid_: Caixa, checkout
 
 **Venda**:
@@ -85,8 +85,12 @@ Processo que envia vendas offline ao servidor, confirma sua persistencia e regis
 _Avoid_: Atualizacao, upload
 
 **Conflito de Sincronizacao**:
-Situacao em que uma venda offline nao pode ser aceita automaticamente por diferenca de preco, produto ou estoque.
+Situacao em que uma venda offline nao pode ser aceita automaticamente por diferenca de preco, produto, pagamento ou estoque.
 _Avoid_: Erro generico, falha tecnica
+
+**Auditoria**:
+Registro imutavel de operacoes criticas do mercado no servidor.
+_Avoid_: Log tecnico, historico generico
 
 **Dados Fiscais Preparatorios**:
 Campos cadastrais que deixam o produto preparado para futura emissao fiscal, sem emitir NFC-e ou NF-e no MVP.

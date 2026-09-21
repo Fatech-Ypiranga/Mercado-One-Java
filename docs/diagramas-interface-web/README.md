@@ -2,7 +2,7 @@
 
 Pasta gerada para a entrega de planejamento da interface web administrativa.
 
-Os arquivos abaixo são HTML autocontidos com SVG inline, criados a partir do material existente no repositório e das rotas atuais do `admin-web`.
+Os arquivos abaixo são HTML autocontidos com SVG inline, criados a partir do material existente no repositório e das rotas atuais do `admin-web`. Sao artefatos de planejamento visual, nao a implementacao. Telas reais: `admin-web/src/app/pages/` e `admin-web/src/app/app.routes.ts`.
 
 - [Arquitetura da Interface Web](01-arquitetura-interface-web.html) - Visão técnica do Admin Web dentro do Mercado One, incluindo API, banco e contexto do PDV offline.
 - [Mapa de Navegação do Admin Web](02-mapa-navegacao-admin-web.html) - Estrutura das rotas atuais e agrupamentos de telas entregáveis para o planejamento da interface.
@@ -18,3 +18,5 @@ Os arquivos abaixo são HTML autocontidos com SVG inline, criados a partir do ma
 - [Usuários, Clientes e Fornecedores](12-apoio-usuarios-clientes-fornecedores.html) - Complemento visual para as telas de apoio administrativo que sustentam acesso, vendas e estoque.
 
 Escopo: mapa de navegação, descrição visual de fluxos, relação com casos de uso e wireframes iniciais. Não inclui pesquisa externa.
+
+Rotas reais do admin web: `/login`, `/`, `/usuarios`, `/produtos`, `/categorias`, `/estoque`, `/vendas`, `/offline`, `/clientes`, `/fornecedores`. `OPERADOR_CAIXA` não tem tela neste app.

@@ -13,7 +13,7 @@ As decisoes estruturais tambem estao registradas como ADRs curtos em `docs/adr/`
 
 ## Escopo do scaffold
 
-O scaffold entrega uma base minima executavel. Novas fatias funcionais devem continuar pequenas e verificaveis conforme cadastros, venda online, fila offline e sincronizacao evoluem.
+O scaffold entrega uma base minima executavel. As fatias de cadastro, estoque, venda, fila offline e sincronizacao ja existem; novas fatias devem continuar pequenas e verificaveis. Nao tratar o scaffold como MVP completo nem como produto em producao.
 
 ## Arquitetura do backend
 

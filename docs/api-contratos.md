@@ -39,9 +39,11 @@ Em erro:
 
 ## Erros atuais
 
-- `VALIDATION_ERROR`: erro de validacao de DTO, parametro ou constraint.
-- `BUSINESS_RULE`: regra de negocio violada, como login duplicado.
-- `INTERNAL_ERROR`: erro inesperado sem detalhe sensivel para o cliente.
+- `VALIDATION_ERROR`: erro de validacao de DTO, parametro ou constraint. HTTP 400.
+- `BUSINESS_RULE`: regra de negocio violada, como login duplicado ou estoque insuficiente. HTTP 400.
+- `INVALID_CREDENTIALS`: login ou senha invalidos. HTTP 401.
+- `NOT_FOUND`: entidade inexistente. HTTP 404.
+- `INTERNAL_ERROR`: erro inesperado sem detalhe sensivel para o cliente. HTTP 500.
 
 ## Endpoints atuais
 
@@ -76,8 +78,9 @@ Exemplo de payload:
 
 - Publico.
 - Autentica usuario ativo, retorna token JWT Bearer para clientes como o PDV e emite cookie `mercado_one_admin_session` HttpOnly para o admin web.
-- Request: `{ "login": "admin@mercado.one", "password": "admin123" }`
+- Request: `{ "login": "admin", "password": "admin123" }` (login seed de `.env.example`). Testes do backend semeiam `admin@mercado.one` por propriedade, nao pelo `.env`.
 - Response: `ApiEnvelope<{ accessToken, tokenType, expiresAt, user }>` com `user.id`, `user.nome`, `user.login` e `user.perfil`.
+- Tambem emite cookie `mercado_one_admin_session` (HttpOnly, SameSite=Lax, Path=/). O PDV usa o `accessToken` como Bearer; o admin web usa o cookie.
 
 `GET /api/auth/me`
 
@@ -86,7 +89,8 @@ Exemplo de payload:
 
 `POST /api/auth/logout`
 
-- Limpa o cookie HttpOnly do admin web.
+- Exige autenticacao (nao e `permitAll`).
+- Limpa o cookie HttpOnly do admin web (`maxAge=0`).
 - Retorna `ApiEnvelope<null>`.
 
 `GET /api/access/roles`
@@ -138,6 +142,8 @@ Exemplo de payload:
 
 - Protegido.
 - Cria produto com nome, codigo de barras, SKU, categoria, unidade, preco de venda, status e dados fiscais preparatorios opcionais.
+- Request: `{ "name", "barcode", "sku", "categoryId", "unit", "salePrice", "active", "ncm", "cest", "defaultCfop", "merchandiseOrigin", "taxClassification" }`.
+- `search` em `GET` filtra por nome, SKU ou codigo de barras.
 
 `PUT /api/catalog/products/{id}`
 
@@ -173,8 +179,9 @@ Exemplo de payload:
 `POST /api/sales`
 
 - Protegido para `ADMIN`, `GERENTE` e `OPERADOR_CAIXA`.
-- Finaliza uma venda online com cliente opcional, itens e pagamentos manuais.
+- Confirma uma venda no servidor com cliente opcional, itens e pagamentos manuais.
 - Usa o preco vigente do produto no servidor.
+- A UI do PDV **nao** chama este endpoint; o caixa atual usa `POST /api/offline/sales/sync`. Testes e o cliente HTTP `OnlineSaleClient.finalizeSale` cobrem o contrato.
 - Rejeita produto inativo, cliente inativo, estoque insuficiente e pagamento diferente do total.
 - Baixa estoque apos confirmacao da venda e registra movimentacao `SALE`.
 - Request:
@@ -194,6 +201,7 @@ Exemplo de payload:
 - `customerId` e opcional.
 - `method` aceita `CASH`, `CARD`, `PIX` e `STORE_CREDIT`.
 - Response: `ApiEnvelope<{ id, operatorUserId, customer, status, totalAmount, items, payments, createdAt }>` com `status="CONFIRMED"`.
+- O enum servidor `SaleStatus` so possui `CONFIRMED`. Nao ha cancelamento pos-venda.
 
 `GET /api/sales`
 
@@ -219,9 +227,11 @@ Exemplo de payload:
 `POST /api/offline/sales/sync`
 
 - Protegido para `ADMIN`, `GERENTE` e `OPERADOR_CAIXA`.
+- Consumidor atual da UI do PDV para toda finalizacao de venda.
 - Recebe venda local do PDV com `localSaleId`, `createdAt`, cliente opcional, itens com `unitPrice` local e pagamentos.
 - Retorna `status="SENT"` com venda confirmada ou `status="CONFLICT"` com lista de conflitos.
-- Quando ha conflito, registra uma pendencia administrativa consultavel.
+- Codigos de conflito observados no codigo: `PRODUCT_NOT_FOUND`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `PAYMENT_TOTAL`, `STOCK_OR_PAYMENT`.
+- Quando ha conflito, registra uma pendencia administrativa consultavel. Aceite/rejeicao no admin nao possui callback para atualizar o SQLite do PDV.
 
 `GET /api/offline/sales/conflicts`
 
@@ -270,6 +280,7 @@ Exemplo de payload:
 
 - Leitura protegida para `ADMIN` e `GERENTE`.
 - Retorna cliente pelo identificador.
+- Nao ha endpoint dedicado de historico: use `GET /api/sales?customerId=`.
 
 `GET /api/customers/search`
 
@@ -303,6 +314,9 @@ Exemplo de payload:
 - `GET /api/customers/**`: `ADMIN`, `GERENTE`.
 - Escrita em `/api/customers/**`: `ADMIN`, `GERENTE`.
 - `/api/auth/me` e `/api/access/roles`: qualquer usuario autenticado.
+- `POST /api/auth/logout`: qualquer usuario autenticado.
+
+Nao existem neste repositorio: endpoints de consulta de `audit_events`, `DELETE`/`PATCH` de negocio, emissao fiscal, desconto ou cancelamento de venda.
 
 ## Convencoes futuras
 
