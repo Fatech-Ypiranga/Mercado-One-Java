@@ -4,18 +4,11 @@ Infraestrutura de desenvolvimento local do Mercado One. Nao ha compose de API, a
 
 ## Estado atual
 
-O arquivo `docker-compose.yml` sobe um PostgreSQL 18 para uso da API durante desenvolvimento. As credenciais locais sao configuradas por variaveis de ambiente com defaults de desenvolvimento.
+O arquivo `docker-compose.yml` sobe um PostgreSQL 18 para a API durante o desenvolvimento. Nao ha compose de API, admin, PDV, Redis, fila ou ambiente de producao.
 
-Servico atual:
+Imagem, banco, usuario, porta, volume e healthcheck estao em [Dados e migracoes](../docs/dados-e-migracoes.md). O container se chama `mercado-one-postgres`.
 
-- `postgres`: container `mercado-one-postgres`.
-- Imagem: `postgres:18`.
-- Banco default: `mercado_one`.
-- Usuario default: `mercado_one`.
-- Senha default: `mercado_one_dev`.
-- Porta default: `5432`.
-- Volume persistente: `postgres18-data`.
-- Healthcheck via `pg_isready`.
+O Compose interpola variaveis a partir do diretorio `infra/` ou do ambiente do shell. O `.env` da raiz e lido pela API Spring, nao automaticamente por este Compose.
 
 ## Comandos
 
@@ -39,14 +32,8 @@ O Compose interpola variaveis a partir do project directory (`infra/`) ou do amb
 
 ## Variaveis
 
-As variaveis ficam exemplificadas em `../.env.example`:
+As variaveis ficam exemplificadas em `../.env.example` e descritas em [Dados e migracoes](../docs/dados-e-migracoes.md).
 
-- `MERCADO_ONE_DB_NAME`
-- `MERCADO_ONE_DB_USER`
-- `MERCADO_ONE_DB_PASSWORD`
-- `MERCADO_ONE_DB_PORT`
-- `MERCADO_ONE_API_PORT` (nao usada pelo Compose; documentada junto porque pertence ao setup local)
-
-A API precisa de `MERCADO_ONE_DATABASE_URL` alinhada a host/porta/nome reais. JWT e seed de admin tambem ficam no `.env` da raiz e nao neste Compose.
+A API precisa de `MERCADO_ONE_DATABASE_URL` alinhada a host, porta e nome reais. JWT e seed de admin ficam no `.env` da raiz e nao neste Compose.
 
 Para ambientes reais, use variaveis de ambiente ou secret manager. Nao reutilize as credenciais default de desenvolvimento.

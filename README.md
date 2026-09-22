@@ -2,28 +2,9 @@
 
 Mercado One e um ERP em scaffold funcional para pequenos mercados varejistas, com administrativo web, API Java e PDV desktop offline-first. O objetivo do repositorio e evoluir o MVP de loja fisica: cadastros, estoque simples, vendas presenciais, operacao offline parcial, clientes e relatorios operacionais.
 
-## Estado atual
+O que ja esta no codigo: [Estado atual](docs/estado-atual.md). O que ainda falta: [Backlog MVP](docs/backlog-mvp.md). Uso da loja: [Admin web](docs/uso-admin-web.md) e [PDV](docs/uso-pdv.md).
 
-Este repositorio esta em fase de scaffold funcional. A stack, a estrutura de modulos e os contratos HTTP ja estao definidos, e as principais fatias operacionais do MVP ja existem em codigo. O backlog diferencia funcionalidades entregues de refinamentos para piloto.
-
-Implementado agora:
-
-- Backend Spring Boot com envelope HTTP padronizado, handler global de erro, autenticacao JWT/cookie HttpOnly, seed de administrador, autorizacao por perfil, gestao de usuarios/perfis, catalogo de categorias/produtos, clientes, fornecedores, estoque simples, venda confirmada no servidor, relatorio de vendas paginado/CSV, produtos mais vendidos, sync offline, conflitos offline resoluveis, auditoria inicial (gravacao) e `GET /api/system/info`.
-- Admin Angular com login, sessao por cookie HttpOnly, shell protegido, guards por perfil, dashboard inicial e telas funcionais de usuarios, categorias, produtos, estoque, vendas, conflitos offline, clientes e fornecedores.
-- PDV JavaFX com login de operador, busca online de produtos/clientes, fallback de catalogo local SQLite, carrinho, comprovante simples nao fiscal, fila SQLite local e sincronizacao via `POST /api/offline/sales/sync`. Toda finalizacao no PDV grava a venda localmente antes de tentar a rede.
-- Infra local com PostgreSQL 18 via Docker Compose.
-- Testes minimos nos tres subprojetos.
-
-Planejado para o MVP / piloto:
-
-- Refinamentos de UX para operacao piloto.
-- Padronizacao completa de mensagens e tratamento visual de erro em todas as telas.
-- Relatorios adicionais alem dos operacionais ja implementados.
-- Consulta administrativa de auditoria (hoje so ha gravacao).
-- Desconto simples no PDV, citado nos requisitos conceituais e ainda nao implementado.
-- Dados fiscais apenas preparatorios, sem emissao fiscal no MVP.
-
-O contrato `POST /api/sales` existe na API para venda confirmada com preco vigente do servidor. A UI do PDV nao chama esse endpoint: o fluxo de caixa sempre usa fila local + sync offline.
+A UI do PDV nao chama `POST /api/sales`. O caixa grava a venda localmente e sincroniza por `POST /api/offline/sales/sync`.
 
 ## Stack
 
@@ -39,28 +20,11 @@ backend-api/   API REST e dominio servidor
 admin-web/     Administrativo web Angular
 pdv-desktop/   Cliente desktop JavaFX para PDV
 infra/         Infraestrutura local de desenvolvimento
-docs/          Requisitos, arquitetura, backlog e guias transversais
+docs/          Guias transversais, contratos e decisoes
 CONTEXT.md     Glossario de dominio
 ```
 
-## Arquitetura
-
-O backend usa fatias verticais por capacidade de negocio. Cada modulo concentra sua propria interface HTTP, casos de uso, dominio e adaptadores internos.
-
-```text
-backend-api/src/main/java/com/mercadoone/backend/modules/
-  access/
-  catalog/
-  customer/
-  inventory/
-  sales/
-  offline/
-  supplier/
-  audit/
-  system/
-```
-
-Contratos HTTP compartilhados ficam em `api/common`; configuracoes transversais ficam em `infrastructure`. A intencao e que modulos nao dependam de detalhes internos de outros modulos; no codigo atual ainda ha acoplamento direto entre algumas fatias (por exemplo `sales` usa `Catalog`/`Customer`/`Inventory`, e `inventory` usa entidade `Product`).
+Componentes, fronteiras e fluxo de venda: [Arquitetura](docs/arquitetura.md).
 
 ## Desenvolvimento local
 
@@ -114,14 +78,16 @@ cd admin-web && npm test -- --watch=false
 cd pdv-desktop && mvn test
 ```
 
-Contagem no codigo-fonte desta atualizacao: 33 metodos `@Test` em `backend-api`, 56 specs `it(` em `admin-web` e 8 metodos `@Test` em `pdv-desktop`. A ultima execucao registrada na documentacao passou com esses totais. Esta atualizacao de documentacao nao reexecutou a suite e nao alterou codigo de aplicacao.
+Contagem no codigo-fonte, sem reexecutar a suite nesta atualizacao: 33 metodos `@Test` em `backend-api`, 56 specs `it(` em `admin-web` e 8 metodos `@Test` em `pdv-desktop`.
 
 ## Documentacao
 
-Indice completo: [docs/README.md](docs/README.md).
+Indice: [docs/README.md](docs/README.md).
 
 - [Glossario de dominio](CONTEXT.md)
 - [Estado atual](docs/estado-atual.md)
+- [Uso do admin web](docs/uso-admin-web.md)
+- [Uso do PDV](docs/uso-pdv.md)
 - [Arquitetura](docs/arquitetura.md)
 - [Backlog MVP](docs/backlog-mvp.md)
 - [Desenvolvimento local](docs/desenvolvimento-local.md)
@@ -130,10 +96,7 @@ Indice completo: [docs/README.md](docs/README.md).
 - [Dados e migracoes](docs/dados-e-migracoes.md)
 - [Seguranca](docs/seguranca.md)
 - [Offline PDV e sync](docs/offline-pdv-sync.md)
-- [Diagramas UML e Mermaid](docs/diagramas.md)
+- [Diagramas](docs/diagramas.md)
 - [Requisitos MVP](docs/requisitos-mvp-mercado-one.md)
-- [Decisoes de stack e scaffold](docs/decisoes-stack-scaffold.md)
 - [Guia para agentes](docs/projeto.AGENTS.md)
 - [Manutencao por agentes](docs/manutencao.AGENTS.md)
-
-Documentos especificos de uma area podem ficar no `README.md` do subprojeto ou em um diretorio `docs/` local. Documentos voltados especificamente para agentes usam o sufixo `.AGENTS.md`.

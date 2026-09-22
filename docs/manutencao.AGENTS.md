@@ -26,7 +26,7 @@ Este documento e voltado para agentes que vao editar e manter o Mercado One.
 
 ## Admin web
 
-- Manter shell e rotas simples ate as telas reais existirem.
+- As rotas do shell ja existem; ao criar outra, alinhar guard, item de navegacao e `docs/uso-admin-web.md`.
 - Usar `ApiClientService` ou services dedicados para contratos HTTP.
 - Tipos TypeScript devem refletir o envelope da API.
 - Telas administrativas devem tratar loading, vazio, erro e sucesso.
@@ -51,7 +51,7 @@ Este documento e voltado para agentes que vao editar e manter o Mercado One.
 - READMEs locais devem explicar responsabilidades e comandos do subprojeto.
 - `docs/estado-atual.md` deve mudar quando scaffold virar funcionalidade real.
 - `docs/backlog-mvp.md` deve mudar quando fatias forem entregues ou repriorizadas.
-- `docs/diagramas.md` e a fonte normativa dos fluxos; JSON/HTML em `docs/diagramas/` sao copias visuais e podem atrasar.
+- `docs/diagramas.md` e a fonte normativa dos fluxos.
 - ADRs em `docs/adr/` devem ser curtos e usados apenas para decisoes relevantes.
 
 ## Antes de finalizar mudancas

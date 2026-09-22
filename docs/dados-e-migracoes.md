@@ -58,9 +58,11 @@ spring:
 
 Isso significa que a aplicacao valida o schema existente em vez de cria-lo automaticamente.
 
+Os testes do backend nao usam esse PostgreSQL. Cada teste sobe H2 em memoria, desliga o Flyway (`spring.flyway.enabled=false`) e deixa o Hibernate criar o schema (`ddl-auto=create-drop`).
+
 ## SQLite do PDV
 
-O caminho padrao planejado para o banco local do PDV e:
+O caminho padrao do banco local do PDV e:
 
 ```text
 ~/.mercado-one/pdv-offline.sqlite3

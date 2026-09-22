@@ -1,17 +1,24 @@
 # Documentacao do Mercado One
 
-Ponto de indice dos guias do repositorio. O mapa do projeto continua sendo o `README.md` da raiz; o glossario de dominio e o `CONTEXT.md`.
+Indice dos guias. O mapa de comandos e pastas e o `README.md` da raiz. O glossario de dominio e o `CONTEXT.md`. O inventario do que o codigo faz hoje e [estado-atual.md](estado-atual.md).
 
 ## Entrada
 
 | Documento | Uso |
 | --- | --- |
-| [../README.md](../README.md) | Mapa do monorepo, stack, comandos e estado resumido |
-| [../CONTEXT.md](../CONTEXT.md) | Glossario de dominio; sem detalhes de implementacao |
+| [../README.md](../README.md) | Mapa do monorepo, stack e comandos |
+| [../CONTEXT.md](../CONTEXT.md) | Glossario de dominio |
 | [../AGENTS.md](../AGENTS.md) | Ponte para docs de agentes |
 | [estado-atual.md](estado-atual.md) | O que existe no codigo agora |
-| [arquitetura.md](arquitetura.md) | Componentes, fronteiras e dados |
-| [backlog-mvp.md](backlog-mvp.md) | Fatias entregues e trabalho restante |
+| [arquitetura.md](arquitetura.md) | Componentes, fronteiras e fluxo de venda |
+| [backlog-mvp.md](backlog-mvp.md) | Trabalho restante |
+
+## Uso da loja
+
+| Documento | Uso |
+| --- | --- |
+| [uso-admin-web.md](uso-admin-web.md) | Tarefas do administrador, gerente e estoquista |
+| [uso-pdv.md](uso-pdv.md) | Jornada do operador de caixa |
 
 ## Operacao e contratos
 
@@ -23,27 +30,17 @@ Ponto de indice dos guias do repositorio. O mapa do projeto continua sendo o `RE
 | [dados-e-migracoes.md](dados-e-migracoes.md) | PostgreSQL, Flyway e SQLite do PDV |
 | [seguranca.md](seguranca.md) | JWT, cookie, CORS, perfis e auditoria |
 | [offline-pdv-sync.md](offline-pdv-sync.md) | Fila local, sync e conflitos |
+| [diagramas.md](diagramas.md) | Mermaid de arquitetura, dominio e fluxos |
 
 ## Intencao e decisoes
 
 | Documento | Uso |
 | --- | --- |
 | [requisitos-mvp-mercado-one.md](requisitos-mvp-mercado-one.md) | Requisitos e aceite; descreve intencao, nao progresso |
-| [decisoes-stack-scaffold.md](decisoes-stack-scaffold.md) | Stack travada e regras do scaffold |
 | [adr/0001-monorepo-com-tres-aplicacoes.md](adr/0001-monorepo-com-tres-aplicacoes.md) | ADR: monorepo |
 | [adr/0002-backend-em-fatias-verticais.md](adr/0002-backend-em-fatias-verticais.md) | ADR: fatias verticais |
 | [adr/0003-pdv-desktop-javafx-com-sqlite-local.md](adr/0003-pdv-desktop-javafx-com-sqlite-local.md) | ADR: PDV JavaFX + SQLite |
 | [adr/0004-postgresql-e-flyway-no-servidor.md](adr/0004-postgresql-e-flyway-no-servidor.md) | ADR: PostgreSQL + Flyway |
-
-## Diagramas
-
-| Documento | Uso |
-| --- | --- |
-| [diagramas.md](diagramas.md) | Mermaid normativo de arquitetura, dominio e fluxos |
-| [diagramas/README.md](diagramas/README.md) | Copias visuais JSON/HTML; podem estar defasadas |
-| [diagramas-interface-web/README.md](diagramas-interface-web/README.md) | Wireframes e mapas da interface admin (planejamento) |
-
-`UML_drawio(1).xml` e um sketch conceitual de estoque no draw.io. Nao e fonte de verdade; use `diagramas.md` e o codigo.
 
 ## Agentes
 
@@ -56,10 +53,7 @@ Ponto de indice dos guias do repositorio. O mapa do projeto continua sendo o `RE
 
 | Documento | Uso |
 | --- | --- |
-| [../backend-api/README.md](../backend-api/README.md) | API, modulos e comandos |
-| [../backend-api/docs/modulos.md](../backend-api/docs/modulos.md) | Fatias do backend |
-| [../backend-api/docs/persistencia.md](../backend-api/docs/persistencia.md) | Flyway e `application.yml` |
+| [../backend-api/README.md](../backend-api/README.md) | Comandos da API |
 | [../admin-web/README.md](../admin-web/README.md) | Rotas, sessao e comandos Angular |
-| [../pdv-desktop/README.md](../pdv-desktop/README.md) | PDV JavaFX e comandos |
-| [../pdv-desktop/docs/offline-sync.md](../pdv-desktop/docs/offline-sync.md) | SQLite local e fila do PDV |
+| [../pdv-desktop/README.md](../pdv-desktop/README.md) | Comandos do PDV JavaFX |
 | [../infra/README.md](../infra/README.md) | PostgreSQL local via Compose |

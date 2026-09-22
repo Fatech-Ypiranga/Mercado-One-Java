@@ -4,7 +4,7 @@ Este documento reune diagramas versionaveis em Mermaid para explicar a arquitetu
 
 Use estes diagramas como ponto de entrada antes de abrir o codigo. Para detalhes normativos, consulte tambem `README.md`, `CONTEXT.md`, `docs/arquitetura.md`, `docs/api-contratos.md`, `docs/dados-e-migracoes.md` e `docs/offline-pdv-sync.md`.
 
-A fonte normativa e o Mermaid deste arquivo. JSON/HTML em `docs/diagramas/` sao copias visuais de verificacao e podem estar defasados (varios ainda mostram `POST /api/sales` saindo do PDV). `UML_drawio(1).xml` e sketch conceitual de estoque, nao diagrama de arquitetura atual.
+A fonte normativa dos fluxos e o Mermaid deste arquivo.
 
 ## Indice
 
@@ -577,5 +577,5 @@ flowchart TB
 
 - Casos de uso detalhados: o backlog MVP ja comunica esse escopo com mais precisao.
 - Deployment cloud ou producao: a infraestrutura documentada hoje e local.
-- Diagramas de telas Angular ou JavaFX: ha wireframes de planejamento em `docs/diagramas-interface-web/`; as telas reais mudam mais rapido que esses HTML.
+- Diagramas de telas Angular ou JavaFX: o uso das telas esta em `docs/uso-admin-web.md` e `docs/uso-pdv.md`.
 - Modulos fora do MVP, como NFC-e, NF-e, TEF, financeiro completo, multi-loja, e-commerce ou aplicativo mobile.
