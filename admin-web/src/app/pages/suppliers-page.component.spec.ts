@@ -56,7 +56,7 @@ describe('SuppliersPageComponent', () => {
       notes: '   ',
       active: true,
     });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
 
     expect(create).toHaveBeenCalledWith({
       name: 'Acme Distribuidora',
@@ -77,7 +77,7 @@ describe('SuppliersPageComponent', () => {
 
     fixture.componentInstance['edit'](supplier);
     fixture.componentInstance['form'].patchValue({ name: 'Acme Atacado' });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(update).toHaveBeenCalledWith(8, jasmine.objectContaining({ name: 'Acme Atacado' }));
@@ -92,7 +92,7 @@ describe('SuppliersPageComponent', () => {
     fixture.detectChanges();
 
     fixture.componentInstance['form'].patchValue({ name: 'Acme Distribuidora' });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Revise os dados do fornecedor.');

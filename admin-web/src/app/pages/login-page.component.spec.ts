@@ -2,7 +2,7 @@ import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { throwError } from 'rxjs';
+import { Subject, throwError } from 'rxjs';
 
 import { AuthService } from '../core/auth.service';
 import { LoginPageComponent } from './login-page.component';
@@ -58,5 +58,22 @@ describe('LoginPageComponent', () => {
     expect(button.disabled).toBeFalse();
     expect(button.textContent).toContain('Entrar');
     expect(fixture.nativeElement.textContent).toContain('Não foi possível conectar à API.');
+  });
+
+  it('submits only once while a login request is pending', () => {
+    const auth = TestBed.inject(AuthService);
+    const pending = new Subject<never>();
+    spyOn(auth, 'login').and.returnValue(pending);
+    const fixture = TestBed.createComponent(LoginPageComponent);
+    fixture.componentInstance['form'].setValue({ login: 'admin', password: 'admin123' });
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(auth.login).toHaveBeenCalledTimes(1);
+    expect((fixture.nativeElement.querySelector('button') as HTMLButtonElement).disabled).toBeTrue();
+    pending.complete();
   });
 });

@@ -5,7 +5,9 @@ import { ActivatedRoute } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { ApiClientService } from '../core/api-client.service';
-import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesService } from '../core/sales.service';
+import { PaymentMethod, ProductSalesTotal, Sale, SaleFilters, SalesReport, SaleStatus, SalesService } from '../core/sales.service';
+
+const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
 
 @Component({
   selector: 'mo-sales-page',
@@ -43,11 +45,14 @@ import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesS
         <input class="numeric" type="number" min="1" step="1" [formControl]="customerIdControl" />
       </label>
       <div class="button-row">
-        <button type="button" class="secondary-button" (click)="loadSales()">Filtrar</button>
-        <button type="button" class="ghost-button" (click)="exportCsv()" [disabled]="loading">CSV</button>
+        <button type="button" class="secondary-button" (click)="applyFilters()">Aplicar filtros</button>
+        <button type="button" class="ghost-button" (click)="exportCsv()" [disabled]="loading || exporting">{{ exporting ? 'Exportando...' : 'Exportar CSV' }}</button>
       </div>
     </section>
 
+    @if (errorMessage) {
+      <p class="form-error" role="alert">{{ errorMessage }}</p>
+    }
     <section class="ledger-figures" aria-label="Totais do período">
       <div>
         <span>Vendas</span>
@@ -76,13 +81,14 @@ import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesS
     }
 
     <section class="data-table">
+      <h2>Vendas no período</h2>
       @if (loading) {
-        <p class="state-message">Carregando vendas...</p>
-      } @else if (errorMessage) {
-        <p class="form-error" role="alert">{{ errorMessage }}</p>
-      } @else if (sales.length === 0) {
+        <p class="state-message" role="status">{{ report ? 'Atualizando vendas...' : 'Carregando vendas...' }}</p>
+      }
+      @if (!loading && !errorMessage && sales.length === 0) {
         <p class="state-message">Nenhuma venda neste filtro. Amplie o período ou remova operador e cliente.</p>
-      } @else {
+      }
+      @if (sales.length > 0) {
         <div class="table-wrap">
           <table>
             <thead>
@@ -98,21 +104,21 @@ import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesS
             <tbody>
               @for (sale of sales; track sale.id) {
                 <tr>
-                  <td>
+                  <td data-label="Venda">
                     <strong class="mono">#{{ sale.id }}</strong>
                     <small>{{ sale.createdAt | date:'short' }} · operador {{ sale.operatorUserId }}</small>
                   </td>
-                  <td>
+                  <td data-label="Cliente">
                     <strong>{{ sale.customer?.name || 'Consumidor não identificado' }}</strong>
                     <small>{{ sale.customer?.phone || sale.customer?.document || '—' }}</small>
                   </td>
-                  <td>
+                  <td data-label="Itens">
                     <strong>{{ sale.items.length }} item(ns)</strong>
                     <small>{{ itemSummary(sale) }}</small>
                   </td>
-                  <td>{{ paymentSummary(sale) }}</td>
-                  <td class="numeric">{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
-                  <td>
+                  <td data-label="Pagamento">{{ paymentSummary(sale) }}</td>
+                  <td class="numeric" data-label="Total">{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
+                  <td data-label="Status">
                     <span class="status-stamp" [class.inactive]="sale.status !== 'CONFIRMED'">
                       {{ statusLabel(sale.status) }}
                     </span>
@@ -127,9 +133,16 @@ import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesS
 
     <section class="ledger-block">
       <h2>Produtos mais vendidos</h2>
-      @if (topProducts.length === 0) {
+      @if (loadingTopProducts) {
+        <p class="state-message" role="status">Atualizando ranking...</p>
+      }
+      @if (topProductsError) {
+        <p class="form-error" role="alert">{{ topProductsError }}</p>
+      }
+      @if (!loadingTopProducts && !topProductsError && topProducts.length === 0) {
         <p class="state-message">Nenhum produto vendido neste filtro.</p>
-      } @else {
+      }
+      @if (topProducts.length > 0) {
         <div class="table-wrap">
           <table>
             <thead>
@@ -142,12 +155,12 @@ import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesS
             <tbody>
               @for (product of topProducts; track product.productId) {
                 <tr>
-                  <td>
+                  <td data-label="Produto">
                     <strong>{{ product.name }}</strong>
                     <small class="mono">{{ product.sku || product.barcode || 'Sem código' }}</small>
                   </td>
-                  <td class="numeric">{{ product.quantity }} {{ product.unit }}</td>
-                  <td class="numeric">{{ product.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
+                  <td class="numeric" data-label="Quantidade">{{ product.quantity }} {{ product.unit }}</td>
+                  <td class="numeric" data-label="Total">{{ product.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
                 </tr>
               }
             </tbody>
@@ -164,6 +177,20 @@ import { PaymentMethod, ProductSalesTotal, Sale, SalesReport, SaleStatus, SalesS
       </section>
     }
   `,
+  styles: [`
+    .data-table h2 { margin: 0 0 16px; }
+    .form-error { margin-bottom: 16px; }
+    @media (max-width: 719px) {
+      .ledger-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .payment-breakdown { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 16px; }
+      .table-wrap { overflow: visible; }
+      table, tbody { min-width: 0; display: block; width: 100%; }
+      thead { display: none; }
+      tr { display: grid; gap: 8px; border: 1px solid var(--color-border); border-radius: var(--radius-input); padding: 14px; margin-bottom: 10px; background: var(--color-surface-raised); }
+      td, td.numeric { display: grid; grid-template-columns: minmax(6rem, 36%) minmax(0, 1fr); gap: 10px; border: 0; padding: 0; text-align: left; overflow-wrap: anywhere; }
+      td::before { content: attr(data-label); color: var(--color-muted); font-weight: 600; }
+    }
+  `],
 })
 export class SalesPageComponent {
   private readonly fb = inject(FormBuilder);
@@ -177,9 +204,15 @@ export class SalesPageComponent {
   protected report: SalesReport | null = null;
   protected topProducts: ProductSalesTotal[] = [];
   protected loading = false;
+  protected loadingTopProducts = false;
+  protected topProductsError = '';
+  protected exporting = false;
   protected errorMessage = '';
   protected currentPage = 0;
   private readonly pageSize = 20;
+  private salesSequence = 0;
+  private rankingSequence = 0;
+  private appliedFilters: SaleFilters = {};
 
   protected readonly fromControl = this.fb.nonNullable.control('');
   protected readonly toControl = this.fb.nonNullable.control('');
@@ -192,37 +225,55 @@ export class SalesPageComponent {
     if (customerId) {
       this.customerIdControl.setValue(customerId);
     }
+    this.appliedFilters = this.currentFilters();
     this.loadSales();
   }
 
   protected loadSales(): void {
+    const request = ++this.salesSequence;
+    const filters = this.appliedFilters;
     this.loading = true;
     this.errorMessage = '';
     this.salesService.listSales({
-      ...this.currentFilters(),
+      ...filters,
       page: this.currentPage,
       size: this.pageSize,
     }).pipe(finalize(() => {
-      this.loading = false;
-      this.syncView();
+      if (request === this.salesSequence) {
+        this.loading = false;
+        this.syncView();
+      }
     })).subscribe({
       next: (response) => {
+        if (request !== this.salesSequence) return;
         this.report = response.data;
         this.sales = response.data?.items ?? [];
         this.syncView();
       },
       error: (error) => {
+        if (request !== this.salesSequence) return;
         this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar vendas.');
         this.syncView();
       },
     });
-    this.loadTopProducts();
+    this.loadTopProducts(filters);
+  }
+
+  protected applyFilters(): void {
+    this.currentPage = 0;
+    this.appliedFilters = this.currentFilters();
+    this.loadSales();
   }
 
   protected exportCsv(): void {
+    if (this.exporting) return;
+    this.exporting = true;
     this.salesService.exportCsv({
-      ...this.currentFilters(),
-    }).subscribe({
+      ...this.appliedFilters,
+    }).pipe(finalize(() => {
+      this.exporting = false;
+      this.syncView();
+    })).subscribe({
       next: (csv) => {
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -255,7 +306,7 @@ export class SalesPageComponent {
 
   protected paymentSummary(sale: Sale): string {
     return sale.payments
-      .map((payment) => `${this.paymentLabel(payment.method)} ${payment.amount.toFixed(2)}`)
+      .map((payment) => `${this.paymentLabel(payment.method)} ${brlFormatter.format(payment.amount)}`)
       .join(', ');
   }
 
@@ -294,14 +345,24 @@ export class SalesPageComponent {
     return labels[method] ?? method;
   }
 
-  private loadTopProducts(): void {
-    this.salesService.topProducts(this.currentFilters(), 10).subscribe({
+  private loadTopProducts(filters: SaleFilters): void {
+    const request = ++this.rankingSequence;
+    this.loadingTopProducts = true;
+    this.topProductsError = '';
+    this.salesService.topProducts(filters, 10).pipe(finalize(() => {
+      if (request === this.rankingSequence) {
+        this.loadingTopProducts = false;
+        this.syncView();
+      }
+    })).subscribe({
       next: (response) => {
+        if (request !== this.rankingSequence) return;
         this.topProducts = response.data ?? [];
         this.syncView();
       },
-      error: () => {
-        this.topProducts = [];
+      error: (error) => {
+        if (request !== this.rankingSequence) return;
+        this.topProductsError = this.apiClient.errorMessage(error, 'Não foi possível carregar produtos mais vendidos.');
         this.syncView();
       },
     });

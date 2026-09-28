@@ -14,6 +14,8 @@ O admin atende tres perfis. O menu lateral so mostra o que o perfil pode abrir.
 
 O operador de caixa nao tem tela aqui. A venda presencial fica no [PDV](uso-pdv.md).
 
+Em tablet e celular, use **Menu** para abrir as areas do administrativo. O menu fecha ao escolher uma area ou pressionar Escape; as mesmas permissoes se aplicam em qualquer tamanho de tela. As listas mostram cada registro com uma acao **Editar** visivel. Em celular, **Novo** ou **Nova** abre o formulario; **Voltar à lista** retorna aos resultados sem alterar os filtros. Se uma gravacao falhar, os dados digitados permanecem no formulario para correcao e nova tentativa.
+
 ## Entrar e sair
 
 1. Abra a tela **Entrar no admin**.
@@ -72,6 +74,8 @@ Para registrar uma movimentacao:
 4. No ajuste, informe o novo saldo e a justificativa. Sem justificativa o formulario nao segue.
 5. Use **Registrar**.
 
+Os saldos, o formulario **Registrar movimentação** e o **Histórico de movimentações** ficam em secoes separadas. A lista e o historico continuam visiveis durante uma atualizacao, com indicacao de que os dados estao sendo atualizados.
+
 O saldo sobe na entrada confirmada. O ajuste substitui o saldo pelo valor informado e exige o motivo. Cada alteracao entra no historico. Nao ha, nesta tela, um documento unico com varios produtos.
 
 ## Vendas
@@ -96,6 +100,8 @@ Uma venda do caixa pode ficar pendente quando o servidor nao aceita o preco, o p
 2. Para aceitar, use **Aceitar**. A observacao e opcional. O servidor registra a venda com o preco praticado no PDV e baixa o estoque.
 3. Para rejeitar, preencha **Observação da decisão** e use **Rejeitar**. Sem essa observacao a rejeicao nao segue.
 4. Use **Atualizar** para reler a lista.
+
+Antes de enviar **Aceitar** ou **Rejeitar**, confirme a decisao no painel do conflito. **Cancelar** fecha essa confirmacao sem resolver a venda. A tela preserva a lista durante a atualizacao e impede o envio repetido da mesma decisao.
 
 Aceitar ou rejeitar encerra a pendencia neste admin. O caixa nao muda sozinho: no PDV a venda continua marcada como conflito. Avise o operador se a loja precisar tratar o comprovante local.
 

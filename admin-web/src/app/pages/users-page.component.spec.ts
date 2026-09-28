@@ -38,7 +38,7 @@ describe('UsersPageComponent', () => {
       perfil: 'GERENTE',
       active: true,
     });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('senha com no mínimo 6 caracteres');
@@ -79,7 +79,7 @@ describe('UsersPageComponent', () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(update).toHaveBeenCalledWith(2, jasmine.objectContaining({ password: null }));
@@ -106,7 +106,7 @@ describe('UsersPageComponent', () => {
     });
     fixture.detectChanges();
 
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Revise os dados do usuário.');

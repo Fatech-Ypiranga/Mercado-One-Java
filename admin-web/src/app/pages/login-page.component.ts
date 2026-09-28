@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -21,32 +21,33 @@ import { AuthService } from '../core/auth.service';
             <small>Administrativo</small>
           </span>
         </div>
-        <p class="eyebrow">Loja física</p>
-        <p class="display">Cadastros, estoque e vendas da loja.</p>
-        <p>Área interna para administrador, gerente e estoquista acompanharem a operação do mercado.</p>
+        <p class="eyebrow">Operação do mercado</p>
+        <p class="display">Tudo em ordem, em um só lugar.</p>
+        <p>Cadastros, estoque e vendas para quem cuida da operação todos os dias.</p>
       </section>
 
       <section class="login-panel" aria-labelledby="login-title">
         <header>
           <p class="eyebrow">Acesso</p>
-          <h1 id="login-title">Entrar no admin</h1>
+          <h1 id="login-title">Acesse sua conta</h1>
+          <p class="login-subtitle">Entre com suas credenciais do Mercado One.</p>
         </header>
 
         <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
           <label>
             Login ou email
-            <input type="email" formControlName="login" autocomplete="username" />
+            <input type="text" formControlName="login" autocomplete="username" [attr.aria-invalid]="form.controls.login.touched && form.controls.login.invalid" aria-describedby="login-validation" />
           </label>
           @if (form.controls.login.touched && form.controls.login.invalid) {
-            <p class="field-error">Informe o login.</p>
+            <p id="login-validation" class="field-error">Informe o login.</p>
           }
 
           <label>
             Senha
-            <input type="password" formControlName="password" autocomplete="current-password" />
+            <input type="password" formControlName="password" autocomplete="current-password" [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid" aria-describedby="password-validation" />
           </label>
           @if (form.controls.password.touched && form.controls.password.invalid) {
-            <p class="field-error">Informe a senha.</p>
+            <p id="password-validation" class="field-error">Informe a senha.</p>
           }
 
           @if (errorMessage) {
@@ -69,6 +70,8 @@ export class LoginPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected loading = false;
   protected errorMessage = '';
@@ -79,6 +82,7 @@ export class LoginPageComponent {
   });
 
   protected submit(): void {
+    if (this.loading) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -89,6 +93,7 @@ export class LoginPageComponent {
     this.auth.login(this.form.getRawValue())
       .pipe(finalize(() => {
         this.loading = false;
+        this.syncView();
       }))
       .subscribe({
         next: () => void this.router.navigate(['/']),
@@ -103,5 +108,11 @@ export class LoginPageComponent {
       return 'Login ou senha inválidos.';
     }
     return 'Não foi possível conectar à API. Verifique se o backend está rodando.';
+  }
+
+  private syncView(): void {
+    if (!this.destroyRef.destroyed) {
+      this.changeDetector.detectChanges();
+    }
   }
 }

@@ -26,7 +26,7 @@ import { Supplier, SupplierService } from '../core/supplier.service';
       <span>Entradas e ajustes manuais com histórico imutável por produto.</span>
     </section>
 
-    <section class="filter-rule">
+    <section class="filter-rule" aria-label="Filtros de estoque">
       <label>
         Buscar saldo
         <input type="search" [formControl]="searchControl" placeholder="Produto, SKU ou código" />
@@ -65,16 +65,26 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         Até
         <input type="date" [formControl]="movementToControl" />
       </label>
-      <button type="button" class="secondary-button" (click)="load()">Filtrar</button>
+      <button type="button" class="secondary-button" (click)="load()">Aplicar filtros</button>
     </section>
 
+    @if (errorMessage && !saving) {
+      <p class="form-error" role="alert">{{ errorMessage }}</p>
+    }
+    @if (successMessage) {
+      <p class="form-success" role="status">{{ successMessage }}</p>
+    }
+
     <section class="workspace">
-      <section class="data-table">
+      <section class="data-table" aria-labelledby="balances-heading">
+        <h2 id="balances-heading">Saldos atuais</h2>
         @if (loadingBalances) {
-          <p class="state-message">Carregando saldos...</p>
-        } @else if (balances.length === 0) {
+          <p class="state-message" role="status">{{ balances.length ? 'Atualizando saldos...' : 'Carregando saldos...' }}</p>
+        }
+        @if (!loadingBalances && balances.length === 0) {
           <p class="state-message">Nenhum saldo neste filtro. Produtos só aparecem após a primeira movimentação.</p>
-        } @else {
+        }
+        @if (balances.length > 0) {
           <div class="table-wrap">
             <table>
               <thead>
@@ -88,17 +98,17 @@ import { Supplier, SupplierService } from '../core/supplier.service';
               <tbody>
                 @for (balance of balances; track balance.id) {
                   <tr>
-                    <td>
+                    <td data-label="Produto">
                       <strong>{{ balance.product.name }}</strong>
                       <small class="mono">{{ balance.product.sku || balance.product.barcode || 'Sem código' }}</small>
                     </td>
-                    <td class="numeric">{{ balance.quantity | number:'1.0-3' }} {{ balance.product.unit }}</td>
-                    <td>
+                    <td class="numeric" data-label="Saldo">{{ balance.quantity | number:'1.0-3' }} {{ balance.product.unit }}</td>
+                    <td data-label="Status">
                       <span class="status-stamp" [class.inactive]="!balance.product.active">
                         {{ balance.product.active ? 'Ativo' : 'Inativo' }}
                       </span>
                     </td>
-                    <td class="numeric">{{ balance.updatedAt | date:'short' }}</td>
+                    <td class="numeric" data-label="Atualizado">{{ balance.updatedAt | date:'short' }}</td>
                   </tr>
                 }
               </tbody>
@@ -108,7 +118,7 @@ import { Supplier, SupplierService } from '../core/supplier.service';
       </section>
 
       <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
-        <h2>Nova movimentação</h2>
+        <h2>Registrar movimentação</h2>
         <label>
           Tipo
           <select formControlName="type">
@@ -163,18 +173,11 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         @if (form.invalid && form.touched) {
           <p class="field-error">Informe produto, quantidade válida e justificativa quando for ajuste.</p>
         }
-        @if (errorMessage) {
-          <p class="form-error" role="alert">{{ errorMessage }}</p>
-        }
-        @if (successMessage) {
-          <p class="form-success" role="status">{{ successMessage }}</p>
-        }
-
         <div class="button-row">
           <button type="submit" class="primary-button" [disabled]="saving || activeProducts.length === 0">
             {{ saving ? 'Registrando...' : 'Registrar' }}
           </button>
-          <button type="button" class="ghost-button" (click)="resetForm()">Limpar</button>
+          <button type="button" class="ghost-button" (click)="resetForm()" [disabled]="saving">Limpar</button>
         </div>
 
         @if (activeProducts.length === 0) {
@@ -186,10 +189,12 @@ import { Supplier, SupplierService } from '../core/supplier.service';
     <section class="ledger-block">
       <h2>Histórico de movimentações</h2>
       @if (loadingMovements) {
-        <p class="state-message">Carregando movimentações...</p>
-      } @else if (movements.length === 0) {
+        <p class="state-message" role="status">{{ movements.length ? 'Atualizando movimentações...' : 'Carregando movimentações...' }}</p>
+      }
+      @if (!loadingMovements && movements.length === 0) {
         <p class="state-message">Nenhuma movimentação no período. Altere as datas ou o tipo de movimento.</p>
-      } @else {
+      }
+      @if (movements.length > 0) {
         <div class="table-wrap">
           <table>
             <thead>
@@ -205,18 +210,18 @@ import { Supplier, SupplierService } from '../core/supplier.service';
             <tbody>
               @for (movement of movements; track movement.id) {
                 <tr>
-                  <td class="numeric">{{ movement.createdAt | date:'short' }}</td>
-                  <td>
+                  <td class="numeric" data-label="Data">{{ movement.createdAt | date:'short' }}</td>
+                  <td data-label="Produto">
                     <strong>{{ movement.product.name }}</strong>
                     <small class="mono">{{ movement.product.sku || movement.product.barcode || 'Sem código' }}</small>
                   </td>
-                  <td>{{ movementLabel(movement.type) }}</td>
-                  <td class="numeric">{{ movement.quantityBefore | number:'1.0-3' }}</td>
-                  <td class="numeric">
+                  <td data-label="Tipo">{{ movementLabel(movement.type) }}</td>
+                  <td class="numeric" data-label="Antes">{{ movement.quantityBefore | number:'1.0-3' }}</td>
+                  <td class="numeric" data-label="Depois">
                     <strong>{{ movement.quantityAfter | number:'1.0-3' }}</strong>
                     <small>{{ signedDelta(movement.quantityDelta) }}</small>
                   </td>
-                  <td>
+                  <td data-label="Motivo">
                     {{ movement.reason }}
                     @if (movement.supplier?.name || movement.supplierName) {
                       <small>{{ movement.supplier?.name || movement.supplierName }}</small>
@@ -230,6 +235,20 @@ import { Supplier, SupplierService } from '../core/supplier.service';
       }
     </section>
   `,
+  styles: [`
+    .data-table h2 { margin: 0 0 16px; }
+    .form-error, .form-success { margin-bottom: 16px; }
+    @media (max-width: 719px) {
+      .workspace { display: grid; grid-template-columns: minmax(0, 1fr); }
+      .table-wrap { overflow: visible; }
+      table, tbody { min-width: 0; display: block; width: 100%; }
+      thead { display: none; }
+      tr { display: grid; gap: 8px; border: 1px solid var(--color-border); border-radius: var(--radius-input); padding: 14px; margin-bottom: 10px; background: var(--color-surface-raised); }
+      td, td.numeric { display: grid; grid-template-columns: minmax(6rem, 36%) minmax(0, 1fr); gap: 10px; border: 0; padding: 0; text-align: left; overflow-wrap: anywhere; }
+      td::before { content: attr(data-label); color: var(--color-muted); font-weight: 600; font-family: var(--font-sans); }
+      .button-row > button { flex: 1 1 8rem; }
+    }
+  `],
 })
 export class InventoryPageComponent {
   private readonly fb = inject(FormBuilder);
@@ -249,6 +268,8 @@ export class InventoryPageComponent {
   protected saving = false;
   protected errorMessage = '';
   protected successMessage = '';
+  private balanceSequence = 0;
+  private movementSequence = 0;
 
   protected readonly searchControl = this.fb.nonNullable.control('');
   protected readonly activeControl = this.fb.nonNullable.control('');
@@ -294,6 +315,7 @@ export class InventoryPageComponent {
   }
 
   protected save(): void {
+    if (this.saving) return;
     this.syncValidators();
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -380,19 +402,24 @@ export class InventoryPageComponent {
   }
 
   private loadBalances(): void {
+    const request = ++this.balanceSequence;
     this.loadingBalances = true;
     this.inventory.listBalances({
       search: this.searchControl.value,
       active: this.activeControl.value === '' ? null : this.activeControl.value === 'true',
     }).pipe(finalize(() => {
-      this.loadingBalances = false;
-      this.syncView();
+      if (request === this.balanceSequence) {
+        this.loadingBalances = false;
+        this.syncView();
+      }
     })).subscribe({
       next: (response) => {
+        if (request !== this.balanceSequence) return;
         this.balances = response.data ?? [];
         this.syncView();
       },
       error: () => {
+        if (request !== this.balanceSequence) return;
         this.errorMessage = 'Não foi possível carregar saldos.';
         this.syncView();
       },
@@ -400,6 +427,7 @@ export class InventoryPageComponent {
   }
 
   private loadMovements(): void {
+    const request = ++this.movementSequence;
     this.loadingMovements = true;
     const type = this.movementTypeControl.value === ''
       ? null
@@ -410,14 +438,18 @@ export class InventoryPageComponent {
       from: this.toDayStart(this.movementFromControl.value),
       to: this.toDayEnd(this.movementToControl.value),
     }).pipe(finalize(() => {
-      this.loadingMovements = false;
-      this.syncView();
+      if (request === this.movementSequence) {
+        this.loadingMovements = false;
+        this.syncView();
+      }
     })).subscribe({
       next: (response) => {
+        if (request !== this.movementSequence) return;
         this.movements = response.data ?? [];
         this.syncView();
       },
       error: () => {
+        if (request !== this.movementSequence) return;
         this.errorMessage = 'Não foi possível carregar movimentações.';
         this.syncView();
       },

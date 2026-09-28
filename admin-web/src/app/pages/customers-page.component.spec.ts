@@ -58,7 +58,7 @@ describe('CustomersPageComponent', () => {
       contactConsent: true,
       active: true,
     });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
 
     expect(create).toHaveBeenCalledWith({
       name: 'Maria Silva',
@@ -79,7 +79,7 @@ describe('CustomersPageComponent', () => {
 
     fixture.componentInstance['edit'](customer);
     fixture.componentInstance['form'].patchValue({ name: 'Maria Souza' });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(update).toHaveBeenCalledWith(3, jasmine.objectContaining({ name: 'Maria Souza' }));
@@ -94,7 +94,7 @@ describe('CustomersPageComponent', () => {
     fixture.detectChanges();
 
     fixture.componentInstance['form'].patchValue({ name: 'Maria Silva' });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Revise os dados do cliente.');

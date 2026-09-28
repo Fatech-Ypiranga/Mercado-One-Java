@@ -65,7 +65,7 @@ Implementado:
 - Dashboard inicial com briefing do dia (conflitos pendentes e totais de venda para `ADMIN`/`GERENTE`), versao da API e atalhos por departamento. `ESTOQUISTA` ve o inicio, mas nao os totais de venda nem conflitos.
 - Telas de usuarios, categorias, produtos, estoque, vendas, conflitos offline, clientes e fornecedores com filtros, periodo de movimentacoes, formularios e estados de loading, vazio, erro e sucesso.
 - Historico de cliente: link `/vendas?customerId=` na tela de clientes.
-- Identidade visual de balcao: papel de talao, Petrona e IBM Plex, navegacao por departamento.
+- Identidade visual de painel operacional claro, com IBM Plex, superficies neutras, verde para acao principal e navegacao por departamento recolhivel em telas menores.
 - Services tipados: `ApiClientService`, `AuthService`, `AccessService`, `CatalogService`, `InventoryService`, `SalesService`, `CustomerService`, `SupplierService` e `OfflineService`.
 - Ambiente local em `src/environments/environment.ts` apontando para `http://localhost:8080`. `environment.prod.ts` usa `apiBaseUrl` vazio (same-origin); nao ha deploy de producao documentado.
 - Build gera artefatos em `output/admin-web-dist` (ignorado pelo git).

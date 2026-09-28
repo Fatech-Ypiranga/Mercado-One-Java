@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 
@@ -29,25 +29,26 @@ import { OfflineConflict, OfflineConflictStatus, OfflineSalePayload, OfflineServ
     </section>
 
     @if (loading) {
-      <p class="state-message">Carregando conflitos...</p>
-    } @else {
-      @if (errorMessage && !selectedConflict) {
+      <p class="state-message" role="status">{{ conflicts.length ? 'Atualizando conflitos...' : 'Carregando conflitos...' }}</p>
+    }
+      @if (errorMessage) {
         <p class="form-error" role="alert">{{ errorMessage }}</p>
       }
       @if (successMessage) {
         <p class="form-success" role="status">{{ successMessage }}</p>
       }
-      @if (conflicts.length === 0) {
+      @if (!loading && conflicts.length === 0) {
         <p class="state-message">Nenhum conflito encontrado para o filtro atual. Troque o status ou atualize após o próximo sync do PDV.</p>
-      } @else {
+      }
+      @if (conflicts.length > 0) {
       <section class="conflict-workspace">
-        <div class="conflict-list" role="listbox" aria-label="Vendas em conflito">
+        <div class="conflict-list" aria-label="Vendas em conflito">
           @for (conflict of conflicts; track conflict.id) {
             <button
               type="button"
-              role="option"
+              [attr.aria-pressed]="selectedConflict?.id === conflict.id"
               [class.selected]="selectedConflict?.id === conflict.id"
-              [attr.aria-selected]="selectedConflict?.id === conflict.id"
+              [disabled]="resolvingId !== null"
               (click)="select(conflict)"
             >
               <strong class="mono">{{ conflict.localSaleId }}</strong>
@@ -116,26 +117,28 @@ import { OfflineConflict, OfflineConflictStatus, OfflineSalePayload, OfflineServ
               <p class="state-message compact">Venda gerada #{{ conflict.remoteSaleId }}</p>
             }
 
-            @if (errorMessage) {
-              <p class="form-error" role="alert">{{ errorMessage }}</p>
-            }
-            @if (successMessage) {
-              <p class="form-success" role="status">{{ successMessage }}</p>
-            }
-
             @if (conflict.status === 'PENDING') {
               <label>
                 Observação da decisão
                 <input [(ngModel)]="resolutionNote" maxlength="500" placeholder="Obrigatória ao rejeitar" />
               </label>
               <div class="button-row">
-                <button type="button" class="primary-button" (click)="resolve(conflict, 'ACCEPT')" [disabled]="resolvingId === conflict.id">
+                <button type="button" class="primary-button" (click)="resolve(conflict, 'ACCEPT')" [disabled]="loading || resolvingId !== null">
                   Aceitar
                 </button>
-                <button type="button" class="ghost-button" (click)="resolve(conflict, 'REJECT')" [disabled]="resolvingId === conflict.id">
+                <button type="button" class="ghost-button" (click)="resolve(conflict, 'REJECT')" [disabled]="loading || resolvingId !== null">
                   Rejeitar
                 </button>
               </div>
+              @if (pendingAction && pendingAction.conflict.id === conflict.id) {
+                <div class="confirmation" role="group" aria-label="Confirmar decisão">
+                  <p>Confirmar {{ pendingAction.action === 'ACCEPT' ? 'aceite' : 'rejeição' }} da venda {{ conflict.localSaleId }}?</p>
+                  <div class="button-row">
+                    <button type="button" class="primary-button confirm-action" (click)="confirmResolution()" [disabled]="resolvingId !== null">Confirmar {{ pendingAction.action === 'ACCEPT' ? 'aceite' : 'rejeição' }}</button>
+                    <button type="button" class="ghost-button" (click)="cancelResolution()" [disabled]="resolvingId !== null">Cancelar</button>
+                  </div>
+                </div>
+              }
             } @else {
               <p class="state-message compact">{{ conflict.resolutionNote || 'Resolvido sem observação.' }}</p>
             }
@@ -143,12 +146,24 @@ import { OfflineConflict, OfflineConflictStatus, OfflineSalePayload, OfflineServ
         }
       </section>
       }
-    }
   `,
+  styles: [`
+    .confirmation { border: 1px solid var(--color-border-strong); border-radius: var(--radius-input); padding: 16px; background: var(--color-surface); }
+    .confirmation p { margin: 0 0 12px; font-weight: 600; }
+    .conflict-list button { border-radius: var(--radius-input); margin-bottom: 6px; }
+    @media (max-width: 719px) {
+      .conflict-workspace { display: grid; grid-template-columns: minmax(0, 1fr); }
+      .conflict-list { max-height: 18rem; overflow-y: auto; }
+      .record-sheet { min-width: 0; overflow-wrap: anywhere; }
+      .button-row > button { flex: 1 1 8rem; }
+    }
+  `]
 })
 export class OfflineConflictsPageComponent implements OnInit {
   private readonly offline = inject(OfflineService);
   private readonly apiClient = inject(ApiClientService);
+  private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected conflicts: OfflineConflict[] = [];
   protected selectedConflict: OfflineConflict | null = null;
@@ -158,28 +173,42 @@ export class OfflineConflictsPageComponent implements OnInit {
   protected resolvingId: number | null = null;
   protected errorMessage = '';
   protected successMessage = '';
+  protected pendingAction: { conflict: OfflineConflict; action: 'ACCEPT' | 'REJECT'; note: string | null } | null = null;
+  private loadSequence = 0;
+  private loadedStatus: OfflineConflictStatus | null = null;
 
   ngOnInit(): void {
     this.load();
   }
 
   protected load(clearSuccess = true): void {
+    const request = ++this.loadSequence;
+    const requestedStatus = this.status;
+    if (this.loadedStatus !== requestedStatus) {
+      this.conflicts = [];
+      this.selectedConflict = null;
+      this.resolutionNote = '';
+    }
+    this.pendingAction = null;
     this.loading = true;
     this.errorMessage = '';
     if (clearSuccess) {
       this.successMessage = '';
     }
-    this.offline.listConflicts(this.status).subscribe({
+    this.offline.listConflicts(requestedStatus).subscribe({
       next: (response) => {
+        if (request !== this.loadSequence) return;
         this.conflicts = response.data ?? [];
+        this.loadedStatus = requestedStatus;
         this.selectedConflict = this.conflicts.find((item) => item.id === this.selectedConflict?.id) ?? this.conflicts[0] ?? null;
         this.loading = false;
+        this.syncView();
       },
       error: (error) => {
+        if (request !== this.loadSequence) return;
         this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar conflitos offline.');
-        this.conflicts = [];
-        this.selectedConflict = null;
         this.loading = false;
+        this.syncView();
       },
     });
   }
@@ -187,30 +216,45 @@ export class OfflineConflictsPageComponent implements OnInit {
   protected select(conflict: OfflineConflict): void {
     this.selectedConflict = conflict;
     this.errorMessage = '';
+    this.pendingAction = null;
+    this.resolutionNote = '';
   }
 
   protected resolve(conflict: OfflineConflict, action: 'ACCEPT' | 'REJECT'): void {
+    if (this.loading || this.resolvingId !== null || conflict.status !== 'PENDING') return;
     if (action === 'REJECT' && !this.resolutionNote.trim()) {
       this.errorMessage = 'Informe uma observação para rejeitar o conflito.';
       this.successMessage = '';
       return;
     }
-    this.resolvingId = conflict.id;
+    this.pendingAction = { conflict, action, note: this.resolutionNote.trim() || null };
     this.errorMessage = '';
     this.successMessage = '';
-    this.offline.resolveConflict(conflict.id, {
-      action,
-      note: this.resolutionNote.trim() || null,
+  }
+
+  protected cancelResolution(): void {
+    this.pendingAction = null;
+  }
+
+  protected confirmResolution(): void {
+    const pending = this.pendingAction;
+    if (!pending || this.resolvingId !== null) return;
+    this.resolvingId = pending.conflict.id;
+    this.offline.resolveConflict(pending.conflict.id, {
+      action: pending.action,
+      note: pending.note,
     }).subscribe({
       next: () => {
-        this.successMessage = action === 'ACCEPT' ? 'Conflito aceito e venda registrada.' : 'Conflito rejeitado.';
+        this.successMessage = pending.action === 'ACCEPT' ? 'Conflito aceito e venda registrada.' : 'Conflito rejeitado.';
         this.resolutionNote = '';
+        this.pendingAction = null;
         this.resolvingId = null;
         this.load(false);
       },
       error: (error) => {
         this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível resolver o conflito.');
         this.resolvingId = null;
+        this.syncView();
       },
     });
   }
@@ -261,5 +305,11 @@ export class OfflineConflictsPageComponent implements OnInit {
 
   protected payloadTotal(payload: OfflineSalePayload): number {
     return payload.items.reduce((total, item) => total + item.quantity * item.unitPrice, 0);
+  }
+
+  private syncView(): void {
+    if (!this.destroyRef.destroyed) {
+      this.changeDetector.detectChanges();
+    }
   }
 }

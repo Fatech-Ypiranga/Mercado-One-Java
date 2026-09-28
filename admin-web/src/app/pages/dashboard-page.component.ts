@@ -18,10 +18,11 @@ interface DepartmentLink {
   standalone: true,
   imports: [CurrencyPipe, DatePipe, RouterLink],
   template: `
+    <div class="dashboard-page">
     <section class="page-header">
-      <p>Operação</p>
+      <p>Visão geral</p>
       <h1>Início</h1>
-      <span>Expediente de hoje: conflitos do PDV, vendas do dia e atalhos por departamento.</span>
+      <span>Acompanhe a operação de hoje e acesse as áreas do mercado.</span>
     </section>
 
     <p class="duty-line">
@@ -39,18 +40,25 @@ interface DepartmentLink {
       }
     </p>
 
+    @if (canReviewOperations && (exceptionError || salesError)) {
+      <div class="dashboard-refresh">
+        <button type="button" class="ghost-button" (click)="refreshOperations()" [disabled]="loadingExceptions || loadingSales">Tentar novamente</button>
+      </div>
+    }
+
     <section class="briefing">
       <article class="briefing-block">
         <h2>Exceções</h2>
         @if (!canReviewOperations) {
           <p class="state-message">Conflitos de sincronização ficam com administrador e gerente. Use o estoque para entradas e ajustes.</p>
-        } @else if (loadingExceptions) {
+        } @else if (loadingExceptions && pendingConflicts.length === 0) {
           <p class="state-message">Consultando conflitos pendentes...</p>
-        } @else if (exceptionError) {
+        } @else if (exceptionError && pendingConflicts.length === 0) {
           <p class="form-error" role="alert">{{ exceptionError }}</p>
         } @else if (pendingConflicts.length === 0) {
           <p class="state-message">Nenhum conflito pendente no PDV. Vendas offline estão sendo aceitas automaticamente.</p>
         } @else {
+          @if (exceptionError) { <p class="form-error" role="alert">{{ exceptionError }} Exibindo a última consulta.</p> }
           <div class="exception-list">
             @for (conflict of pendingConflicts; track conflict.id) {
               <a class="exception-item" routerLink="/offline">
@@ -64,14 +72,15 @@ interface DepartmentLink {
       </article>
 
       <article class="briefing-block">
-        <h2>Livro do dia</h2>
+        <h2>Vendas de hoje</h2>
         @if (!canReviewOperations) {
           <p class="state-message">O relatório de vendas do dia é restrito a administrador e gerente.</p>
-        } @else if (loadingSales) {
+        } @else if (loadingSales && !todayReport) {
           <p class="state-message">Carregando vendas de hoje...</p>
-        } @else if (salesError) {
+        } @else if (salesError && !todayReport) {
           <p class="form-error" role="alert">{{ salesError }}</p>
         } @else {
+          @if (salesError) { <p class="form-error" role="alert">{{ salesError }} Exibindo a última consulta.</p> }
           <div class="ledger-figures" aria-label="Totais de hoje">
             <div>
               <span>Vendas</span>
@@ -99,6 +108,7 @@ interface DepartmentLink {
       </article>
     </section>
 
+    <h2 class="dashboard-section-heading">Acesso rápido</h2>
     <nav class="department-index" aria-label="Departamentos">
       @for (link of visibleDepartments; track link.path) {
         <a [routerLink]="link.path">
@@ -110,6 +120,7 @@ interface DepartmentLink {
         </a>
       }
     </nav>
+    </div>
   `,
 })
 export class DashboardPageComponent {
@@ -129,6 +140,7 @@ export class DashboardPageComponent {
   protected loadingSales = false;
   protected exceptionError = '';
   protected salesError = '';
+  private operationsRequestId = 0;
 
   private readonly departments: DepartmentLink[] = [
     { label: 'Produtos', hint: 'Cadastro vendável e dados fiscais preparatórios', path: '/produtos', roles: ['ADMIN', 'GERENTE'] },
@@ -153,16 +165,25 @@ export class DashboardPageComponent {
       },
     });
 
+    this.refreshOperations();
+  }
+
+  protected refreshOperations(): void {
     if (this.canReviewOperations) {
+      const requestId = ++this.operationsRequestId;
       this.loadingExceptions = true;
       this.loadingSales = true;
+      this.exceptionError = '';
+      this.salesError = '';
       this.offline.listConflicts('PENDING').subscribe({
         next: (response) => {
+          if (requestId !== this.operationsRequestId) return;
           this.pendingConflicts = (response.data ?? []).slice(0, 5);
           this.loadingExceptions = false;
           this.syncView();
         },
         error: (error) => {
+          if (requestId !== this.operationsRequestId) return;
           this.exceptionError = this.apiClient.errorMessage(error, 'Não foi possível carregar conflitos offline.');
           this.loadingExceptions = false;
           this.syncView();
@@ -175,11 +196,13 @@ export class DashboardPageComponent {
         size: 1,
       }).subscribe({
         next: (response) => {
+          if (requestId !== this.operationsRequestId) return;
           this.todayReport = response.data;
           this.loadingSales = false;
           this.syncView();
         },
         error: (error) => {
+          if (requestId !== this.operationsRequestId) return;
           this.salesError = this.apiClient.errorMessage(error, 'Não foi possível carregar as vendas de hoje.');
           this.loadingSales = false;
           this.syncView();

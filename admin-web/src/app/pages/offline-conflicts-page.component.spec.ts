@@ -70,6 +70,10 @@ describe('OfflineConflictsPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Dinheiro');
     fixture.nativeElement.querySelector('.primary-button').click();
     fixture.detectChanges();
+    expect(resolve).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Confirmar aceite');
+    fixture.nativeElement.querySelector('.confirm-action').click();
+    fixture.detectChanges();
 
     expect(resolve).toHaveBeenCalledWith(10, { action: 'ACCEPT', note: null });
     expect(fixture.nativeElement.textContent).toContain('Conflito aceito e venda registrada.');
@@ -93,6 +97,19 @@ describe('OfflineConflictsPageComponent', () => {
 
     expect(resolve).not.toHaveBeenCalled();
     expect(fixture.nativeElement.textContent).toContain('Informe uma observação para rejeitar o conflito.');
+  });
+
+  it('prevents a duplicate resolution while the request is pending', () => {
+    const offline = TestBed.inject(OfflineService);
+    spyOn(offline, 'listConflicts').and.returnValue(of(envelope([conflict()])));
+    const pending = new Subject<ApiEnvelope<OfflineConflict>>();
+    const resolve = spyOn(offline, 'resolveConflict').and.returnValue(pending.asObservable());
+    const fixture = TestBed.createComponent(OfflineConflictsPageComponent);
+    fixture.detectChanges();
+    fixture.componentInstance['resolve'](conflict(), 'ACCEPT');
+    fixture.componentInstance['confirmResolution']();
+    fixture.componentInstance['confirmResolution']();
+    expect(resolve).toHaveBeenCalledTimes(1);
   });
 
   it('renders the loading state', () => {

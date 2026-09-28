@@ -1,4 +1,5 @@
 module.exports = function configureKarma(config) {
+  const collectCoverage = process.env.MERCADO_ONE_COVERAGE === '1';
   config.set({
     frameworks: ['jasmine'],
     plugins: [
@@ -7,7 +8,12 @@ module.exports = function configureKarma(config) {
       require('karma-jasmine-html-reporter'),
       require('karma-coverage'),
     ],
-    reporters: ['progress', 'kjhtml'],
+    reporters: collectCoverage ? ['progress', 'coverage'] : ['progress', 'kjhtml'],
+    coverageReporter: {
+      dir: '../output/admin-web-coverage',
+      reporters: [{ type: 'text-summary' }, { type: 'lcovonly' }],
+      check: { global: { statements: 80, lines: 80 } },
+    },
     jasmineHtmlReporter: {
       suppressAll: true,
     },

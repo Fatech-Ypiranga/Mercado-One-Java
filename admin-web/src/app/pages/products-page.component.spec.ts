@@ -67,7 +67,7 @@ describe('ProductsPageComponent', () => {
       salePrice: 12.9,
       active: true,
     });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
 
     expect(create).toHaveBeenCalledWith(jasmine.objectContaining({
       barcode: null,
@@ -87,7 +87,7 @@ describe('ProductsPageComponent', () => {
 
     fixture.componentInstance['edit'](product);
     fixture.componentInstance['form'].patchValue({ name: 'Cafe Especial' });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
 
     expect(update).toHaveBeenCalledWith(10, jasmine.objectContaining({ name: 'Cafe Especial' }));
   });
@@ -101,7 +101,7 @@ describe('ProductsPageComponent', () => {
     fixture.detectChanges();
 
     fixture.componentInstance['form'].patchValue({ name: 'Cafe', categoryId: 1, unit: 'UN', salePrice: 12.9 });
-    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Revise os dados do produto.');

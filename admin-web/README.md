@@ -29,10 +29,11 @@ Sessao: cookie HttpOnly `mercado_one_admin_session` na API e metadados em `sessi
 npm install
 npm start
 npm test -- --watch=false
+npm run test:e2e
 npm run build
 ```
 
-`npm test` ja inclui `--watch=false` e usa Karma `ChromeHeadlessNoGpu`. O build grava em `../output/admin-web-dist`.
+`npm test` ja inclui `--watch=false` e usa Karma `ChromeHeadlessNoGpu`. Para `npm run test:e2e`, mantenha `npm start` em outro terminal; os testes Playwright simulam as respostas da API. O build grava em `../output/admin-web-dist`.
 
 ## Documentacao relacionada
 

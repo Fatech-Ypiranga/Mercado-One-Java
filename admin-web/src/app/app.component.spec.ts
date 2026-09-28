@@ -41,4 +41,25 @@ describe('AppComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Mercado One');
     expect(fixture.nativeElement.textContent).toContain('Produtos');
   });
+
+  it('opens the compact menu and returns focus to its button on Escape', () => {
+    const auth = TestBed.inject(AuthService);
+    auth.session.set({
+      expiresAt: new Date(Date.now() + 60000).toISOString(),
+      user: { id: 1, nome: 'Administrador', login: 'admin', perfil: 'ADMIN' },
+    });
+    const fixture = TestBed.createComponent(AdminShellComponent);
+    fixture.detectChanges();
+    const toggle = fixture.nativeElement.querySelector('.menu-toggle') as HTMLButtonElement;
+    const sidebar = fixture.nativeElement.querySelector('.sidebar') as HTMLElement;
+    toggle.click();
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(sidebar.querySelector('.sidebar-nav')?.classList.contains('mobile-collapsed')).toBeFalse();
+
+    sidebar.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    fixture.detectChanges();
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(document.activeElement).toBe(toggle);
+  });
 });

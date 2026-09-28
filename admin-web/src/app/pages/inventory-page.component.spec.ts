@@ -1,10 +1,11 @@
 import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 
 import { CatalogService } from '../core/catalog.service';
-import { InventoryService } from '../core/inventory.service';
+import { InventoryBalance, InventoryService } from '../core/inventory.service';
+import { ApiEnvelope } from '../core/api-client.service';
 import { InventoryPageComponent } from './inventory-page.component';
 
 describe('InventoryPageComponent', () => {
@@ -116,5 +117,24 @@ describe('InventoryPageComponent', () => {
       from: new Date(2026, 8, 7, 0, 0, 0, 0).toISOString(),
       to: new Date(2026, 8, 8, 23, 59, 59, 999).toISOString(),
     }));
+  });
+
+  it('keeps the latest balances when an older filter request finishes later', () => {
+    const catalog = TestBed.inject(CatalogService);
+    const inventory = TestBed.inject(InventoryService);
+    spyOn(catalog, 'listProducts').and.returnValue(of({ success: true, data: [product], error: null, timestamp: new Date().toISOString() }));
+    const first = new Subject<ApiEnvelope<InventoryBalance[]>>();
+    const second = new Subject<ApiEnvelope<InventoryBalance[]>>();
+    spyOn(inventory, 'listBalances').and.returnValues(first.asObservable(), second.asObservable());
+    spyOn(inventory, 'listMovements').and.returnValue(of({ success: true, data: [], error: null, timestamp: new Date().toISOString() }));
+    const fixture = TestBed.createComponent(InventoryPageComponent);
+    fixture.detectChanges();
+    fixture.componentInstance['load']();
+    const recent = { id: 2, product, quantity: 8, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+    second.next({ success: true, data: [recent], error: null, timestamp: new Date().toISOString() });
+    second.complete();
+    first.next({ success: true, data: [], error: null, timestamp: new Date().toISOString() });
+    first.complete();
+    expect(fixture.componentInstance['balances'][0]?.quantity).toBe(8);
   });
 });
