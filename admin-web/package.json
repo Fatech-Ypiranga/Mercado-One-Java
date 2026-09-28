@@ -5,6 +5,7 @@
   "scripts": {
     "start": "ng serve --host 0.0.0.0 --port 4200",
     "build": "ng build",
+    "build:production": "node scripts/build-production.mjs",
     "test": "node --require ./scripts/angular-karma-output-hook.cjs ./node_modules/@angular/cli/bin/ng test --watch=false",
     "test:e2e": "playwright test"
   },

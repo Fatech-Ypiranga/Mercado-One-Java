@@ -25,7 +25,7 @@ Implementado:
 - Envelope HTTP `ApiEnvelope`.
 - Erro padronizado `ApiError`.
 - `GlobalExceptionHandler` para validacao, credencial invalida, entidade ausente, regra de negocio e erro inesperado.
-- `SecurityConfig` com JWT Bearer, cookie HttpOnly `mercado_one_admin_session` para admin web, CORS local com credenciais para `localhost:4200` e `127.0.0.1:4200`, CSRF desabilitado, login publico, rotas protegidas e autorizacao por perfil.
+- `SecurityConfig` com JWT Bearer, cookie HttpOnly `mercado_one_admin_session` para admin web, CORS com credenciais a partir de `MERCADO_ONE_CORS_ALLOWED_ORIGINS` (default local `localhost:4200` e `127.0.0.1:4200`), CSRF desabilitado, login publico, rotas protegidas e autorizacao por perfil. Cookie `Secure` e `SameSite=None` so com `MERCADO_ONE_COOKIE_SECURE=true`.
 - Validacao de token consulta o usuario atual no banco para respeitar inativacao ou alteracao de perfil apos emissao do JWT.
 - Seed de administrador inicial por variaveis de ambiente (`admin` / `admin123` no `.env.example`).
 - CRUD administrativo inicial de usuarios e perfis, inclusive senha opcional na atualizacao.
@@ -67,7 +67,8 @@ Implementado:
 - Historico de cliente: link `/vendas?customerId=` na tela de clientes.
 - Identidade visual de painel operacional claro, com IBM Plex, superficies neutras, verde para acao principal e navegacao por departamento recolhivel em telas menores.
 - Services tipados: `ApiClientService`, `AuthService`, `AccessService`, `CatalogService`, `InventoryService`, `SalesService`, `CustomerService`, `SupplierService` e `OfflineService`.
-- Ambiente local em `src/environments/environment.ts` apontando para `http://localhost:8080`. `environment.prod.ts` usa `apiBaseUrl` vazio (same-origin); nao ha deploy de producao documentado.
+- Ambiente local em `src/environments/environment.ts` apontando para `http://localhost:8080`. O build de producao le `MERCADO_ONE_API_BASE_URL` via `npm run build:production`. `npm run build` deixa essa URL vazia.
+- Piloto Azure descrito em [infra/README.md](../infra/README.md).
 - Build gera artefatos em `output/admin-web-dist` (ignorado pelo git).
 
 Nao implementado ainda:

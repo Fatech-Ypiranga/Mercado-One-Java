@@ -20,6 +20,8 @@ MERCADO_ONE_DB_USER=mercado_one
 MERCADO_ONE_DB_PASSWORD=mercado_one_dev
 MERCADO_ONE_DB_PORT=5432
 MERCADO_ONE_API_PORT=8080
+MERCADO_ONE_CORS_ALLOWED_ORIGINS=http://localhost:4200,http://127.0.0.1:4200
+MERCADO_ONE_COOKIE_SECURE=false
 MERCADO_ONE_JWT_SECRET=mercado-one-dev-secret-change-me-with-at-least-32-characters
 MERCADO_ONE_JWT_EXPIRATION_MINUTES=480
 MERCADO_ONE_SEED_ADMIN_ENABLED=true
@@ -66,7 +68,7 @@ Endpoints uteis:
 - `http://localhost:8080/actuator/health` (publico)
 - `http://localhost:8080/api/system/info` (publico)
 
-`GET /actuator/info` exige autenticacao. CORS da API cobre `/api/**` para `http://localhost:4200` e `http://127.0.0.1:4200`.
+`GET /actuator/info` exige autenticacao. CORS da API cobre `/api/**` para as origens de `MERCADO_ONE_CORS_ALLOWED_ORIGINS`. O default local e `http://localhost:4200` e `http://127.0.0.1:4200`. A porta HTTP da API e `PORT`, se existir, senao `MERCADO_ONE_API_PORT` (default `8080`).
 
 ## Admin web
 
@@ -85,6 +87,12 @@ npm run build
 ```
 
 Saida em `output/admin-web-dist` (pasta `output/` ignorada pelo git). Cache do CLI em `output/angular-cache`.
+
+`npm run build` usa `apiBaseUrl` vazio. Para um admin publicado fora da origem da API:
+
+```bash
+MERCADO_ONE_API_BASE_URL=https://exemplo.azurewebsites.net npm run build:production
+```
 
 ## PDV desktop
 

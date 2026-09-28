@@ -72,4 +72,4 @@ Flyway e a fonte de verdade para mudancas no schema servidor. O Hibernate valida
 
 ## Estado do scaffold
 
-A arquitetura esta definida e os modulos `access`, `catalog`, `customer`, `supplier`, `inventory`, `sales`, `offline`, `audit` e `system` ja possuem casos de uso iniciais. Nao ha deploy cloud, fila de mensageria, worker separado nem aplicacao mobile neste repositorio.
+A arquitetura esta definida e os modulos `access`, `catalog`, `customer`, `supplier`, `inventory`, `sales`, `offline`, `audit` e `system` ja possuem casos de uso iniciais. O piloto na Azure fica em [Infraestrutura](../infra/README.md): API no App Service, PostgreSQL Flexible Server e admin no Static Web Apps. Nao ha fila de mensageria, worker separado nem aplicacao mobile neste repositorio.

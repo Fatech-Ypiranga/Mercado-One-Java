@@ -56,4 +56,4 @@ Indice dos guias. O mapa de comandos e pastas e o `README.md` da raiz. O glossar
 | [../backend-api/README.md](../backend-api/README.md) | Comandos da API |
 | [../admin-web/README.md](../admin-web/README.md) | Rotas, sessao e comandos Angular |
 | [../pdv-desktop/README.md](../pdv-desktop/README.md) | Comandos do PDV JavaFX |
-| [../infra/README.md](../infra/README.md) | PostgreSQL local via Compose |
+| [../infra/README.md](../infra/README.md) | PostgreSQL local via Compose e piloto Azure |

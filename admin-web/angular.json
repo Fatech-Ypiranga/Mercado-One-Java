@@ -44,6 +44,9 @@
           },
           "configurations": {
             "production": {
+              "define": {
+                "MERCADO_ONE_API_BASE_URL": "\"\""
+              },
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",

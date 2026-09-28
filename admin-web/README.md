@@ -21,7 +21,7 @@ Credencial inicial de desenvolvimento: `admin` / `admin123`.
 /fornecedores Fornecedores (ADMIN, GERENTE)
 ```
 
-Sessao: cookie HttpOnly `mercado_one_admin_session` na API e metadados em `sessionStorage` (`mercado-one-admin-session-state`). O JWT nao vai para `localStorage`. `src/environments/environment.ts` aponta para `http://localhost:8080`.
+Sessao: cookie HttpOnly `mercado_one_admin_session` na API e metadados em `sessionStorage` (`mercado-one-admin-session-state`). O JWT nao vai para `localStorage`. `src/environments/environment.ts` aponta para `http://localhost:8080`. O build publicado em outra origem usa `MERCADO_ONE_API_BASE_URL`.
 
 ## Comandos
 
@@ -31,9 +31,10 @@ npm start
 npm test -- --watch=false
 npm run test:e2e
 npm run build
+MERCADO_ONE_API_BASE_URL=https://exemplo.azurewebsites.net npm run build:production
 ```
 
-`npm test` ja inclui `--watch=false` e usa Karma `ChromeHeadlessNoGpu`. Para `npm run test:e2e`, mantenha `npm start` em outro terminal; os testes Playwright simulam as respostas da API. O build grava em `../output/admin-web-dist`.
+`npm test` ja inclui `--watch=false` e usa Karma `ChromeHeadlessNoGpu`. Para `npm run test:e2e`, mantenha `npm start` em outro terminal; os testes Playwright simulam as respostas da API. O build grava em `../output/admin-web-dist`. `build:production` grava a URL publica da API no bundle.
 
 ## Documentacao relacionada
 
