@@ -80,7 +80,7 @@ Exemplo de payload:
 - Autentica usuario ativo, retorna token JWT Bearer para clientes como o PDV e emite cookie `mercado_one_admin_session` HttpOnly para o admin web.
 - Request: `{ "login": "admin", "password": "admin123" }` (login seed de `.env.example`). Testes do backend semeiam `admin@mercado.one` por propriedade, nao pelo `.env`.
 - Response: `ApiEnvelope<{ accessToken, tokenType, expiresAt, user }>` com `user.id`, `user.nome`, `user.login` e `user.perfil`.
-- Tambem emite cookie `mercado_one_admin_session` (HttpOnly, SameSite=Lax, Path=/). O PDV usa o `accessToken` como Bearer; o admin web usa o cookie.
+- Tambem emite cookie `mercado_one_admin_session` (HttpOnly, Path=/, SameSite=Lax no ambiente local ou Secure e SameSite=None com `MERCADO_ONE_COOKIE_SECURE=true`). O PDV usa o `accessToken` como Bearer; o admin web usa o cookie.
 
 `GET /api/auth/me`
 
@@ -90,7 +90,7 @@ Exemplo de payload:
 `POST /api/auth/logout`
 
 - Exige autenticacao (nao e `permitAll`).
-- Limpa o cookie HttpOnly do admin web (`maxAge=0`).
+- Limpa o cookie HttpOnly do admin web (`maxAge=0`). Com `MERCADO_ONE_COOKIE_SECURE=true`, exige `Origin` do admin permitido ou da propria API.
 - Retorna `ApiEnvelope<null>`.
 
 `GET /api/access/roles`

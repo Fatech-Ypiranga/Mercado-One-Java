@@ -1,9 +1,13 @@
 server:
-  port: ${MERCADO_ONE_API_PORT:8080}
+  port: ${PORT:${MERCADO_ONE_API_PORT:8080}}
 
 spring:
   application:
     name: mercado-one-backend-api
+  config:
+    import:
+      - optional:file:.env[.properties]
+      - optional:file:../.env[.properties]
   datasource:
     url: ${MERCADO_ONE_DATABASE_URL:jdbc:postgresql://localhost:5432/mercado_one}
     username: ${MERCADO_ONE_DB_USER:mercado_one}
@@ -19,6 +23,8 @@ mercado-one:
   security:
     jwt-secret: ${MERCADO_ONE_JWT_SECRET}
     jwt-expiration-minutes: ${MERCADO_ONE_JWT_EXPIRATION_MINUTES:480}
+    cors-allowed-origins: ${MERCADO_ONE_CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200}
+    cookie-secure: ${MERCADO_ONE_COOKIE_SECURE:false}
     seed-admin:
       enabled: ${MERCADO_ONE_SEED_ADMIN_ENABLED:false}
       name: ${MERCADO_ONE_SEED_ADMIN_NAME:}

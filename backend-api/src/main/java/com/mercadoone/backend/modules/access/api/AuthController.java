@@ -7,29 +7,46 @@ import com.mercadoone.backend.modules.access.application.JwtService.Authenticate
 import com.mercadoone.backend.modules.access.domain.AppUser;
 import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.access.domain.UserStatus;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final boolean cookieSecure;
+    private final List<String> adminOrigins;
 
-    AuthController(AuthService authService) {
+    AuthController(
+            AuthService authService,
+            @Value("${mercado-one.security.cookie-secure:false}") boolean cookieSecure,
+            @Value("${mercado-one.security.cors-allowed-origins}") String allowedOrigins
+    ) {
         this.authService = authService;
+        this.cookieSecure = cookieSecure;
+        this.adminOrigins = Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList();
     }
 
     @PostMapping("/login")
@@ -40,15 +57,18 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ApiEnvelope<Void> logout(HttpServletResponse response) {
-        response.addHeader(HttpHeaders.SET_COOKIE, ResponseCookie.from("mercado_one_admin_session", "")
-                .httpOnly(true)
-                .sameSite("Lax")
-                .path("/")
-                .maxAge(0)
-                .build()
-                .toString());
+    public ApiEnvelope<Void> logout(HttpServletRequest request, HttpServletResponse response) {
+        if (cookieSecure && !isTrustedLogoutOrigin(request)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Origem nao autorizada para logout.");
+        }
+        response.addHeader(HttpHeaders.SET_COOKIE, sessionCookie("", Instant.now()).toString());
         return ApiEnvelope.ok(null);
+    }
+
+    private boolean isTrustedLogoutOrigin(HttpServletRequest request) {
+        String origin = request.getHeader(HttpHeaders.ORIGIN);
+        return origin != null && (adminOrigins.contains(origin)
+                || origin.equals("https://" + request.getHeader(HttpHeaders.HOST)));
     }
 
     @GetMapping("/me")
@@ -95,11 +115,13 @@ public class AuthController {
 
     private ResponseCookie sessionCookie(String token, Instant expiresAt) {
         long maxAge = Math.max(0, Duration.between(Instant.now(), expiresAt).toSeconds());
-        return ResponseCookie.from("mercado_one_admin_session", token)
+        ResponseCookie.ResponseCookieBuilder builder = ResponseCookie.from("mercado_one_admin_session", token)
                 .httpOnly(true)
-                .sameSite("Lax")
                 .path("/")
-                .maxAge(maxAge)
-                .build();
+                .maxAge(maxAge);
+        if (cookieSecure) {
+            return builder.secure(true).sameSite("None").build();
+        }
+        return builder.sameSite("Lax").build();
     }
 }

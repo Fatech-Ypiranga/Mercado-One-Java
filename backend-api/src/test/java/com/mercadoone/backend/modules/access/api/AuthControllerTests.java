@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import jakarta.servlet.http.Cookie;
 import org.springframework.test.web.servlet.MockMvc;
@@ -13,7 +14,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.blankOrNullString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -26,7 +29,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "mercado-one.security.seed-admin.enabled=true",
         "mercado-one.security.seed-admin.name=Administrador",
         "mercado-one.security.seed-admin.login=admin@mercado.one",
-        "mercado-one.security.seed-admin.password=admin123"
+        "mercado-one.security.seed-admin.password=admin123",
+        "mercado-one.security.cookie-secure=false",
+        "mercado-one.security.cors-allowed-origins=http://localhost:4200,http://127.0.0.1:4200"
 })
 @AutoConfigureMockMvc
 class AuthControllerTests {
@@ -88,10 +93,20 @@ class AuthControllerTests {
 
         org.assertj.core.api.Assertions.assertThat(login).isNotNull();
         org.assertj.core.api.Assertions.assertThat(login.isHttpOnly()).isTrue();
+        org.assertj.core.api.Assertions.assertThat(login.getSecure()).isFalse();
 
         mockMvc.perform(get("/api/auth/me").cookie(new Cookie(login.getName(), login.getValue())))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.login").value("admin@mercado.one"));
+    }
+
+    @Test
+    void allowsLocalAdminOriginOnApi() throws Exception {
+        mockMvc.perform(options("/api/auth/login")
+                        .header(HttpHeaders.ORIGIN, "http://localhost:4200")
+                        .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "POST"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost:4200"));
     }
 
     @Test
