@@ -2,58 +2,58 @@
 
 ## 1. Resumo Executivo
 
-O Mercado One sera um ERP para pequenos mercados varejistas, com CRM e PDV integrados. O MVP deve provar a operacao essencial de uma loja fisica: cadastrar produtos, controlar estoque simples, registrar entradas, vender no PDV, operar parcialmente offline, manter clientes e consultar relatorios basicos.
+O Mercado One será um ERP para pequenos mercados varejistas, com CRM e PDV integrados. O MVP deve provar a operação essencial de uma loja física: cadastrar produtos, controlar estoque simples, registrar entradas, vender no PDV, operar parcialmente offline, manter clientes e consultar relatórios básicos.
 
-O documento define requisitos em nivel suficiente para orientar backlog, modelagem de dados e implementacao futura usando a stack restrita do projeto: Java, Angular, TypeScript, HTML, CSS e SQL.
+O documento define requisitos em nível suficiente para orientar backlog, modelagem de dados e implementação futura usando a stack restrita do projeto: Java, Angular, TypeScript, HTML, CSS e SQL.
 
-Nota de manutencao: este documento e conceitual e registra requisitos/criterios de aceite do MVP. Para saber o que ja esta implementado no codigo, consulte `docs/estado-atual.md`, `docs/backlog-mvp.md` e os READMEs dos subprojetos.
+Nota de manutenção: este documento é conceitual e registra requisitos/critérios de aceite do MVP. Para saber o que já está implementado no código, consulte `docs/estado-atual.md`, `docs/backlog-mvp.md` e os READMEs dos subprojetos.
 
-Requisitos conceituais ainda sem codigo correspondente: desconto simples no PDV, cancelamento pos-venda, entrada de estoque como documento multi-item, consulta administrativa de auditoria e auditoria de criacao/alteracao de produto. O PDV atual sempre persiste a venda localmente e sincroniza por `POST /api/offline/sales/sync`; `POST /api/sales` existe na API, mas nao e o caminho da UI de caixa.
+Requisitos conceituais ainda sem código correspondente: desconto simples no PDV, cancelamento pós-venda, entrada de estoque como documento multi-item, consulta administrativa de auditoria e auditoria de criação/alteração de produto. O PDV atual sempre persiste a venda localmente e sincroniza por `POST /api/offline/sales/sync`; `POST /api/sales` existe na API, mas não é o caminho da UI de caixa.
 
 ## 2. Objetivos do MVP
 
-- Permitir que um pequeno mercado opere cadastros, estoque e vendas presenciais em um sistema unico.
-- Reduzir dependencia de controles manuais para produtos, saldos e vendas.
-- Permitir venda no PDV mesmo durante indisponibilidade temporaria de internet ou servidor.
-- Registrar clientes e historico de compras para uma base inicial de CRM.
-- Fornecer relatorios operacionais minimos para acompanhamento diario.
-- Preparar a base de dados para informacoes fiscais, sem emitir documentos fiscais no MVP.
+- Permitir que um pequeno mercado opere cadastros, estoque e vendas presenciais em um sistema único.
+- Reduzir dependência de controles manuais para produtos, saldos e vendas.
+- Permitir venda no PDV mesmo durante indisponibilidade temporária de internet ou servidor.
+- Registrar clientes e histórico de compras para uma base inicial de CRM.
+- Fornecer relatórios operacionais mínimos para acompanhamento diário.
+- Preparar a base de dados para informações fiscais, sem emitir documentos fiscais no MVP.
 
-## 3. Publico-Alvo
+## 3. Público-Alvo
 
-O MVP e destinado a pequenos mercados varejistas com uma unica loja por implantacao inicial. O perfil esperado e uma operacao com poucos usuarios administrativos, um ou mais operadores de caixa e controle de estoque simples por produto e quantidade.
+O MVP é destinado a pequenos mercados varejistas com uma única loja por implantação inicial. O perfil esperado é uma operação com poucos usuários administrativos, um ou mais operadores de caixa e controle de estoque simples por produto e quantidade.
 
 ## 4. Atores
 
 ### 4.1 Administrador/Dono
 
-Responsavel pela configuracao geral do mercado, usuarios, permissoes, consulta de relatorios e supervisao da operacao.
+Responsável pela configuração geral do mercado, usuários, permissões, consulta de relatórios e supervisão da operação.
 
 ### 4.2 Gerente
 
-Responsavel por cadastros, entradas de estoque, ajustes operacionais, acompanhamento de vendas e relatorios.
+Responsável por cadastros, entradas de estoque, ajustes operacionais, acompanhamento de vendas e relatórios.
 
 ### 4.3 Operador de Caixa
 
-Responsavel por realizar vendas no PDV, consultar produtos, identificar clientes, registrar pagamentos manuais e finalizar vendas.
+Responsável por realizar vendas no PDV, consultar produtos, identificar clientes, registrar pagamentos manuais e finalizar vendas.
 
 ### 4.4 Atendente/Estoquista
 
-Responsavel por consultar produtos, registrar ou apoiar entradas de mercadorias e realizar ajustes de estoque quando autorizado.
+Responsável por consultar produtos, registrar ou apoiar entradas de mercadorias e realizar ajustes de estoque quando autorizado.
 
 ## 5. Escopo Funcional
 
-### 5.1 Gestao de Usuarios e Permissoes
+### 5.1 Gestão de Usuários e Permissões
 
-O sistema deve permitir cadastro, edicao, ativacao e desativacao de usuarios. Cada usuario deve possuir um perfil de acesso simples, no minimo: administrador, gerente, operador de caixa e estoquista.
+O sistema deve permitir cadastro, edição, ativação e desativação de usuários. Cada usuário deve possuir um perfil de acesso simples, no mínimo: administrador, gerente, operador de caixa e estoquista.
 
 Requisitos:
 
-- Autenticar usuarios antes do acesso ao sistema.
+- Autenticar usuários antes do acesso ao sistema.
 - Autorizar funcionalidades conforme perfil.
-- Permitir redefinicao administrativa de senha.
-- Bloquear acesso de usuarios inativos.
-- Registrar usuario responsavel em operacoes criticas.
+- Permitir redefinição administrativa de senha.
+- Bloquear acesso de usuários inativos.
+- Registrar usuário responsável em operações críticas.
 
 ### 5.2 Cadastro de Produtos
 
@@ -61,19 +61,19 @@ O sistema deve permitir manter produtos comercializados pelo mercado.
 
 Requisitos:
 
-- Cadastrar produto com nome, codigo de barras ou SKU, categoria, unidade, preco de venda, status e dados fiscais preparatorios.
+- Cadastrar produto com nome, código de barras ou SKU, categoria, unidade, preço de venda, status e dados fiscais preparatórios.
 - Editar dados cadastrais de produto.
 - Ativar e inativar produto.
-- Pesquisar produto por nome, codigo de barras ou SKU.
+- Pesquisar produto por nome, código de barras ou SKU.
 - Impedir uso de produto inativo em novas vendas.
 
-Campos fiscais preparatorios sugeridos:
+Campos fiscais preparatórios sugeridos:
 
 - NCM.
-- CEST, quando aplicavel.
-- CFOP padrao sugerido.
+- CEST, quando aplicável.
+- CFOP padrão sugerido.
 - Origem da mercadoria.
-- Aliquota ou classificacao tributaria interna, quando definida pelo mercado.
+- Alíquota ou classificação tributária interna, quando definida pelo mercado.
 
 ### 5.3 Cadastro de Categorias
 
@@ -91,23 +91,23 @@ O sistema deve permitir registrar fornecedores usados nas entradas de mercadoria
 
 Requisitos:
 
-- Cadastrar fornecedor com nome, documento, telefone, email e observacoes.
+- Cadastrar fornecedor com nome, documento, telefone, email e observações.
 - Editar e inativar fornecedor.
 - Vincular fornecedor a uma entrada de estoque quando informado.
 
-### 5.5 Cadastro de Clientes e CRM Basico
+### 5.5 Cadastro de Clientes e CRM Básico
 
-O sistema deve permitir cadastrar clientes para consulta no PDV e formacao de historico de compras.
+O sistema deve permitir cadastrar clientes para consulta no PDV e formação de histórico de compras.
 
 Requisitos:
 
-- Cadastrar cliente com nome, telefone, email, documento opcional e consentimento basico de contato.
+- Cadastrar cliente com nome, telefone, email, documento opcional e consentimento básico de contato.
 - Pesquisar cliente por nome, telefone ou documento.
 - Vincular uma venda a um cliente.
-- Consultar historico de compras do cliente.
-- Permitir edicao e inativacao de cliente.
+- Consultar histórico de compras do cliente.
+- Permitir edição e inativação de cliente.
 
-Ficam fora do MVP campanhas, segmentacoes automaticas, programas de pontos, cashback e disparos integrados de mensagens.
+Ficam fora do MVP campanhas, segmentações automáticas, programas de pontos, cashback e disparos integrados de mensagens.
 
 ### 5.6 Estoque
 
@@ -119,107 +119,107 @@ Requisitos:
 - Registrar entrada de estoque.
 - Registrar ajuste manual de estoque com justificativa.
 - Registrar baixa de estoque por venda sincronizada.
-- Exibir movimentacoes de estoque por periodo e produto.
-- Impedir saldo negativo quando a venda estiver online, salvo se uma configuracao futura permitir o contrario.
+- Exibir movimentações de estoque por período e produto.
+- Impedir saldo negativo quando a venda estiver online, salvo se uma configuração futura permitir o contrário.
 
-Nao fazem parte do MVP controle por lote, validade, multi-deposito, enderecamento, inventario ciclico formal ou custo medio avancado.
+Não fazem parte do MVP controle por lote, validade, multi-depósito, endereçamento, inventário cíclico formal ou custo médio avançado.
 
 ### 5.7 Compras e Recebimento Simples
 
-O sistema deve permitir registrar entrada de mercadorias sem implementar um modulo completo de compras.
+O sistema deve permitir registrar entrada de mercadorias sem implementar um módulo completo de compras.
 
 Requisitos:
 
-- Registrar entrada com data, fornecedor opcional, itens, quantidades e observacao.
-- Atualizar saldo de estoque apos confirmacao da entrada.
-- Registrar movimentacao de estoque para cada item recebido.
-- Permitir consulta de entradas por periodo.
+- Registrar entrada com data, fornecedor opcional, itens, quantidades e observação.
+- Atualizar saldo de estoque após confirmação da entrada.
+- Registrar movimentação de estoque para cada item recebido.
+- Permitir consulta de entradas por período.
 
 ### 5.8 PDV Online
 
-O PDV deve permitir a venda presencial de forma simples e rapida.
+O PDV deve permitir a venda presencial de forma simples e rápida.
 
 Requisitos:
 
 - Iniciar nova venda.
-- Adicionar produto por codigo de barras, SKU ou busca por nome.
-- Alterar quantidade antes da finalizacao.
-- Remover item antes da finalizacao.
+- Adicionar produto por código de barras, SKU ou busca por nome.
+- Alterar quantidade antes da finalização.
+- Remover item antes da finalização.
 - Aplicar desconto simples quando o perfil permitir.
-- Cancelar venda antes da finalizacao.
+- Cancelar venda antes da finalização.
 - Identificar cliente opcionalmente.
 - Registrar uma ou mais formas de pagamento manuais.
 - Finalizar venda.
-- Baixar estoque apos finalizacao online confirmada.
+- Baixar estoque após finalização online confirmada.
 - Gerar comprovante simples de venda sem valor fiscal.
 
 Formas de pagamento manuais no MVP:
 
 - Dinheiro.
-- Cartao.
+- Cartão.
 - PIX.
 - Fiado.
 
-O MVP nao inclui TEF, integracao com adquirente, geracao de cobranca PIX, conciliacao automatica ou comprovante fiscal.
+O MVP não inclui TEF, integração com adquirente, geração de cobrança PIX, conciliação automática ou comprovante fiscal.
 
 ### 5.9 PDV Offline Parcial
 
-O PDV deve permitir registrar vendas quando houver indisponibilidade temporaria de comunicacao com o servidor.
+O PDV deve permitir registrar vendas quando houver indisponibilidade temporária de comunicação com o servidor.
 
 Requisitos:
 
-- Manter catalogo local previamente carregado com produtos ativos e precos vigentes.
-- Permitir venda offline usando os dados locais disponiveis.
-- Atribuir identificador local temporario para venda offline.
+- Manter catálogo local previamente carregado com produtos ativos e preços vigentes.
+- Permitir venda offline usando os dados locais disponíveis.
+- Atribuir identificador local temporário para venda offline.
 - Registrar venda offline em fila local.
-- Exibir status de sincronizacao da venda.
-- Sincronizar vendas pendentes quando a comunicacao retornar.
-- Registrar conflitos de preco, produto ou estoque para revisao.
-- Nao apagar venda offline original em caso de conflito.
+- Exibir status de sincronização da venda.
+- Sincronizar vendas pendentes quando a comunicação retornar.
+- Registrar conflitos de preço, produto ou estoque para revisão.
+- Não apagar venda offline original em caso de conflito.
 
 Estados sugeridos para venda offline:
 
-- Pendente de sincronizacao.
+- Pendente de sincronização.
 - Sincronizada.
 - Sincronizada com conflito.
-- Falha de sincronizacao.
+- Falha de sincronização.
 
-O MVP nao precisa permitir cadastro de produtos, cadastro completo de clientes, cancelamento pos-venda ou ajuste de estoque em modo offline.
+O MVP não precisa permitir cadastro de produtos, cadastro completo de clientes, cancelamento pós-venda ou ajuste de estoque em modo offline.
 
-### 5.10 Relatorios Operacionais
+### 5.10 Relatórios Operacionais
 
-O sistema deve fornecer relatorios minimos para acompanhamento da operacao.
+O sistema deve fornecer relatórios mínimos para acompanhamento da operação.
 
 Requisitos:
 
-- Vendas por periodo.
+- Vendas por período.
 - Produtos mais vendidos.
 - Saldo atual de estoque.
-- Movimentacoes de estoque por periodo.
+- Movimentações de estoque por período.
 - Vendas por operador.
 - Vendas vinculadas a clientes.
 
-Os relatorios devem permitir filtros basicos por periodo e, quando aplicavel, produto, categoria, operador ou cliente.
+Os relatórios devem permitir filtros básicos por período e, quando aplicável, produto, categoria, operador ou cliente.
 
 ## 6. Casos de Uso
 
-### UC01 - Gerenciar Usuarios
+### UC01 - Gerenciar Usuários
 
 Ator principal: Administrador/Dono.
 
 Fluxo principal:
 
-1. Administrador acessa a area de usuarios.
-2. Sistema lista usuarios existentes.
-3. Administrador cria ou edita um usuario.
+1. Administrador acessa a área de usuários.
+2. Sistema lista usuários existentes.
+3. Administrador cria ou edita um usuário.
 4. Administrador define perfil de acesso.
-5. Sistema salva o usuario e aplica permissoes.
+5. Sistema salva o usuário e aplica permissões.
 
-Criterios de aceite:
+Critérios de aceite:
 
-- Usuario inativo nao consegue autenticar.
-- Operador de caixa nao acessa funcionalidades administrativas.
-- Operacoes criticas registram usuario responsavel.
+- Usuário inativo não consegue autenticar.
+- Operador de caixa não acessa funcionalidades administrativas.
+- Operações críticas registram usuário responsável.
 
 ### UC02 - Cadastrar Produto
 
@@ -228,16 +228,16 @@ Ator principal: Gerente.
 Fluxo principal:
 
 1. Gerente acessa cadastro de produtos.
-2. Informa nome, codigo, categoria, unidade, preco, status e dados fiscais preparatorios.
-3. Sistema valida campos obrigatorios.
+2. Informa nome, código, categoria, unidade, preço, status e dados fiscais preparatórios.
+3. Sistema valida campos obrigatórios.
 4. Sistema salva produto.
-5. Produto ativo fica disponivel para venda e consulta.
+5. Produto ativo fica disponível para venda e consulta.
 
-Criterios de aceite:
+Critérios de aceite:
 
 - Produto ativo aparece no PDV.
-- Produto inativo nao aparece para nova venda.
-- Produto pode ser encontrado por nome, SKU ou codigo de barras.
+- Produto inativo não aparece para nova venda.
+- Produto pode ser encontrado por nome, SKU ou código de barras.
 
 ### UC03 - Registrar Entrada de Estoque
 
@@ -245,17 +245,17 @@ Ator principal: Gerente ou Estoquista.
 
 Fluxo principal:
 
-1. Usuario inicia uma entrada de estoque.
+1. Usuário inicia uma entrada de estoque.
 2. Seleciona fornecedor opcional.
 3. Adiciona produtos e quantidades.
 4. Confirma a entrada.
-5. Sistema atualiza saldos e registra movimentacoes.
+5. Sistema atualiza saldos e registra movimentações.
 
-Criterios de aceite:
+Critérios de aceite:
 
 - Saldo aumenta conforme quantidades confirmadas.
-- Cada item gera movimentacao de estoque.
-- Entrada fica disponivel para consulta por periodo.
+- Cada item gera movimentação de estoque.
+- Entrada fica disponível para consulta por período.
 
 ### UC04 - Realizar Venda Online no PDV
 
@@ -266,16 +266,16 @@ Fluxo principal:
 1. Operador inicia nova venda.
 2. Adiciona produtos ao carrinho.
 3. Sistema calcula total.
-4. Operador identifica cliente, se aplicavel.
+4. Operador identifica cliente, se aplicável.
 5. Operador registra pagamento manual.
 6. Operador finaliza venda.
 7. Sistema registra venda e baixa estoque.
 
-Criterios de aceite:
+Critérios de aceite:
 
-- Venda finalizada possui itens, valores, operador, pagamentos e horario.
-- Estoque e reduzido para os produtos vendidos.
-- Venda vinculada a cliente aparece no historico do cliente.
+- Venda finalizada possui itens, valores, operador, pagamentos e horário.
+- Estoque é reduzido para os produtos vendidos.
+- Venda vinculada a um cliente aparece no histórico do cliente.
 
 ### UC05 - Realizar Venda Offline Parcial
 
@@ -283,18 +283,18 @@ Ator principal: Operador de Caixa.
 
 Fluxo principal:
 
-1. PDV identifica indisponibilidade de comunicacao.
-2. Operador inicia venda usando catalogo local.
-3. Operador adiciona produtos disponiveis localmente.
+1. PDV identifica indisponibilidade de comunicação.
+2. Operador inicia venda usando catálogo local.
+3. Operador adiciona produtos disponíveis localmente.
 4. Operador registra pagamento manual.
 5. Sistema grava venda na fila offline com identificador local.
-6. Sistema exibe venda como pendente de sincronizacao.
+6. Sistema exibe venda como pendente de sincronização.
 
-Criterios de aceite:
+Critérios de aceite:
 
-- Venda offline nao depende de comunicacao imediata com servidor.
-- Venda recebe status pendente de sincronizacao.
-- Dados minimos da venda ficam preservados localmente.
+- Venda offline não depende de comunicação imediata com servidor.
+- Venda recebe status pendente de sincronização.
+- Dados mínimos da venda ficam preservados localmente.
 
 ### UC06 - Sincronizar Vendas Offline
 
@@ -302,58 +302,58 @@ Ator principal: Sistema.
 
 Fluxo principal:
 
-1. Sistema detecta retorno de comunicacao.
+1. Sistema detecta retorno de comunicação.
 2. Sistema envia vendas pendentes ao servidor.
 3. Servidor registra a venda.
-4. Servidor baixa estoque quando a venda e aceita.
+4. Servidor baixa estoque quando a venda é aceita.
 5. Sistema atualiza status local.
-6. Conflitos sao registrados para revisao.
+6. Conflitos são registrados para revisão.
 
-Criterios de aceite:
+Critérios de aceite:
 
-- Venda sincronizada passa a constar nos relatorios.
+- Venda sincronizada passa a constar nos relatórios.
 - Venda sincronizada baixa estoque.
-- Conflito nao apaga a venda original.
-- Falha de sincronizacao mantem venda pendente ou marcada como falha.
+- Conflito não apaga a venda original.
+- Falha de sincronização mantém venda pendente ou marcada como falha.
 
-### UC07 - Consultar Cliente e Historico
+### UC07 - Consultar Cliente e Histórico
 
 Ator principal: Operador de Caixa ou Gerente.
 
 Fluxo principal:
 
-1. Usuario pesquisa cliente por nome, telefone ou documento.
+1. Usuário pesquisa cliente por nome, telefone ou documento.
 2. Sistema exibe dados do cliente.
-3. Usuario consulta historico de compras.
-4. No PDV, operador vincula cliente a venda.
+3. Usuário consulta histórico de compras.
+4. No PDV, o operador vincula o cliente a uma venda.
 
-Criterios de aceite:
+Critérios de aceite:
 
 - Cliente pode ser vinculado a venda.
-- Historico lista compras vinculadas ao cliente.
-- Cliente inativo nao deve ser sugerido para novas vendas.
+- Histórico lista compras vinculadas ao cliente.
+- Cliente inativo não deve ser sugerido para novas vendas.
 
-### UC08 - Consultar Relatorios Operacionais
+### UC08 - Consultar Relatórios Operacionais
 
 Ator principal: Administrador/Dono ou Gerente.
 
 Fluxo principal:
 
-1. Usuario acessa area de relatorios.
-2. Seleciona tipo de relatorio.
+1. Usuário acessa área de relatórios.
+2. Seleciona tipo de relatório.
 3. Aplica filtros.
 4. Sistema exibe resultados.
 
-Criterios de aceite:
+Critérios de aceite:
 
-- Relatorio de vendas filtra por periodo.
-- Relatorio de produtos mais vendidos considera vendas finalizadas e sincronizadas.
-- Relatorio de estoque apresenta saldo atual.
-- Operador de caixa nao acessa relatorios gerenciais, salvo se autorizado.
+- Relatório de vendas filtra por período.
+- Relatório de produtos mais vendidos considera vendas finalizadas e sincronizadas.
+- Relatório de estoque apresenta saldo atual.
+- Operador de caixa não acessa relatórios gerenciais, salvo se autorizado.
 
 ## 7. Entidades Conceituais
 
-### Usuario
+### Usuário
 
 Representa pessoa autorizada a acessar o Mercado One.
 
@@ -365,11 +365,11 @@ Campos conceituais:
 - Senha protegida.
 - Perfil.
 - Status.
-- Data de criacao.
+- Data de criação.
 
 ### Perfil
 
-Representa conjunto simples de permissoes.
+Representa conjunto simples de permissões.
 
 Perfis iniciais:
 
@@ -386,13 +386,13 @@ Campos conceituais:
 
 - Identificador.
 - Nome.
-- Codigo de barras.
+- Código de barras.
 - SKU.
 - Categoria.
 - Unidade.
-- Preco de venda.
+- Preço de venda.
 - Status.
-- Dados fiscais preparatorios.
+- Dados fiscais preparatórios.
 
 ### Categoria
 
@@ -415,12 +415,12 @@ Campos conceituais:
 - Documento.
 - Telefone.
 - Email.
-- Observacoes.
+- Observações.
 - Status.
 
 ### Cliente
 
-Pessoa identificada para relacionamento e historico de compras.
+Pessoa identificada para relacionamento e histórico de compras.
 
 Campos conceituais:
 
@@ -439,16 +439,16 @@ Registro de venda presencial realizada no PDV.
 Campos conceituais:
 
 - Identificador.
-- Identificador local temporario, quando offline.
+- Identificador local temporário, quando offline.
 - Operador.
 - Cliente opcional.
 - Itens.
 - Pagamentos.
 - Total bruto.
 - Desconto.
-- Total liquido.
+- Total líquido.
 - Status da venda.
-- Status de sincronizacao.
+- Status de sincronização.
 - Data e hora.
 
 ### Item de Venda
@@ -460,8 +460,8 @@ Campos conceituais:
 - Venda.
 - Produto.
 - Quantidade.
-- Preco unitario praticado.
-- Desconto do item, quando aplicavel.
+- Preço unitário praticado.
+- Desconto do item, quando aplicável.
 - Total do item.
 
 ### Pagamento
@@ -473,112 +473,112 @@ Campos conceituais:
 - Venda.
 - Forma de pagamento.
 - Valor.
-- Observacao, quando aplicavel.
+- Observação, quando aplicável.
 
-### Movimentacao de Estoque
+### Movimentação de Estoque
 
-Registro imutavel de alteracao de saldo de estoque.
+Registro imutável de alteração de saldo de estoque.
 
 Campos conceituais:
 
 - Produto.
-- Tipo de movimentacao.
+- Tipo de movimentação.
 - Quantidade.
 - Origem.
-- Usuario responsavel ou processo.
+- Usuário responsável ou processo.
 - Justificativa.
 - Data e hora.
 
 Tipos iniciais:
 
 - Entrada.
-- Saida por venda.
+- Saída por venda.
 - Ajuste manual.
 
 ### Fila Offline
 
-Registro local das vendas feitas sem comunicacao com o servidor.
+Registro local das vendas feitas sem comunicação com o servidor.
 
 Campos conceituais:
 
 - Identificador local.
 - Dados da venda.
-- Status de sincronizacao.
-- Numero de tentativas.
-- Ultima tentativa.
+- Status de sincronização.
+- Número de tentativas.
+- Última tentativa.
 - Mensagem de erro ou conflito.
 
-## 8. Regras de Negocio
+## 8. Regras de Negócio
 
-- Produto inativo nao deve aparecer para nova venda.
-- Cliente inativo nao deve ser sugerido para nova venda.
-- Venda online finalizada deve reduzir estoque imediatamente apos confirmacao.
-- Venda offline deve reduzir estoque somente apos sincronizacao aceita pelo servidor.
-- Venda offline deve receber identificador local temporario.
-- Venda offline deve manter status de sincronizacao visivel.
-- Conflitos de preco, produto ou estoque devem ser registrados para revisao.
-- Conflito de sincronizacao nao deve apagar a venda offline original.
-- Historico do cliente deve ser derivado de vendas vinculadas.
+- Produto inativo não deve aparecer para nova venda.
+- Cliente inativo não deve ser sugerido para nova venda.
+- Venda online finalizada deve reduzir estoque imediatamente após confirmação.
+- Venda offline deve reduzir estoque somente após sincronização aceita pelo servidor.
+- Venda offline deve receber identificador local temporário.
+- Venda offline deve manter status de sincronização visível.
+- Conflitos de preço, produto ou estoque devem ser registrados para revisão.
+- Conflito de sincronização não deve apagar a venda offline original.
+- Histórico do cliente deve ser derivado de vendas vinculadas.
 - Ajuste manual de estoque deve exigir justificativa.
-- Operacoes criticas devem registrar usuario responsavel e data/hora.
-- O sistema nao deve emitir documento fiscal no MVP.
+- Operações críticas devem registrar usuário responsável e data/hora.
+- O sistema não deve emitir documento fiscal no MVP.
 
-## 9. Requisitos Nao Funcionais
+## 9. Requisitos Não Funcionais
 
 ### 9.1 Tecnologia
 
 - Backend em Java.
 - Frontend em Angular com TypeScript, HTML e CSS.
 - Banco de dados SQL relacional.
-- Interface web responsiva para areas administrativas.
+- Interface web responsiva para áreas administrativas.
 - PDV otimizado para uso em tela de caixa.
 
-### 9.2 Seguranca
+### 9.2 Segurança
 
-- Autenticacao obrigatoria.
+- Autenticação obrigatória.
 - Senhas armazenadas de forma protegida.
-- Autorizacao por perfil.
-- Bloqueio de usuarios inativos.
-- Validacao de entradas no frontend e backend.
-- Auditoria basica de operacoes criticas.
+- Autorização por perfil.
+- Bloqueio de usuários inativos.
+- Validação de entradas no frontend e backend.
+- Auditoria básica de operações críticas.
 
 ### 9.3 Disponibilidade e Offline
 
 - O PDV deve indicar quando estiver offline.
-- O PDV deve manter catalogo local previamente carregado.
-- Vendas offline devem ser preservadas ate sincronizacao bem-sucedida ou revisao de falha.
+- O PDV deve manter catálogo local previamente carregado.
+- Vendas offline devem ser preservadas até sincronização bem-sucedida ou revisão de falha.
 - O sistema deve evitar perda silenciosa de vendas.
 
 ### 9.4 Usabilidade
 
 - O fluxo de venda deve exigir poucos passos.
-- Busca por produto deve aceitar codigo e nome.
-- Mensagens de erro devem ser claras para usuarios operacionais.
-- Telas de cadastro devem destacar campos obrigatorios.
+- Busca por produto deve aceitar código e nome.
+- Mensagens de erro devem ser claras para usuários operacionais.
+- Telas de cadastro devem destacar campos obrigatórios.
 
 ### 9.5 Auditoria
 
-Devem ser auditadas, no minimo:
+Devem ser auditadas, no mínimo:
 
-- Criacao e alteracao de produto.
+- Criação e alteração de produto.
 - Entrada de estoque.
 - Ajuste manual de estoque.
-- Finalizacao de venda.
-- Sincronizacao de venda offline.
-- Alteracao de usuario ou perfil.
+- Finalização de venda.
+- Sincronização de venda offline.
+- Alteração de usuário ou perfil.
 
 ## 10. Fora de Escopo do MVP
 
-- Emissao de NFC-e ou NF-e.
-- Integracao fiscal com SEFAZ.
+- Emissão de NFC-e ou NF-e.
+- Integração fiscal com SEFAZ.
 - TEF.
 - PIX integrado.
-- Conciliacao financeira.
+- Conciliação financeira.
 - Contabilidade.
 - Contas a pagar e receber completas.
 - RH e folha de pagamento.
 - Multi-loja.
-- Multi-deposito.
+- Multi-depósito.
 - Controle por lote e validade.
 - Programa de fidelidade.
 - Cashback.
@@ -587,27 +587,27 @@ Devem ser auditadas, no minimo:
 - E-commerce.
 - Aplicativo mobile nativo.
 
-## 11. Criterios Gerais de Aceite
+## 11. Critérios Gerais de Aceite
 
-- Deve ser possivel cadastrar um produto ativo e vende-lo no PDV.
-- Deve ser possivel registrar entrada de estoque e visualizar saldo atualizado.
-- Venda online finalizada deve aparecer em relatorio de vendas.
+- Deve ser possível cadastrar um produto ativo e vendê-lo no PDV.
+- Deve ser possível registrar entrada de estoque e visualizar saldo atualizado.
+- Venda online finalizada deve aparecer em relatório de vendas.
 - Venda online finalizada deve gerar baixa de estoque.
 - Venda offline deve ser registrada em fila local.
-- Venda offline deve sincronizar quando a comunicacao voltar.
-- Venda offline sincronizada deve aparecer em relatorios e baixar estoque.
-- Venda vinculada a cliente deve aparecer no historico do cliente.
-- Perfis devem restringir acesso a funcionalidades sensiveis.
-- Dados fiscais devem existir apenas como preparacao cadastral, sem emissao fiscal.
+- Venda offline deve sincronizar quando a comunicação voltar.
+- Venda offline sincronizada deve aparecer em relatórios e baixar estoque.
+- Venda vinculada a cliente deve aparecer no histórico do cliente.
+- Perfis devem restringir acesso a funcionalidades sensíveis.
+- Dados fiscais devem existir apenas como preparação cadastral, sem emissão fiscal.
 
-## 12. Sugestao de Priorizacao para Backlog
+## 12. Sugestão de Priorização para Backlog
 
 ### Prioridade 1 - Base Operacional
 
-- Autenticacao e perfis.
+- Autenticação e perfis.
 - Cadastro de produtos.
 - Cadastro de categorias.
-- Cadastro de usuarios.
+- Cadastro de usuários.
 - Estoque simples.
 
 ### Prioridade 2 - Venda Online
@@ -615,44 +615,44 @@ Devem ser auditadas, no minimo:
 - PDV online.
 - Registro manual de pagamentos.
 - Baixa de estoque por venda.
-- Relatorio de vendas por periodo.
+- Relatório de vendas por período.
 
-### Prioridade 3 - Entradas e CRM Basico
+### Prioridade 3 - Entradas e CRM Básico
 
 - Cadastro de fornecedores.
 - Entrada de estoque.
 - Cadastro de clientes.
-- Vinculo de cliente na venda.
-- Historico de compras.
+- Vínculo de cliente na venda.
+- Histórico de compras.
 
 ### Prioridade 4 - Offline Parcial
 
-- Catalogo local do PDV.
+- Catálogo local do PDV.
 - Fila offline.
-- Sincronizacao de vendas.
+- Sincronização de vendas.
 - Registro de conflitos.
 
-### Prioridade 5 - Relatorios Complementares
+### Prioridade 5 - Relatórios Complementares
 
 - Produtos mais vendidos.
 - Saldo de estoque.
-- Movimentacoes de estoque.
+- Movimentações de estoque.
 - Vendas por operador.
 
-## 13. Riscos e Decisoes Futuras
+## 13. Riscos e Decisões Futuras
 
-- Offline parcial aumenta a complexidade do PDV e deve ser validado cedo com prototipo tecnico.
-- Fiscal sem emissao reduz escopo, mas os campos preparatorios devem ser definidos com cuidado para nao bloquear NFC-e/NF-e futuramente.
-- Controle de estoque sem lote e validade atende o MVP, mas pode ser insuficiente para mercados com pereciveis.
-- Pagamento manual acelera o MVP, mas TEF e PIX integrado devem ser avaliados antes de operacao em escala.
-- Multi-loja esta fora do MVP; a modelagem inicial deve evitar acoplamento desnecessario a uma unica loja caso expansao seja provavel.
+- Offline parcial aumenta a complexidade do PDV e deve ser validado cedo com protótipo técnico.
+- Fiscal sem emissão reduz escopo, mas os campos preparatórios devem ser definidos com cuidado para não bloquear NFC-e/NF-e futuramente.
+- Controle de estoque sem lote e validade atende o MVP, mas pode ser insuficiente para mercados com perecíveis.
+- Pagamento manual acelera o MVP, mas TEF e PIX integrado devem ser avaliados antes de operação em escala.
+- Multi-loja está fora do MVP; a modelagem inicial deve evitar acoplamento desnecessário a uma única loja caso expansão seja provável.
 
-## 14. Assumptions
+## 14. Premissas
 
-- O MVP atende pequenos mercados com uma loja por implantacao.
-- O foco inicial e operacao de loja, nao financeiro completo.
-- O PDV offline parcial usa catalogo e precos previamente carregados.
-- Vendas offline sao preservadas localmente ate sincronizacao.
-- O sistema registra pagamentos manualmente, sem confirmar transacoes externas.
-- Dados fiscais sao apenas preparatorios no MVP.
-- O documento sera usado como base para backlog, modelagem de dados e arquitetura inicial.
+- O MVP atende pequenos mercados com uma loja por implantação.
+- O foco inicial é operação de loja, não financeiro completo.
+- O PDV offline parcial usa catálogo e preços previamente carregados.
+- Vendas offline são preservadas localmente até sincronização.
+- O sistema registra pagamentos manualmente, sem confirmar transações externas.
+- Dados fiscais são apenas preparatórios no MVP.
+- O documento será usado como base para backlog, modelagem de dados e arquitetura inicial.

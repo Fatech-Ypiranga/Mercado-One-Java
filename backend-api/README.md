@@ -1,8 +1,8 @@
 # Backend API
 
-API REST do Mercado One: contratos de servidor, regras centrais do MVP e persistencia em PostgreSQL.
+API REST do Mercado One: contratos de servidor, regras centrais do MVP e persistência em PostgreSQL.
 
-O que esta implementado: [Estado atual](../docs/estado-atual.md). Fatias e acoplamento: [Arquitetura](../docs/arquitetura.md).
+O que está implementado: [Estado atual](../docs/estado-atual.md). Fatias e acoplamento: [Arquitetura](../docs/arquitetura.md).
 
 ## Comandos
 
@@ -11,10 +11,10 @@ mvn spring-boot:run
 mvn test
 ```
 
-`mvn spring-boot:run` le o `.env` da raiz do repositorio (ou do diretorio atual). A variavel obrigatoria e `MERCADO_ONE_JWT_SECRET`. Os testes usam H2 em memoria, com Flyway desligado e `ddl-auto=create-drop`; o detalhe esta em [Dados e migracoes](../docs/dados-e-migracoes.md).
+`mvn spring-boot:run` lê o `.env` da raiz do repositório (ou do diretório atual). A variável obrigatória é `MERCADO_ONE_JWT_SECRET`. Os testes usam H2 em memória, com Flyway desligado e `ddl-auto=create-drop`; o detalhe está em [Dados e migrações](../docs/dados-e-migracoes.md).
 
-## Documentacao
+## Documentação
 
 - [Contratos de API](../docs/api-contratos.md)
-- [Dados e migracoes](../docs/dados-e-migracoes.md)
-- [Seguranca](../docs/seguranca.md)
+- [Dados e migrações](../docs/dados-e-migracoes.md)
+- [Segurança](../docs/seguranca.md)

@@ -2,17 +2,17 @@
 
 Este guia descreve o setup esperado para executar o Mercado One localmente.
 
-## Pre-requisitos
+## Pré-requisitos
 
 - Java 25.
-- Maven disponivel no PATH.
-- Node.js compativel com Angular 22.
+- Maven disponível no PATH.
+- Node.js compatível com Angular 22.
 - npm funcional.
 - Docker com suporte a Docker Compose.
 
-## Variaveis
+## Variáveis
 
-Copie `.env.example` para `.env` na raiz do repositorio. A API carrega esse arquivo ao subir com `mvn spring-boot:run` (diretorio atual ou raiz do repo), via `spring.config.import` em `backend-api/src/main/resources/application.yml`. Sem `MERCADO_ONE_JWT_SECRET`, o Maven termina com `BUILD FAILURE`.
+Copie `.env.example` para `.env` na raiz do repositório. A API carrega esse arquivo ao subir com `mvn spring-boot:run` (diretório atual ou raiz do repo), via `spring.config.import` em `backend-api/src/main/resources/application.yml`. Sem `MERCADO_ONE_JWT_SECRET`, o Maven termina com `BUILD FAILURE`.
 
 ```env
 MERCADO_ONE_DB_NAME=mercado_one
@@ -30,15 +30,15 @@ MERCADO_ONE_SEED_ADMIN_LOGIN=admin
 MERCADO_ONE_SEED_ADMIN_PASSWORD=admin123
 ```
 
-A API nao le `MERCADO_ONE_DB_NAME` nem `MERCADO_ONE_DB_PORT` diretamente. O JDBC default e:
+A API não lê `MERCADO_ONE_DB_NAME` nem `MERCADO_ONE_DB_PORT` diretamente. O JDBC default é:
 
 ```text
 MERCADO_ONE_DATABASE_URL=jdbc:postgresql://localhost:5432/mercado_one
 ```
 
-Se mudar nome ou porta do banco no Compose, ajuste tambem `MERCADO_ONE_DATABASE_URL` no `.env`. Essa chave nao esta no `.env.example` porque o default da API coincide com os defaults do Compose.
+Se mudar nome ou porta do banco no Compose, ajuste também `MERCADO_ONE_DATABASE_URL` no `.env`. Essa chave não está no `.env.example` porque o default da API coincide com os defaults do Compose.
 
-As credenciais default sao apenas para desenvolvimento local. O seed so roda quando `MERCADO_ONE_SEED_ADMIN_ENABLED=true`.
+As credenciais default são apenas para desenvolvimento local. O seed só roda quando `MERCADO_ONE_SEED_ADMIN_ENABLED=true`.
 
 ## Banco local
 
@@ -48,7 +48,7 @@ Na raiz do projeto:
 docker compose -f infra/docker-compose.yml up -d
 ```
 
-O Compose usa o diretorio de `infra/docker-compose.yml` como project directory. Interpolacao `${MERCADO_ONE_*}` vem do ambiente do shell, de `infra/.env` se existir, ou dos defaults no YAML. O `.env` da raiz alimenta a API, nao o Compose, salvo se as variaveis ja estiverem no shell.
+O Compose usa o diretório de `infra/docker-compose.yml` como project directory. Interpolação `${MERCADO_ONE_*}` vem do ambiente do shell, de `infra/.env` se existir, ou dos defaults no YAML. O `.env` da raiz alimenta a API, não o Compose, salvo se as variáveis já estiverem no shell.
 
 Verifique o container:
 
@@ -63,12 +63,12 @@ cd backend-api
 mvn spring-boot:run
 ```
 
-Endpoints uteis:
+Endpoints úteis:
 
-- `http://localhost:8080/actuator/health` (publico)
-- `http://localhost:8080/api/system/info` (publico)
+- `http://localhost:8080/actuator/health` (público)
+- `http://localhost:8080/api/system/info` (público)
 
-`GET /actuator/info` exige autenticacao. CORS da API cobre `/api/**` para as origens de `MERCADO_ONE_CORS_ALLOWED_ORIGINS`. O default local e `http://localhost:4200` e `http://127.0.0.1:4200`. A porta HTTP da API e `PORT`, se existir, senao `MERCADO_ONE_API_PORT` (default `8080`).
+`GET /actuator/info` exige autenticação. CORS da API cobre `/api/**` para as origens de `MERCADO_ONE_CORS_ALLOWED_ORIGINS`. O default local é `http://localhost:4200` e `http://127.0.0.1:4200`. A porta HTTP da API é `PORT`, se existir, senão `MERCADO_ONE_API_PORT` (default `8080`).
 
 ## Admin web
 
@@ -86,7 +86,7 @@ Build:
 npm run build
 ```
 
-Saida em `output/admin-web-dist` (pasta `output/` ignorada pelo git). Cache do CLI em `output/angular-cache`.
+Saída em `output/admin-web-dist` (pasta `output/` ignorada pelo git). Cache do CLI em `output/angular-cache`.
 
 `npm run build` usa `apiBaseUrl` vazio. Para um admin publicado fora da origem da API:
 
@@ -108,9 +108,9 @@ mvn javafx:run
 
 ## Troubleshooting
 
-- Se `mvn` nao for reconhecido, instale Maven ou ajuste o PATH.
-- Se `npm` falhar com `npm-cli.js` ausente, repare a instalacao do Node/npm antes de rodar os comandos Angular.
-- Se `mvn spring-boot:run` falhar com `Could not resolve placeholder 'MERCADO_ONE_JWT_SECRET'`, confirme se `.env` existe na raiz e contem essa chave.
-- Se a API nao conectar no banco, confirme se o container `mercado-one-postgres` esta saudavel e se `MERCADO_ONE_DATABASE_URL` bate com host/porta/nome reais.
+- Se `mvn` não for reconhecido, instale Maven ou ajuste o PATH.
+- Se `npm` falhar com `npm-cli.js` ausente, repare a instalação do Node/npm antes de rodar os comandos Angular.
+- Se `mvn spring-boot:run` falhar com `Could not resolve placeholder 'MERCADO_ONE_JWT_SECRET'`, confirme se `.env` existe na raiz e contém essa chave.
+- Se a API não conectar no banco, confirme se o container `mercado-one-postgres` está saudável e se `MERCADO_ONE_DATABASE_URL` bate com host/porta/nome reais.
 - Se a porta `5432` ou `8080` estiver ocupada, ajuste `MERCADO_ONE_DB_PORT` **e** `MERCADO_ONE_DATABASE_URL`, ou `MERCADO_ONE_API_PORT`.
 - Se o admin autenticar mas as chamadas seguintes falharem com CORS, use origem `http://localhost:4200` (ou `127.0.0.1:4200`) e mantenha a API em `8080`.

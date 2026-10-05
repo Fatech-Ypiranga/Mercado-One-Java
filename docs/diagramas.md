@@ -1,26 +1,26 @@
 # Diagramas UML e Mermaid
 
-Este documento reune diagramas versionaveis em Mermaid para explicar a arquitetura, o modelo de dominio e os fluxos criticos do Mercado One. Os diagramas refletem o estado atual do projeto: monorepo com administrativo web, API central, PDV desktop offline-first, PostgreSQL servidor e SQLite local do PDV.
+Este documento reúne diagramas versionáveis em Mermaid para explicar a arquitetura, o modelo de domínio e os fluxos críticos do Mercado One. Os diagramas refletem o estado atual do projeto: monorepo com administrativo web, API central, PDV desktop offline-first, PostgreSQL servidor e SQLite local do PDV.
 
-Use estes diagramas como ponto de entrada antes de abrir o codigo. Para detalhes normativos, consulte tambem `README.md`, `CONTEXT.md`, `docs/arquitetura.md`, `docs/api-contratos.md`, `docs/dados-e-migracoes.md` e `docs/offline-pdv-sync.md`.
+Use estes diagramas como ponto de entrada antes de abrir o código. Para detalhes normativos, consulte também `README.md`, `CONTEXT.md`, `docs/arquitetura.md`, `docs/api-contratos.md`, `docs/dados-e-migracoes.md` e `docs/offline-pdv-sync.md`.
 
-A fonte normativa dos fluxos e o Mermaid deste arquivo.
+A fonte normativa dos fluxos é o Mermaid deste arquivo.
 
-## Indice
+## Índice
 
 1. [Componentes do sistema](#componentes-do-sistema)
 2. [Arquitetura do backend](#arquitetura-do-backend)
-3. [Dominio principal](#dominio-principal)
+3. [Domínio principal](#domínio-principal)
 4. [Banco servidor](#banco-servidor)
-5. [Login e sessao](#login-e-sessao)
+5. [Login e sessão](#login-e-sessão)
 6. [Venda confirmada no servidor](#venda-confirmada-no-servidor-post-apisales)
-7. [Venda no PDV](#venda-no-pdv-fila-local-e-sincronizacao)
+7. [Venda no PDV](#venda-no-pdv-fila-local-e-sincronização)
 8. [Estado da venda offline local](#estado-da-venda-offline-local)
 9. [Fluxo de estoque](#fluxo-de-estoque)
 
 ## Componentes do sistema
 
-Use este diagrama para entender os executaveis do monorepo, os bancos usados e os contratos entre Admin Web, Backend API e PDV Desktop.
+Use este diagrama para entender os executáveis do monorepo, os bancos usados e os contratos entre Admin Web, Backend API e PDV Desktop.
 
 ```mermaid
 flowchart LR
@@ -32,18 +32,18 @@ flowchart LR
     end
 
     Postgres[("PostgreSQL 18\nbanco servidor")]
-    Sqlite[("SQLite local\ncatalogo e fila offline")]
+    Sqlite[("SQLite local\ncatálogo e fila offline")]
 
     Admin -->|"HTTP JSON / ApiEnvelope\ncookie HttpOnly mercado_one_admin_session"| Api
     Pdv -->|"HTTP JSON / ApiEnvelope\nAuthorization: Bearer JWT"| Api
     Api -->|"JPA + Flyway"| Postgres
-    Infra -->|"sobe servico postgres"| Postgres
-    Pdv -->|"preserva venda antes da rede\ncatalogo local e tentativas"| Sqlite
+    Infra -->|"sobe serviço postgres"| Postgres
+    Pdv -->|"preserva venda antes da rede\ncatálogo local e tentativas"| Sqlite
 ```
 
 ## Arquitetura do backend
 
-Use este diagrama para localizar responsabilidades no backend. As fatias de negocio vivem em `modules/`; contratos HTTP transversais ficam em `api/common`; configuracoes compartilhadas ficam em `infrastructure`.
+Use este diagrama para localizar responsabilidades no backend. As fatias de negócio vivem em `modules/`; contratos HTTP transversais ficam em `api/common`; configurações compartilhadas ficam em `infrastructure`.
 
 ```mermaid
 flowchart TB
@@ -54,24 +54,24 @@ flowchart TB
         Infra["infrastructure\nSecurityConfig,\nJwtAuthenticationFilter"]
 
         subgraph Modules["modules"]
-            Access["access\nusuarios, autenticacao,\nperfis e JWT"]
+            Access["access\nusuários, autenticação,\nperfis e JWT"]
             Catalog["catalog\ncategorias e produtos"]
             Customer["customer\nclientes e busca operacional"]
             Supplier["supplier\nfornecedores"]
-            Inventory["inventory\nsaldos, entradas,\najustes e movimentacoes"]
-            Sales["sales\nvendas, itens,\npagamentos e relatorios"]
+            Inventory["inventory\nsaldos, entradas,\najustes e movimentações"]
+            Sales["sales\nvendas, itens,\npagamentos e relatórios"]
             Offline["offline\nsync e conflitos\nde venda offline"]
-            Audit["audit\neventos imutaveis"]
-            System["system\ninfo tecnica"]
+            Audit["audit\neventos imutáveis"]
+            System["system\ninfo técnica"]
         end
     end
 
     Database[("PostgreSQL\nschema Flyway")]
 
     Client -->|"contratos REST"| Infra
-    Infra -->|"autenticacao e autorizacao"| Access
+    Infra -->|"autenticação e autorização"| Access
     Infra --> Common
-    Common -.->|"envelope e erro padrao"| Modules
+    Common -.->|"envelope e erro padrão"| Modules
     Modules -->|"JPA repositories"| Database
 
     Sales -->|"consulta produto ativo"| Catalog
@@ -79,17 +79,17 @@ flowchart TB
     Sales -->|"baixa de estoque"| Inventory
     Sales -->|"audita venda"| Audit
     Inventory -->|"fornecedor opcional"| Supplier
-    Inventory -->|"audita movimentacao"| Audit
+    Inventory -->|"audita movimentação"| Audit
     Offline -->|"valida/finaliza venda offline"| Sales
-    Offline -->|"audita conflito e resolucao"| Audit
+    Offline -->|"audita conflito e resolução"| Audit
 
     classDef boundary fill:#f8f8f8,stroke:#888,color:#222
     class Backend,Modules boundary
 ```
 
-## Dominio principal
+## Domínio principal
 
-Use este diagrama para entender as entidades persistidas e enums centrais. Ele omite controllers, DTOs e campos fiscais detalhados para manter foco no dominio.
+Use este diagrama para entender as entidades persistidas e enums centrais. Ele omite controllers, DTOs e campos fiscais detalhados para manter foco no domínio.
 
 ```mermaid
 classDiagram
@@ -243,7 +243,7 @@ classDiagram
 
 ## Banco servidor
 
-Use este ERD para revisar as tabelas servidoras criadas pelas migrations Flyway de `V2` a `V7`. O SQLite local do PDV aparece em diagramas separados porque nao e fonte primaria de cadastro.
+Use este ERD para revisar as tabelas servidoras criadas pelas migrations Flyway de `V2` a `V7`. O SQLite local do PDV aparece em diagramas separados porque não é fonte primária de cadastro.
 
 ```mermaid
 erDiagram
@@ -371,7 +371,7 @@ erDiagram
     app_users ||--o{ inventory_movements : cria
     app_users ||--o{ sales : opera
     customers ||--o{ sales : compra
-    sales ||--|{ sale_items : contem
+    sales ||--|{ sale_items : contém
     catalog_products ||--o{ sale_items : vendido_em
     sales ||--|{ sale_payments : pago_por
     customers ||--o{ offline_sale_conflicts : aparece_em
@@ -381,9 +381,9 @@ erDiagram
     app_users ||--o{ audit_events : ator
 ```
 
-## Login e sessao
+## Login e sessão
 
-Use este diagrama para comparar o login do Admin Web e do PDV. O mesmo endpoint autentica usuario ativo, mas o Admin Web usa cookie HttpOnly e o PDV usa token Bearer.
+Use este diagrama para comparar o login do Admin Web e do PDV. O mesmo endpoint autentica usuário ativo, mas o Admin Web usa cookie HttpOnly e o PDV usa token Bearer.
 
 ```mermaid
 sequenceDiagram
@@ -398,19 +398,19 @@ sequenceDiagram
         Pessoa->>Admin: informa login e senha
         Admin->>Api: POST /api/auth/login
         Api->>Auth: autenticar credenciais
-        Auth->>Users: buscar usuario ativo por login
+        Auth->>Users: buscar usuário ativo por login
         Users-->>Auth: AppUser
-        Auth-->>Api: usuario + JWT
+        Auth-->>Api: usuário + JWT
         Api-->>Admin: ApiEnvelope<LoginResponse> + cookie HttpOnly
         Admin->>Api: GET /api/auth/me com cookie
-        Api-->>Admin: usuario atual e perfil
+        Api-->>Admin: usuário atual e perfil
     else Login pelo PDV Desktop
         Pessoa->>Pdv: informa login e senha
         Pdv->>Api: POST /api/auth/login
         Api->>Auth: autenticar credenciais
-        Auth->>Users: buscar usuario ativo por login
+        Auth->>Users: buscar usuário ativo por login
         Users-->>Auth: AppUser
-        Auth-->>Api: usuario + JWT
+        Auth-->>Api: usuário + JWT
         Api-->>Pdv: ApiEnvelope<LoginResponse>
         Pdv->>Api: chamadas protegidas com Authorization Bearer JWT
     end
@@ -418,7 +418,7 @@ sequenceDiagram
 
 ## Venda confirmada no servidor (`POST /api/sales`)
 
-Use este diagrama para o contrato HTTP de venda com preco vigente do servidor. A UI do PDV **nao** dispara este endpoint; o caixa atual usa o fluxo da secao seguinte. Testes de `SalesController` e `OnlineSaleClient.finalizeSale` exercitam este contrato.
+Use este diagrama para o contrato HTTP de venda com preço vigente do servidor. A UI do PDV **não** dispara este endpoint; o caixa atual usa o fluxo da seção seguinte. Testes de `SalesController` e `OnlineSaleClient.finalizeSale` exercitam este contrato.
 
 ```mermaid
 sequenceDiagram
@@ -444,7 +444,7 @@ sequenceDiagram
         Sales->>Products: findById(productId)
         Products->>Db: consultar produto
         Db-->>Products: Product ativo
-        Sales->>Sales: calcular item com preco vigente
+        Sales->>Sales: calcular item com preço vigente
     end
 
     Sales->>Sales: validar pagamentos iguais ao total
@@ -452,7 +452,7 @@ sequenceDiagram
 
     loop para cada item salvo
         Sales->>Inventory: registerSaleOut(produto, quantidade)
-        Inventory->>Db: bloquear saldo e gravar movimentacao SALE
+        Inventory->>Db: bloquear saldo e gravar movimentação SALE
     end
 
     Sales->>Audit: record(SALE_CONFIRMED)
@@ -461,9 +461,9 @@ sequenceDiagram
     Api-->>ClienteHttp: ApiEnvelope<Sale>
 ```
 
-## Venda no PDV (fila local e sincronizacao)
+## Venda no PDV (fila local e sincronização)
 
-Use este diagrama para o fluxo real da UI JavaFX: a venda e gravada localmente antes de qualquer tentativa de rede, inclusive quando a API esta no ar. Conflitos ou falhas nao apagam o registro original. `ACCEPT`/`REJECT` no admin nao alteram o SQLite do PDV.
+Use este diagrama para o fluxo real da UI JavaFX: a venda é gravada localmente antes de qualquer tentativa de rede, inclusive quando a API está no ar. Conflitos ou falhas não apagam o registro original. `ACCEPT`/`REJECT` no admin não alteram o SQLite do PDV.
 
 ```mermaid
 sequenceDiagram
@@ -492,8 +492,8 @@ sequenceDiagram
         Api-->>Pdv: ApiEnvelope<OfflineSaleSyncResult>
         Pdv->>Queue: markSent(localSaleId, remoteSaleId)
         Queue->>Sqlite: status SENT + tentativa
-    else conflito de preco, produto, estoque ou pagamento
-        Offline->>Sqlite: nao altera SQLite do PDV
+    else conflito de preço, produto, estoque ou pagamento
+        Offline->>Sqlite: não altera SQLite do PDV
         Offline->>Offline: salvar OfflineSaleConflictRecord
         Offline-->>Api: status CONFLICT + conflitos
         Api-->>Pdv: ApiEnvelope<OfflineSaleSyncResult>
@@ -503,7 +503,7 @@ sequenceDiagram
         Api-->>Admin: conflitos pendentes
         Admin->>Api: POST /api/offline/sales/conflicts/{id}/resolve
         Api->>Offline: ACCEPT ou REJECT
-    else falha tecnica de rede ou servidor
+    else falha técnica de rede ou servidor
         Api--xPdv: erro ou indisponibilidade
         Pdv->>Queue: markError(localSaleId, mensagem)
         Queue->>Sqlite: status ERROR + tentativa
@@ -512,7 +512,7 @@ sequenceDiagram
 
 ## Estado da venda offline local
 
-Use este diagrama para revisar o ciclo de vida persistido no SQLite do PDV. `PENDING`, `ERROR` e `CONFLICT` mantem a venda local preservada.
+Use este diagrama para revisar o ciclo de vida persistido no SQLite do PDV. `PENDING`, `ERROR` e `CONFLICT` mantêm a venda local preservada.
 
 ```mermaid
 stateDiagram-v2
@@ -520,7 +520,7 @@ stateDiagram-v2
 
     PENDING --> SENT: API aceita sync
     PENDING --> CONFLICT: API registra conflito
-    PENDING --> ERROR: falha tecnica
+    PENDING --> ERROR: falha técnica
 
     ERROR --> SENT: reenvio no login aceito
     ERROR --> CONFLICT: reenvio no login gera conflito
@@ -534,21 +534,21 @@ stateDiagram-v2
     end note
 
     note right of CONFLICT
-        Conflito nao apaga a venda.
+        Conflito não apaga a venda.
         Admin Web aceita ou rejeita
-        a pendencia no servidor.
+        a pendência no servidor.
     end note
 ```
 
 ## Fluxo de estoque
 
-Use este diagrama para entender as tres origens de movimentacao de estoque no MVP: entrada, ajuste manual e baixa por venda.
+Use este diagrama para entender as três origens de movimentação de estoque no MVP: entrada, ajuste manual e baixa por venda.
 
 ```mermaid
 flowchart TB
-    Start([Operacao de estoque])
+    Start([Operação de estoque])
 
-    Start --> Choice{Tipo de operacao}
+    Start --> Choice{Tipo de operação}
 
     Choice -->|"Entrada"| Entry["Registrar entrada\nproduto ativo, quantidade,\nfornecedor opcional"]
     Choice -->|"Ajuste"| Adjustment["Registrar ajuste manual\nnova quantidade e justificativa"]
@@ -566,16 +566,16 @@ flowchart TB
     MovementAdjustment --> AuditAdjustment["Auditar INVENTORY_ADJUSTMENT"]
     MovementSale --> AuditSale["Auditar INVENTORY_SALE_OUT"]
 
-    AuditEntry --> Current["Saldo atual atualizado\ne movimentacao imutavel"]
+    AuditEntry --> Current["Saldo atual atualizado\ne movimentação imutável"]
     AuditAdjustment --> Current
     AuditSale --> Current
 
-    Current --> Reports["Consultas e relatorios\nsaldos, movimentacoes,\nvendas e produtos mais vendidos"]
+    Current --> Reports["Consultas e relatórios\nsaldos, movimentações,\nvendas e produtos mais vendidos"]
 ```
 
 ## Fora do escopo destes diagramas
 
-- Casos de uso detalhados: o backlog MVP ja comunica esse escopo com mais precisao.
-- Deployment cloud ou producao: a infraestrutura documentada hoje e local.
-- Diagramas de telas Angular ou JavaFX: o uso das telas esta em `docs/uso-admin-web.md` e `docs/uso-pdv.md`.
-- Modulos fora do MVP, como NFC-e, NF-e, TEF, financeiro completo, multi-loja, e-commerce ou aplicativo mobile.
+- Casos de uso detalhados: o backlog MVP já comunica esse escopo com mais precisão.
+- Deployment cloud ou produção: a infraestrutura documentada hoje é local.
+- Diagramas de telas Angular ou JavaFX: o uso das telas está em `docs/uso-admin-web.md` e `docs/uso-pdv.md`.
+- Módulos fora do MVP, como NFC-e, NF-e, TEF, financeiro completo, multi-loja, e-commerce ou aplicativo mobile.

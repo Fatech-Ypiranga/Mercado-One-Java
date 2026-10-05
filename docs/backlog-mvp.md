@@ -1,132 +1,132 @@
 # Backlog MVP
 
-Este backlog traduz os requisitos atuais em fatias implementaveis. Itens marcados descrevem trabalho ja existente no codigo. Itens abertos descrevem lacunas reais, nao ideias novas.
+Este backlog traduz os requisitos atuais em fatias implementáveis. Itens marcados descrevem trabalho já existente no código. Itens abertos descrevem lacunas reais, não ideias novas.
 
 ## P1 - Base Operacional
 
-- [x] Implementar autenticacao real no backend.
-- [x] Persistir usuarios com nome, login/email, senha protegida, perfil e status.
-- [x] Aplicar autorizacao por perfil.
-- [x] Criar telas administrativas de usuarios.
+- [x] Implementar autenticação real no backend.
+- [x] Persistir usuários com nome, login/email, senha protegida, perfil e status.
+- [x] Aplicar autorização por perfil.
+- [x] Criar telas administrativas de usuários.
 - [x] Implementar cadastro de categorias.
-- [x] Implementar cadastro de produtos com dados fiscais preparatorios.
-- [x] Criar consulta de produtos por nome, SKU e codigo de barras.
+- [x] Implementar cadastro de produtos com dados fiscais preparatórios.
+- [x] Criar consulta de produtos por nome, SKU e código de barras.
 - [x] Impedir uso de produto inativo em novas vendas.
 
-Aceite minimo:
+Aceite mínimo:
 
-- Usuario inativo nao autentica.
-- Operador de caixa nao acessa area administrativa sensivel (nao ha rotas de `OPERADOR_CAIXA` no admin web).
-- Produto ativo fica disponivel para consulta e venda.
-- Produto inativo nao aparece para nova venda.
+- Usuário inativo não autentica.
+- Operador de caixa não acessa área administrativa sensível (não há rotas de `OPERADOR_CAIXA` no admin web).
+- Produto ativo fica disponível para consulta e venda.
+- Produto inativo não aparece para nova venda.
 
 ## P2 - Estoque Simples
 
 - [x] Persistir saldo por produto.
 - [x] Registrar entrada de estoque com fornecedor opcional.
 - [x] Registrar ajuste manual com justificativa.
-- [x] Registrar movimentacoes imutaveis de estoque.
+- [x] Registrar movimentações imutáveis de estoque.
 - [x] Exibir saldo atual por produto.
-- [x] Exibir movimentacoes por produto.
-- [x] Exibir movimentacoes por periodo.
-- [ ] Entrada como documento com varios produtos em um unico POST (hoje `POST /api/inventory/entries` recebe um produto).
+- [x] Exibir movimentações por produto.
+- [x] Exibir movimentações por período.
+- [ ] Entrada como documento com vários produtos em um único POST (hoje `POST /api/inventory/entries` recebe um produto).
 
-Aceite minimo do que esta entregue:
+Aceite mínimo do que está entregue:
 
 - Entrada confirmada aumenta saldo.
 - Ajuste manual exige justificativa.
-- Cada alteracao de saldo gera movimentacao.
+- Cada alteração de saldo gera movimentação.
 
 ## P3 - Venda no PDV
 
-- [x] Fluxo minimo de venda no PDV com persistencia local antes da rede.
-- [x] Adicionar produtos por codigo, SKU ou busca.
-- [x] Alterar quantidade e remover itens antes da finalizacao.
+- [x] Fluxo mínimo de venda no PDV com persistência local antes da rede.
+- [x] Adicionar produtos por código, SKU ou busca.
+- [x] Alterar quantidade e remover itens antes da finalização.
 - [x] Identificar cliente opcionalmente.
-- [x] Registrar pagamento manual em dinheiro, cartao, PIX ou fiado no contrato da API.
-- [x] Contrato `POST /api/sales` para venda confirmada com preco vigente do servidor.
-- [x] Baixar estoque apos confirmacao no servidor.
+- [x] Registrar pagamento manual em dinheiro, cartão, PIX ou fiado no contrato da API.
+- [x] Contrato `POST /api/sales` para venda confirmada com preço vigente do servidor.
+- [x] Baixar estoque após confirmação no servidor.
 - [x] Gerar comprovante simples sem valor fiscal.
-- [ ] A UI do PDV passar a usar `POST /api/sales` quando a API estiver disponivel (hoje sempre usa fila + `POST /api/offline/sales/sync`).
-- [ ] Desconto simples quando o perfil permitir (requisito conceitual, sem codigo).
-- [ ] Mais de um pagamento na mesma venda na UI do PDV (a API ja aceita lista).
+- [ ] A UI do PDV passar a usar `POST /api/sales` quando a API estiver disponível (hoje sempre usa fila + `POST /api/offline/sales/sync`).
+- [ ] Desconto simples quando o perfil permitir (requisito conceitual, sem código).
+- [ ] Mais de um pagamento na mesma venda na UI do PDV (a API já aceita lista).
 
-Aceite minimo do que esta entregue:
+Aceite mínimo do que está entregue:
 
-- Venda finalizada possui itens, operador, pagamentos, totais e horario.
-- Estoque e reduzido quando o servidor aceita a venda.
-- Venda aceita aparece nos relatorios basicos.
+- Venda finalizada possui itens, operador, pagamentos, totais e horário.
+- Estoque é reduzido quando o servidor aceita a venda.
+- Venda aceita aparece nos relatórios básicos.
 
-## P4 - Clientes e CRM Basico
+## P4 - Clientes e CRM Básico
 
 - [x] Cadastrar cliente com nome, telefone, email, documento opcional e consentimento de contato.
 - [x] Pesquisar cliente por nome, telefone ou documento.
-- [x] Vincular cliente a venda.
-- [x] Consultar historico de compras (`/vendas?customerId=` no admin).
+- [x] Vincular cliente a uma venda.
+- [x] Consultar histórico de compras (`/vendas?customerId=` no admin).
 - [x] Inativar cliente.
 
-Aceite minimo:
+Aceite mínimo:
 
-- Cliente ativo pode ser vinculado a venda.
-- Cliente inativo nao e sugerido para nova venda.
-- Historico lista vendas vinculadas.
+- Cliente ativo pode ser vinculado a uma venda.
+- Cliente inativo não é sugerido para nova venda.
+- Histórico lista vendas vinculadas.
 
 ## P5 - Fornecedores e Recebimento
 
-- [x] Cadastrar fornecedor com nome, documento, telefone, email, observacoes e status.
-- [x] Vincular fornecedor opcional a entrada de estoque.
-- [x] Consultar entradas por periodo e fornecedor.
+- [x] Cadastrar fornecedor com nome, documento, telefone, email, observações e status.
+- [x] Vincular fornecedor opcional a uma entrada de estoque.
+- [x] Consultar entradas por período e fornecedor.
 
-Aceite minimo:
+Aceite mínimo:
 
 - Entrada pode ser registrada sem fornecedor.
-- Entrada com fornecedor preserva o vinculo para consulta.
+- Entrada com fornecedor preserva o vínculo para consulta.
 
 ## P6 - Offline Parcial do PDV
 
-- [x] Carregar catalogo local de produtos ativos e precos vigentes.
+- [x] Carregar catálogo local de produtos ativos e preços vigentes.
 - [x] Registrar venda offline com identificador local.
 - [x] Persistir venda em fila offline.
-- [x] Enviar vendas pendentes quando a comunicacao retornar (login reenvia `PENDING` e `ERROR`).
-- [x] Registrar conflitos de preco, produto, pagamento ou estoque.
+- [x] Enviar vendas pendentes quando a comunicação retornar (login reenvia `PENDING` e `ERROR`).
+- [x] Registrar conflitos de preço, produto, pagamento ou estoque.
 - [x] Preservar venda offline original em conflito ou falha.
-- [ ] Badge de sincronizacao no cabecalho do PDV (enum `SyncStatus` existe, mas nao e atualizado na tela).
-- [ ] Refletir no PDV o aceite/rejeicao feito no admin (o status local permanece `CONFLICT`).
+- [ ] Badge de sincronização no cabeçalho do PDV (enum `SyncStatus` existe, mas não é atualizado na tela).
+- [ ] Refletir no PDV o aceite/rejeição feito no admin (o status local permanece `CONFLICT`).
 
-Aceite minimo do que esta entregue:
+Aceite mínimo do que está entregue:
 
-- Venda no PDV nao depende de comunicacao imediata para ser preservada.
+- Venda no PDV não depende de comunicação imediata para ser preservada.
 - Venda pendente permanece preservada localmente.
-- Venda sincronizada e aceita baixa estoque no servidor.
-- Conflito nao apaga a venda original.
+- A venda sincronizada e aceita pelo servidor reduz o estoque.
+- Conflito não apaga a venda original.
 
-## P7 - Relatorios Operacionais
+## P7 - Relatórios Operacionais
 
-- [x] Vendas por periodo.
+- [x] Vendas por período.
 - [x] Produtos mais vendidos.
 - [x] Saldo atual de estoque.
-- [x] Movimentacoes de estoque por periodo.
+- [x] Movimentações de estoque por período.
 - [x] Vendas por operador.
 - [x] Vendas vinculadas a clientes.
 
-Aceite minimo:
+Aceite mínimo:
 
-- Relatorios respeitam filtros basicos.
-- Operador de caixa nao acessa relatorios gerenciais salvo autorizacao explicita.
+- Relatórios respeitam filtros básicos.
+- Operador de caixa não acessa relatórios gerenciais salvo autorização explícita.
 
-## Lacunas em relacao aos requisitos conceituais
+## Lacunas em relação aos requisitos conceituais
 
-Ainda nao ha codigo para:
+Ainda não há código para:
 
 - Consulta administrativa de `audit_events`.
-- Auditoria de criacao e alteracao de produto.
-- Cancelamento pos-venda.
-- Fluxo dedicado de redefinicao de senha alem do `password` opcional em `PUT /api/access/users/{id}`.
+- Auditoria de criação e alteração de produto.
+- Cancelamento pós-venda.
+- Fluxo dedicado de redefinição de senha além do `password` opcional em `PUT /api/access/users/{id}`.
 
 ## Fora do MVP
 
-- NFC-e, NF-e e integracao SEFAZ.
-- TEF, PIX integrado e conciliacao automatica.
+- NFC-e, NF-e e integração SEFAZ.
+- TEF, PIX integrado e conciliação automática.
 - Financeiro completo, contabilidade e RH.
-- Multi-loja, multi-deposito, lote, validade e inventario ciclico formal.
+- Multi-loja, multi-depósito, lote, validade e inventário cíclico formal.
 - Fidelidade, cashback, campanhas automatizadas, e-commerce e aplicativo mobile nativo.

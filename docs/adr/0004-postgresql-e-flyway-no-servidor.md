@@ -1,3 +1,3 @@
 # PostgreSQL e Flyway no servidor
 
-O backend usa PostgreSQL como banco central e Flyway como fonte de verdade para evolucao do schema. Essa decisao torna mudancas de dados revisaveis e evita depender de criacao automatica de tabelas pelo Hibernate em runtime.
+O backend usa PostgreSQL como banco central e Flyway como fonte de verdade para evolução do schema. Essa decisão torna mudanças de dados revisáveis e evita depender de criação automática de tabelas pelo Hibernate em runtime.
