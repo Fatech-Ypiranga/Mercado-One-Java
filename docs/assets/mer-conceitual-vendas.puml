@@ -1,0 +1,61 @@
+@startchen
+left to right direction
+
+entity "Categoria" as CATEGORIA {
+  Nome
+  Ativa
+}
+entity "Produto" as PRODUTO {
+  Código
+  Nome
+  Preço
+  Unidade
+}
+entity "Item de Venda" as ITEM_VENDA {
+  Quantidade
+  "Preço praticado" as PRECO_PRATICADO
+  Total
+}
+entity "Venda" as VENDA {
+  Identificação
+  Data
+  Total
+  Estado
+}
+entity "Pagamento" as PAGAMENTO {
+  Forma
+  Valor
+}
+entity "Cliente" as CLIENTE {
+  Nome
+  Documento
+  Contato
+  Consentimento
+}
+entity "Usuário" as USUARIO {
+  Nome
+  Login
+  Perfil
+  Ativo
+}
+
+relationship "classifica" as CLASSIFICA { }
+relationship "compõe" as COMPOE { }
+relationship "contém" as CONTEM { }
+relationship "recebe" as RECEBE { }
+relationship "identifica" as IDENTIFICA { }
+relationship "opera" as OPERA { }
+
+CLASSIFICA -(1,1)- CATEGORIA
+CLASSIFICA -(0,N)- PRODUTO
+COMPOE -(1,1)- PRODUTO
+COMPOE -(0,N)- ITEM_VENDA
+CONTEM -(1,1)- VENDA
+CONTEM -(1,N)- ITEM_VENDA
+RECEBE -(1,1)- VENDA
+RECEBE -(1,N)- PAGAMENTO
+IDENTIFICA -(0,1)- CLIENTE
+IDENTIFICA -(0,N)- VENDA
+OPERA -(1,1)- USUARIO
+OPERA -(0,N)- VENDA
+@endchen

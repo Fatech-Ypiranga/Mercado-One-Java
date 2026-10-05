@@ -1,0 +1,52 @@
+@startchen
+left to right direction
+
+entity "Produto" as PRODUTO {
+  Código
+  Nome
+}
+entity "Saldo de Estoque" as SALDO {
+  Quantidade
+  Atualização
+}
+entity "Movimentação" as MOVIMENTACAO {
+  Tipo
+  Variação
+  "Saldo antes" as SALDO_ANTERIOR
+  "Saldo depois" as SALDO_POSTERIOR
+  Motivo
+  Data
+}
+entity "Fornecedor" as FORNECEDOR {
+  Nome
+  Documento
+  Contato
+  Ativo
+}
+entity "Usuário" as USUARIO {
+  Nome
+  Perfil
+}
+entity "Venda" as VENDA {
+  Identificação
+  Total
+  Data
+}
+
+relationship "possui" as POSSUI { }
+relationship "movimenta" as MOVIMENTA { }
+relationship "informa" as INFORMA { }
+relationship "registra" as REGISTRA { }
+relationship "origina baixa" as ORIGINA { }
+
+POSSUI -(1,1)- PRODUTO
+POSSUI -(0,1)- SALDO
+MOVIMENTA -(1,1)- PRODUTO
+MOVIMENTA -(0,N)- MOVIMENTACAO
+INFORMA -(0,1)- FORNECEDOR
+INFORMA -(0,N)- MOVIMENTACAO
+REGISTRA -(0,1)- USUARIO
+REGISTRA -(0,N)- MOVIMENTACAO
+ORIGINA -(0,1)- VENDA
+ORIGINA -(1,N)- MOVIMENTACAO
+@endchen

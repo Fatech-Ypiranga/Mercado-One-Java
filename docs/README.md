@@ -28,6 +28,8 @@ Indice dos guias. O mapa de comandos e pastas e o `README.md` da raiz. O glossar
 | [testes-e-verificacao.md](testes-e-verificacao.md) | Checks e suite conhecida |
 | [api-contratos.md](api-contratos.md) | Envelope, endpoints, erros e autorizacao |
 | [dados-e-migracoes.md](dados-e-migracoes.md) | PostgreSQL, Flyway e SQLite do PDV |
+| [modelo-conceitual.md](modelo-conceitual.md) | MER conceitual com entidades, relacionamentos, atributos e cardinalidades |
+| [dicionario-de-dados.md](dicionario-de-dados.md) | Dicionário físico dos campos persistidos |
 | [seguranca.md](seguranca.md) | JWT, cookie, CORS, perfis e auditoria |
 | [offline-pdv-sync.md](offline-pdv-sync.md) | Fila local, sync e conflitos |
 | [diagramas.md](diagramas.md) | Mermaid de arquitetura, dominio e fluxos |

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1900" height="1150" viewBox="0 0 1900 1150" role="img" aria-label="MER conceitual · Estoque">
+<style>
+svg{background:#fffdf9;font-family:Arial,Helvetica,sans-serif}.title{font-size:38px;font-weight:700;fill:#123d5b;text-anchor:middle}.legend{font-size:17px;fill:#45687d;text-anchor:middle}.entity{fill:#fff;stroke:#08719d;stroke-width:3}.entity-text{font-size:25px;font-weight:700;fill:#123d5b;text-anchor:middle;dominant-baseline:middle}.relation{fill:#eb9500;stroke:#08719d;stroke-width:3}.relation-text{font-size:21px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:middle}.attribute{fill:#fff;stroke:#08719d;stroke-width:2.5}.attr-text{font-size:16px;fill:#123d5b;text-anchor:middle;dominant-baseline:middle}.edge{stroke:#08719d;stroke-width:3;fill:none}.attr-link{stroke:#08719d;stroke-width:2;fill:none}.card{fill:#08719d}.card-text{font-size:18px;font-weight:700;fill:#fff;text-anchor:middle;dominant-baseline:middle}
+</style>
+<text x="950.0" y="58" class="title">MER conceitual · Estoque</text>
+<text x="950.0" y="93" class="legend">Retângulo: entidade · Losango: relacionamento · Elipse: atributo · (mínimo,máximo): cardinalidade</text>
+<line x1="445.0" y1="310.0" x2="515.0" y2="310.0" class="edge"/>
+<line x1="805.0" y1="310.0" x2="735.0" y2="310.0" class="edge"/>
+<line x1="352.7" y1="353.0" x2="584.1" y2="541.7" class="edge"/>
+<line x1="897.3" y1="797.0" x2="665.9" y2="608.3" class="edge"/>
+<line x1="445.0" y1="840.0" x2="515.0" y2="840.0" class="edge"/>
+<line x1="805.0" y1="840.0" x2="735.0" y2="840.0" class="edge"/>
+<line x1="1455.0" y1="840.0" x2="1385.0" y2="840.0" class="edge"/>
+<line x1="1095.0" y1="840.0" x2="1165.0" y2="840.0" class="edge"/>
+<line x1="1544.1" y1="353.0" x2="1317.4" y2="527.4" class="edge"/>
+<line x1="999.9" y1="797.0" x2="1235.5" y2="594.0" class="edge"/>
+<line x1="237.0" y1="267" x2="237.0" y2="184" class="attr-link"/>
+<ellipse cx="237.0" cy="159" rx="60" ry="25" class="attribute"/>
+<text x="237.0" y="159" class="attr-text">código</text>
+<line x1="363.0" y1="267" x2="363.0" y2="184" class="attr-link"/>
+<ellipse cx="363.0" cy="159" rx="60" ry="25" class="attribute"/>
+<text x="363.0" y="159" class="attr-text">nome</text>
+<line x1="887.0" y1="267" x2="887.0" y2="184" class="attr-link"/>
+<ellipse cx="887.0" cy="159" rx="60" ry="25" class="attribute"/>
+<text x="887.0" y="159" class="attr-text">quantidade</text>
+<line x1="1013.0" y1="267" x2="1013.0" y2="184" class="attr-link"/>
+<ellipse cx="1013.0" cy="159" rx="60" ry="25" class="attribute"/>
+<text x="1013.0" y="159" class="attr-text">atualização</text>
+<line x1="237.0" y1="883" x2="237.0" y2="966" class="attr-link"/>
+<ellipse cx="237.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="237.0" y="991" class="attr-text">nome</text>
+<line x1="363.0" y1="883" x2="363.0" y2="966" class="attr-link"/>
+<ellipse cx="363.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="363.0" y="991" class="attr-text">perfil</text>
+<line x1="815.0" y1="883" x2="761.0" y2="966" class="attr-link"/>
+<ellipse cx="761.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="761.0" y="991" class="attr-text">tipo</text>
+<line x1="887.0" y1="883" x2="887.0" y2="966" class="attr-link"/>
+<ellipse cx="887.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="887.0" y="991" class="attr-text">variação</text>
+<line x1="1013.0" y1="883" x2="1013.0" y2="966" class="attr-link"/>
+<ellipse cx="1013.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="1013.0" y="991" class="attr-text">saldo antes</text>
+<line x1="1085.0" y1="883" x2="1139.0" y2="966" class="attr-link"/>
+<ellipse cx="1139.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="1139.0" y="991" class="attr-text">saldo depois</text>
+<line x1="805" y1="883" x2="600" y2="966" class="attr-link"/>
+<ellipse cx="600" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="600" y="991" class="attr-text">motivo</text>
+<line x1="1095" y1="883" x2="1265" y2="966" class="attr-link"/>
+<ellipse cx="1265" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="1265" y="991" class="attr-text">data</text>
+<line x1="1465.0" y1="883" x2="1411.0" y2="966" class="attr-link"/>
+<ellipse cx="1411.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="1411.0" y="991" class="attr-text">nome</text>
+<line x1="1537.0" y1="883" x2="1537.0" y2="966" class="attr-link"/>
+<ellipse cx="1537.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="1537.0" y="991" class="attr-text">documento</text>
+<line x1="1663.0" y1="883" x2="1663.0" y2="966" class="attr-link"/>
+<ellipse cx="1663.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="1663.0" y="991" class="attr-text">contato</text>
+<line x1="1735.0" y1="883" x2="1789.0" y2="966" class="attr-link"/>
+<ellipse cx="1789.0" cy="991" rx="60" ry="25" class="attribute"/>
+<text x="1789.0" y="991" class="attr-text">ativo</text>
+<line x1="1474" y1="267" x2="1474" y2="184" class="attr-link"/>
+<ellipse cx="1474" cy="159" rx="60" ry="25" class="attribute"/><text x="1474" y="159" class="attr-text">identificação</text>
+<line x1="1600" y1="267" x2="1600" y2="184" class="attr-link"/>
+<ellipse cx="1600" cy="159" rx="60" ry="25" class="attribute"/><text x="1600" y="159" class="attr-text">total</text>
+<line x1="1726" y1="267" x2="1726" y2="184" class="attr-link"/>
+<ellipse cx="1726" cy="159" rx="60" ry="25" class="attribute"/><text x="1726" y="159" class="attr-text">data</text>
+<rect x="155" y="267" width="290" height="86" class="entity"/><text x="300" y="310" class="entity-text">PRODUTO</text>
+<rect x="805" y="267" width="290" height="86" class="entity"/><text x="950" y="310" class="entity-text">SALDO DE ESTOQUE</text>
+<rect x="155" y="797" width="290" height="86" class="entity"/><text x="300" y="840" class="entity-text">USUÁRIO</text>
+<rect x="805" y="797" width="290" height="86" class="entity"/><text x="950" y="840" class="entity-text">MOVIMENTAÇÃO</text>
+<rect x="1455" y="797" width="290" height="86" class="entity"/><text x="1600" y="840" class="entity-text">FORNECEDOR</text>
+<rect x="1455" y="267" width="290" height="86" class="entity"/><text x="1600" y="310" class="entity-text">VENDA</text>
+<polygon points="515,310 625,257 735,310 625,363" class="relation"/><text x="625" y="310" class="relation-text">possui</text>
+<polygon points="515,575 625,522 735,575 625,628" class="relation"/><text x="625" y="575" class="relation-text">movimenta</text>
+<polygon points="515,840 625,787 735,840 625,893" class="relation"/><text x="625" y="840" class="relation-text">registra</text>
+<polygon points="1165,840 1275,787 1385,840 1275,893" class="relation"/><text x="1275" y="840" class="relation-text">informa</text>
+<polygon points="1165,560 1275,507 1385,560 1275,613" class="relation"/><text x="1275" y="560" class="relation-text">origina baixa</text>
+<rect x="430.0" y="379.0" width="80" height="32" rx="3" class="card"/><text x="470.0" y="395.0" class="card-text">(1,1)</text>
+<rect x="740.0" y="209.0" width="80" height="32" rx="3" class="card"/><text x="780.0" y="225.0" class="card-text">(0,1)</text>
+<rect x="278.4" y="418.7" width="80" height="32" rx="3" class="card"/><text x="318.4" y="434.7" class="card-text">(1,1)</text>
+<rect x="891.6" y="699.3" width="80" height="32" rx="3" class="card"/><text x="931.6" y="715.3" class="card-text">(0,N)</text>
+<rect x="430.0" y="909.0" width="80" height="32" rx="3" class="card"/><text x="470.0" y="925.0" class="card-text">(0,1)</text>
+<rect x="740.0" y="739.0" width="80" height="32" rx="3" class="card"/><text x="780.0" y="755.0" class="card-text">(0,N)</text>
+<rect x="1390.0" y="739.0" width="80" height="32" rx="3" class="card"/><text x="1430.0" y="755.0" class="card-text">(0,1)</text>
+<rect x="1080.0" y="909.0" width="80" height="32" rx="3" class="card"/><text x="1120.0" y="925.0" class="card-text">(0,N)</text>
+<rect x="1430" y="424" width="80" height="32" rx="3" class="card"/><text x="1470" y="440" class="card-text">(0,1)</text>
+<rect x="1020" y="684" width="80" height="32" rx="3" class="card"/><text x="1060" y="700" class="card-text">(1,N)</text>
+<text x="950.0" y="1112" class="legend">Cardinalidade ao lado da entidade: ocorrências dela para uma ocorrência da entidade oposta.</text></svg>

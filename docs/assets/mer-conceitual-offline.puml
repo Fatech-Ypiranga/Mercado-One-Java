@@ -1,0 +1,88 @@
+@startchen
+left to right direction
+
+entity "Venda Local" as VENDA_LOCAL {
+  Identificação
+  Data
+  "Estado sync" as ESTADO_SYNC
+}
+entity "Item de Venda" as ITEM_VENDA {
+  Quantidade
+  "Preço praticado" as PRECO_PRATICADO
+}
+entity "Produto" as PRODUTO {
+  Código
+  Nome
+}
+entity "Pagamento" as PAGAMENTO {
+  Forma
+  Valor
+}
+entity "Cliente" as CLIENTE {
+  Nome
+  Documento
+}
+entity "Tentativa de Sincronização" as TENTATIVA {
+  Resultado
+  Mensagem
+  Data
+}
+entity "Conflito" as CONFLITO {
+  Motivo
+  Estado
+  Data
+}
+entity "Venda" as VENDA {
+  Identificação
+  Total
+  Data
+}
+entity "Usuário" as USUARIO {
+  Nome
+  Perfil
+}
+entity "Evento de Auditoria" as AUDITORIA {
+  Ação
+  Alvo
+  Resumo
+  Data
+}
+
+relationship "contém" as CONTEM { }
+relationship "referencia" as REFERENCIA { }
+relationship "recebe" as RECEBE { }
+relationship "identifica" as IDENTIFICA { }
+relationship "registra" as REGISTRA { }
+relationship "gera" as GERA { }
+relationship "opera" as OPERA { }
+relationship "resolve" as RESOLVE { }
+relationship "aceita como" as ACEITA { }
+relationship "confirma como" as CONFIRMA { }
+relationship "atua em" as ATUA { }
+relationship "documenta" as DOCUMENTA { }
+
+CONTEM -(1,1)- VENDA_LOCAL
+CONTEM -(1,N)- ITEM_VENDA
+REFERENCIA -(0,N)- ITEM_VENDA
+REFERENCIA -(1,1)- PRODUTO
+RECEBE -(1,1)- VENDA_LOCAL
+RECEBE -(1,N)- PAGAMENTO
+IDENTIFICA -(0,1)- CLIENTE
+IDENTIFICA -(0,N)- VENDA_LOCAL
+REGISTRA -(1,1)- VENDA_LOCAL
+REGISTRA -(0,N)- TENTATIVA
+GERA -(1,1)- VENDA_LOCAL
+GERA -(0,1)- CONFLITO
+OPERA -(1,1)- USUARIO
+OPERA -(0,N)- CONFLITO
+RESOLVE -(0,1)- USUARIO
+RESOLVE -(0,N)- CONFLITO
+ACEITA -(0,1)- CONFLITO
+ACEITA -(0,1)- VENDA
+CONFIRMA -(0,1)- VENDA_LOCAL
+CONFIRMA -(0,1)- VENDA
+ATUA -(0,1)- USUARIO
+ATUA -(0,N)- AUDITORIA
+DOCUMENTA -(0,1)- VENDA
+DOCUMENTA -(0,N)- AUDITORIA
+@endchen
