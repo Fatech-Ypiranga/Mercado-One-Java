@@ -1,6 +1,7 @@
 package com.mercadoone.backend.modules.access.api;
 
 import com.mercadoone.backend.api.common.ApiEnvelope;
+import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
 import com.mercadoone.backend.modules.access.application.UserManagementService;
 import com.mercadoone.backend.modules.access.application.UserManagementService.UserData;
 import com.mercadoone.backend.modules.access.domain.AppUser;
@@ -10,6 +11,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,16 +54,32 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ApiEnvelope<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
-        return ApiEnvelope.ok(UserResponse.from(userManagementService.createUser(request.toData())));
+    public ApiEnvelope<UserResponse> create(
+            @Valid @RequestBody CreateUserRequest request,
+            @AuthenticationPrincipal AuthenticatedUser actor
+    ) {
+        return ApiEnvelope.ok(UserResponse.from(userManagementService.createUser(request.toData(), actor.id())));
     }
 
     @PutMapping("/users/{id}")
     public ApiEnvelope<UserResponse> update(
             @PathVariable Long id,
-            @Valid @RequestBody UpdateUserRequest request
+            @Valid @RequestBody UpdateUserRequest request,
+            @AuthenticationPrincipal AuthenticatedUser actor
     ) {
-        return ApiEnvelope.ok(UserResponse.from(userManagementService.updateUser(id, request.toData())));
+        return ApiEnvelope.ok(UserResponse.from(userManagementService.updateUser(id, request.toData(), actor.id())));
+    }
+
+    @PostMapping("/users/{id}/password")
+    public ApiEnvelope<UserResponse> resetPassword(
+            @PathVariable Long id,
+            @Valid @RequestBody ResetPasswordRequest request,
+            @AuthenticationPrincipal AuthenticatedUser actor
+    ) {
+        return ApiEnvelope.ok(UserResponse.from(userManagementService.resetPassword(id, request.password(), actor.id())));
+    }
+
+    public record ResetPasswordRequest(@NotBlank @Size(min = 6, max = 120) String password) {
     }
 
     public record RoleResponse(UserRole value, String label) {
