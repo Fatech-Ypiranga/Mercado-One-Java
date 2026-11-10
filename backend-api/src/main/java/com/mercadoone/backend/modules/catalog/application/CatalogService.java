@@ -1,5 +1,6 @@
 package com.mercadoone.backend.modules.catalog.application;
 
+import com.mercadoone.backend.modules.audit.application.AuditService;
 import com.mercadoone.backend.modules.catalog.domain.Category;
 import com.mercadoone.backend.modules.catalog.domain.Product;
 import com.mercadoone.backend.modules.catalog.domain.Product.ProductData;
@@ -11,17 +12,23 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Service
 public class CatalogService {
 
     private final CategoryRepository categories;
     private final ProductRepository products;
+    private final AuditService auditService;
 
-    CatalogService(CategoryRepository categories, ProductRepository products) {
+    CatalogService(CategoryRepository categories, ProductRepository products, AuditService auditService) {
         this.categories = categories;
         this.products = products;
+        this.auditService = auditService;
     }
 
     @Transactional(readOnly = true)
@@ -47,16 +54,58 @@ public class CatalogService {
     }
 
     @Transactional
-    public Product createProduct(ProductData data, Long categoryId) {
-        return products.save(new Product(data, findCategory(categoryId)));
+    public Product createProduct(ProductData data, Long categoryId, Long actorUserId) {
+        Product product = products.save(new Product(data, findCategory(categoryId)));
+        auditService.record("PRODUCT_CREATED", "catalog_product", product.getId(), actorUserId, snapshot(product));
+        return product;
     }
 
     @Transactional
-    public Product updateProduct(Long id, ProductData data, Long categoryId) {
+    public Product updateProduct(Long id, ProductData data, Long categoryId, Long actorUserId) {
         Product product = products.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Produto nao encontrado."));
+        Map<String, Object> before = snapshot(product);
         product.update(data, findCategory(categoryId));
+        Map<String, Object> after = snapshot(product);
+        Map<String, Object> changes = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : after.entrySet()) {
+            Object previous = before.get(entry.getKey());
+            if (!Objects.equals(normalize(previous), normalize(entry.getValue()))) {
+                changes.put(entry.getKey(), Map.of(
+                        "from", previous == null ? "" : previous,
+                        "to", entry.getValue() == null ? "" : entry.getValue()
+                ));
+            }
+        }
+        auditService.record("PRODUCT_UPDATED", "catalog_product", product.getId(), actorUserId, Map.of(
+                "name", product.getName(),
+                "changes", changes
+        ));
         return product;
+    }
+
+    private static Map<String, Object> snapshot(Product product) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        values.put("name", product.getName());
+        values.put("barcode", product.getBarcode());
+        values.put("sku", product.getSku());
+        values.put("categoryId", product.getCategory().getId());
+        values.put("unit", product.getUnit());
+        values.put("salePrice", product.getSalePrice());
+        values.put("active", product.isActive());
+        values.put("ncm", product.getNcm());
+        values.put("cest", product.getCest());
+        values.put("defaultCfop", product.getDefaultCfop());
+        values.put("merchandiseOrigin", product.getMerchandiseOrigin());
+        values.put("taxClassification", product.getTaxClassification());
+        return values;
+    }
+
+    private static Object normalize(Object value) {
+        if (value instanceof BigDecimal decimal) {
+            return decimal.stripTrailingZeros();
+        }
+        return value;
     }
 
     private Category findCategory(Long id) {

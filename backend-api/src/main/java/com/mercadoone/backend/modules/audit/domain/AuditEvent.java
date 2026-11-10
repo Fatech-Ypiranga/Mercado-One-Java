@@ -51,4 +51,32 @@ public class AuditEvent {
     void prePersist() {
         createdAt = Instant.now();
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public String getEntityType() {
+        return entityType;
+    }
+
+    public String getEntityId() {
+        return entityId;
+    }
+
+    public Long getActorUserId() {
+        return actorUserId;
+    }
+
+    public String getSummaryJson() {
+        return summaryJson;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
 }
