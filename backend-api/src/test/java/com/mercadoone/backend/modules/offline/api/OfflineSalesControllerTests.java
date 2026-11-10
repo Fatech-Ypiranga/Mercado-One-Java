@@ -77,6 +77,28 @@ class OfflineSalesControllerTests {
     }
 
     @Test
+    void offlineSaleWithoutStockBecomesConflictInsteadOfServerError() throws Exception {
+        String token = loginToken();
+        long productId = createProduct(token, "Offline Sem Estoque", "OFF-NOSTOCK", true, "5.00");
+
+        mockMvc.perform(post("/api/offline/sales/sync")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content(syncBody("local-no-stock", productId, "1.000", "5.00", "5.00")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("CONFLICT"))
+                .andExpect(jsonPath("$.data.conflicts[0].code").value("STOCK_INSUFFICIENT"));
+
+        String conflictsResponse = mockMvc.perform(get("/api/offline/sales/conflicts")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        pendingConflictByLocalSale(conflictsResponse, "local-no-stock");
+    }
+
+    @Test
     void rejectsOfflineConflictWithRequiredNote() throws Exception {
         String token = loginToken();
         long productId = createProduct(token, "Offline Arroz", "OFF-002", true, "10.00");

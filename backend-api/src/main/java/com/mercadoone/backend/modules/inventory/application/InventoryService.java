@@ -60,6 +60,13 @@ public class InventoryService {
         return movements.findAll(movementFilters(productId, type, from, to, supplierId), Sort.by("createdAt").descending());
     }
 
+    @Transactional(readOnly = true)
+    public BigDecimal availableQuantity(Long productId) {
+        return balances.findByProductId(productId)
+                .map(InventoryBalance::getQuantity)
+                .orElse(BigDecimal.ZERO);
+    }
+
     @Transactional
     public InventoryMovement registerEntry(EntryData data, Long createdByUserId) {
         Product product = findActiveProduct(data.productId());

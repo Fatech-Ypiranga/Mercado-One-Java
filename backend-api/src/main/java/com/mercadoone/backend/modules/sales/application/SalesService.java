@@ -218,6 +218,10 @@ public class SalesService {
     public List<OfflineSaleConflict> validateOfflineSale(OfflineSaleData data, UserRole operatorRole) {
         List<OfflineSaleConflict> conflicts = new ArrayList<>();
         BigDecimal itemTotal = BigDecimal.ZERO;
+        Map<Long, BigDecimal> requestedByProduct = new HashMap<>();
+        for (OfflineSaleItemData item : data.items()) {
+            requestedByProduct.merge(item.productId(), item.quantity(), BigDecimal::add);
+        }
         for (OfflineSaleItemData item : data.items()) {
             Product product = products.findById(item.productId()).orElse(null);
             if (product == null) {
@@ -232,6 +236,14 @@ public class SalesService {
             }
             itemTotal = itemTotal.add(item.unitPrice().multiply(item.quantity()).setScale(2, RoundingMode.HALF_UP));
         }
+        // Estoque validado antes de qualquer escrita: falha dentro da transacao de finalizacao
+        // marcaria a transacao como rollback-only e impediria o registro do conflito.
+        requestedByProduct.forEach((productId, requested) -> {
+            Product product = products.findById(productId).orElse(null);
+            if (product != null && inventory.availableQuantity(productId).compareTo(requested) < 0) {
+                conflicts.add(new OfflineSaleConflict("STOCK_INSUFFICIENT", "Estoque insuficiente para " + product.getName() + "."));
+            }
+        });
         BigDecimal discount = data.discountAmount() == null
                 ? BigDecimal.ZERO
                 : data.discountAmount().setScale(2, RoundingMode.HALF_UP);

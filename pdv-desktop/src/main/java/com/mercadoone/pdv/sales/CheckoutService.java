@@ -174,9 +174,14 @@ public class CheckoutService {
                     conflicts++;
                 }
             } catch (ApiUnavailableException exception) {
-                lastApiReachable = false;
                 queue.markError(sale.localSaleId(), exception.getMessage());
                 errors++;
+                if (exception.serverError()) {
+                    // 5xx de uma venda nao pode bloquear as demais da fila.
+                    lastApiReachable = true;
+                    continue;
+                }
+                lastApiReachable = false;
                 break;
             } catch (RuntimeException exception) {
                 queue.markError(sale.localSaleId(), exception.getMessage());

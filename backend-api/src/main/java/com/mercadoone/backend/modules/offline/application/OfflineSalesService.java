@@ -54,17 +54,10 @@ public class OfflineSalesService {
             return new OfflineSaleSyncResult("CONFLICT", null, saleConflicts);
         }
 
-        try {
-            Sale sale = salesService.finalizeOfflineSale(data, operatorUserId, operatorRole);
-            return new OfflineSaleSyncResult("SENT", sale, List.of());
-        } catch (IllegalArgumentException exception) {
-            List<OfflineSaleConflict> generatedConflicts = List.of(new OfflineSaleConflict(
-                    "STOCK_OR_PAYMENT",
-                    exception.getMessage()
-            ));
-            saveConflict(data, operatorUserId, generatedConflicts);
-            return new OfflineSaleSyncResult("CONFLICT", null, generatedConflicts);
-        }
+        // Regras de negocio sao verificadas em validateOfflineSale; uma excecao aqui reverte a
+        // transacao inteira e o PDV reenvia depois, quando a validacao captura o conflito.
+        Sale sale = salesService.finalizeOfflineSale(data, operatorUserId, operatorRole);
+        return new OfflineSaleSyncResult("SENT", sale, List.of());
     }
 
     @Transactional(readOnly = true)
