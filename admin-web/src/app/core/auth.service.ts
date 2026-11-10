@@ -104,6 +104,11 @@ export class AuthService {
     return this.isAuthenticated() && session !== null && roles.includes(session.user.perfil);
   }
 
+  /** Rota inicial permitida para o perfil atual. Operador de caixa não acessa o painel gerencial. */
+  homePath(): string {
+    return this.session()?.user.perfil === 'OPERADOR_CAIXA' ? '/meu-caixa' : '/';
+  }
+
   private storeSession(session: AuthSession): void {
     sessionStorage.setItem(SESSION_STATE_KEY, JSON.stringify(session));
     this.session.set(session);

@@ -26,7 +26,7 @@ interface NavigationGroup {
       <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
       <aside class="sidebar" aria-label="Navegação principal" (keydown.escape)="closeNavigation(true)">
         <div class="sidebar-heading">
-          <a class="brand" routerLink="/" (click)="closeNavigation()">
+          <a class="brand" [routerLink]="auth.homePath()" (click)="closeNavigation()">
             <span class="brand-mark" aria-hidden="true">M1</span>
             <span>
               <strong>Mercado One</strong>
@@ -79,7 +79,8 @@ export class AdminShellComponent {
     {
       label: 'Operação',
       items: [
-        { label: 'Início', path: '/' },
+        { label: 'Início', path: '/', roles: ['ADMIN', 'GERENTE', 'ESTOQUISTA'] },
+        { label: 'Meu caixa', path: '/meu-caixa', roles: ['ADMIN', 'GERENTE', 'OPERADOR_CAIXA'] },
         { label: 'Vendas', path: '/vendas', roles: ['ADMIN', 'GERENTE'] },
         { label: 'Offline', path: '/offline', roles: ['ADMIN', 'GERENTE'] },
       ],
@@ -108,6 +109,8 @@ export class AdminShellComponent {
       label: 'Acesso',
       items: [
         { label: 'Usuários', path: '/usuarios', roles: ['ADMIN'] },
+        { label: 'Auditoria', path: '/auditoria', roles: ['ADMIN'] },
+        { label: 'Minha conta', path: '/minha-conta' },
       ],
     },
   ];
