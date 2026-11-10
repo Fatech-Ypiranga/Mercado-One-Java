@@ -49,7 +49,7 @@ describe('SalesService', () => {
     expect(request.request.withCredentials).toBeTrue();
     request.flush({
       success: true,
-      data: { items: [], page: { page: 1, size: 20, totalElements: 0, totalPages: 0 }, totals: { saleCount: 0, totalAmount: 0, totalItems: 0, totalsByPaymentMethod: {} } },
+      data: { items: [], page: { page: 1, size: 20, totalElements: 0, totalPages: 0 }, totals: { saleCount: 0, canceledCount: 0, discountAmount: 0, totalAmount: 0, totalItems: 0, totalsByPaymentMethod: {} } },
       error: null,
       timestamp: new Date().toISOString(),
     });

@@ -17,7 +17,7 @@ describe('SalesPageComponent', () => {
     return {
       items: [],
       page: { page: 0, size: 20, totalElements, totalPages: 1 },
-      totals: { saleCount: totalElements, totalAmount: 0, totalItems: 0, totalsByPaymentMethod: {} },
+      totals: { saleCount: totalElements, canceledCount: 0, discountAmount: 0, totalAmount: 0, totalItems: 0, totalsByPaymentMethod: {} },
     };
   }
 

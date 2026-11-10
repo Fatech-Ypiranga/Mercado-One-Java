@@ -7,7 +7,7 @@ import com.mercadoone.backend.modules.offline.application.OfflineSalesService.Co
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService.LocalSaleRemoteStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineConflictStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineSaleConflictRecord;
-import com.mercadoone.backend.modules.sales.api.SalesController.SaleResponse;
+import com.mercadoone.backend.modules.sales.domain.Sale;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleConflict;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleData;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleItemData;
@@ -123,15 +123,21 @@ public class OfflineSalesController {
 
     public record OfflineSaleSyncResponse(
             String status,
-            SaleResponse sale,
+            SyncedSale sale,
             List<OfflineSaleConflict> conflicts
     ) {
         static OfflineSaleSyncResponse from(OfflineSaleSyncResult result) {
             return new OfflineSaleSyncResponse(
                     result.status(),
-                    result.sale() == null ? null : SaleResponse.from(result.sale()),
+                    result.sale() == null ? null : SyncedSale.from(result.sale()),
                     result.conflicts()
             );
+        }
+    }
+
+    public record SyncedSale(Long id, String clientSaleId, java.time.Instant createdAt, BigDecimal grossAmount, BigDecimal discountAmount, BigDecimal totalAmount) {
+        static SyncedSale from(Sale sale) {
+            return new SyncedSale(sale.getId(), sale.getClientSaleId(), sale.getCreatedAt(), sale.getGrossAmount(), sale.getDiscountAmount(), sale.getTotalAmount());
         }
     }
 

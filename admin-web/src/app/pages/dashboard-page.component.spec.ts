@@ -44,7 +44,7 @@ describe('DashboardPageComponent', () => {
     http.expectOne((request) => request.url.endsWith('/api/offline/sales/conflicts'))
       .flush({ success: true, data: [{ id: 7, localSaleId: 'PDV-7', conflictSummary: 'Preço divergente' }], error: null, timestamp: '' });
     http.expectOne((request) => request.url.endsWith('/api/sales'))
-      .flush({ success: true, data: { items: [], page: { page: 0, size: 1, totalElements: 0, totalPages: 0 }, totals: { saleCount: 2, totalAmount: 35, totalItems: 3, totalsByPaymentMethod: { PIX: 35 } } }, error: null, timestamp: '' });
+      .flush({ success: true, data: { items: [], page: { page: 0, size: 1, totalElements: 0, totalPages: 0 }, totals: { saleCount: 2, canceledCount: 0, discountAmount: 0, totalAmount: 35, totalItems: 3, totalsByPaymentMethod: { PIX: 35 } } }, error: null, timestamp: '' });
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('PDV-7');
@@ -66,9 +66,9 @@ describe('DashboardPageComponent', () => {
     expect(salesRequests.length).toBe(2);
 
     conflictRequests[1].flush({ success: true, data: [{ id: 2, localSaleId: 'PDV-NOVO', conflictSummary: 'Novo' }], error: null, timestamp: '' });
-    salesRequests[1].flush({ success: true, data: { items: [], page: { page: 0, size: 1, totalElements: 0, totalPages: 0 }, totals: { saleCount: 9, totalAmount: 90, totalItems: 9, totalsByPaymentMethod: { CASH: 90 } } }, error: null, timestamp: '' });
+    salesRequests[1].flush({ success: true, data: { items: [], page: { page: 0, size: 1, totalElements: 0, totalPages: 0 }, totals: { saleCount: 9, canceledCount: 0, discountAmount: 0, totalAmount: 90, totalItems: 9, totalsByPaymentMethod: { CASH: 90 } } }, error: null, timestamp: '' });
     conflictRequests[0].flush({ success: true, data: [{ id: 1, localSaleId: 'PDV-ANTIGO', conflictSummary: 'Antigo' }], error: null, timestamp: '' });
-    salesRequests[0].flush({ success: true, data: { items: [], page: { page: 0, size: 1, totalElements: 0, totalPages: 0 }, totals: { saleCount: 1, totalAmount: 10, totalItems: 1, totalsByPaymentMethod: { PIX: 10 } } }, error: null, timestamp: '' });
+    salesRequests[0].flush({ success: true, data: { items: [], page: { page: 0, size: 1, totalElements: 0, totalPages: 0 }, totals: { saleCount: 1, canceledCount: 0, discountAmount: 0, totalAmount: 10, totalItems: 1, totalsByPaymentMethod: { PIX: 10 } } }, error: null, timestamp: '' });
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('PDV-NOVO');

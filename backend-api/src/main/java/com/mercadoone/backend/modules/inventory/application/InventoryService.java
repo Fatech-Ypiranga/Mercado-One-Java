@@ -1,7 +1,7 @@
 package com.mercadoone.backend.modules.inventory.application;
 
 import com.mercadoone.backend.modules.catalog.domain.Product;
-import com.mercadoone.backend.modules.catalog.infrastructure.ProductRepository;
+import com.mercadoone.backend.modules.catalog.application.CatalogService;
 import com.mercadoone.backend.modules.inventory.domain.InventoryBalance;
 import com.mercadoone.backend.modules.inventory.domain.InventoryMovement;
 import com.mercadoone.backend.modules.inventory.domain.InventoryMovement.MovementData;
@@ -24,20 +24,20 @@ import java.util.List;
 @Service
 public class InventoryService {
 
-    private final ProductRepository products;
+    private final CatalogService catalog;
     private final InventoryBalanceRepository balances;
     private final InventoryMovementRepository movements;
     private final SupplierService supplierService;
     private final AuditService auditService;
 
     InventoryService(
-            ProductRepository products,
+            CatalogService catalog,
             InventoryBalanceRepository balances,
             InventoryMovementRepository movements,
             SupplierService supplierService,
             AuditService auditService
     ) {
-        this.products = products;
+        this.catalog = catalog;
         this.balances = balances;
         this.movements = movements;
         this.supplierService = supplierService;
@@ -226,7 +226,7 @@ public class InventoryService {
     }
 
     private Product findActiveProduct(Long productId) {
-        Product product = products.findById(productId)
+        Product product = catalog.findProduct(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Produto nao encontrado."));
         if (!product.isActive()) {
             throw new IllegalArgumentException("Produto inativo nao recebe movimentacao de estoque.");

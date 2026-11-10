@@ -12,39 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class OnlineSaleClientTests {
 
     @Test
-    void buildsBackendSalesContractBody() {
-        String body = OnlineSaleClient.buildRequestBody(
-                10L,
-                new BigDecimal("2.000"),
-                PaymentMethod.PIX,
-                new BigDecimal("15.00")
-        );
-
-        assertEquals(
-                "{\"items\":[{\"productId\":10,\"quantity\":2.000}],\"payments\":[{\"method\":\"PIX\",\"amount\":15.00}]}",
-                body
-        );
-    }
-
-    @Test
-    void buildsSaleBodyWithCustomerAndMultipleItems() {
-        String body = OnlineSaleClient.buildRequestBody(
-                5L,
-                List.of(
-                        new OnlineSaleClient.SaleLine(10L, new BigDecimal("2.000")),
-                        new OnlineSaleClient.SaleLine(11L, new BigDecimal("1.000"))
-                ),
-                PaymentMethod.CASH,
-                new BigDecimal("24.50")
-        );
-
-        assertEquals(
-                "{\"customerId\":5,\"items\":[{\"productId\":10,\"quantity\":2.000},{\"productId\":11,\"quantity\":1.000}],\"payments\":[{\"method\":\"CASH\",\"amount\":24.50}]}",
-                body
-        );
-    }
-
-    @Test
     void logsInAndParsesProductsAndCustomers() {
         List<HttpRequest> requests = new ArrayList<>();
         OnlineSaleClient client = new OnlineSaleClient(request -> {

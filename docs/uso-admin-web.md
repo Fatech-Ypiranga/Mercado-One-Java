@@ -1,6 +1,6 @@
 # Uso do admin web
 
-Este guia descreve o que cada pessoa da loja faz no administrativo. A instalação do ambiente fica em [Desenvolvimento local](desenvolvimento-local.md). O que o sistema ainda não faz fica em [Estado atual](estado-atual.md).
+Este guia descreve o que cada pessoa da loja faz no administrativo. A instalação do ambiente fica em [Desenvolvimento local](desenvolvimento-local.md). O que o sistema ainda não faz fica em [Backlog MVP](backlog-mvp.md).
 
 ## Quem entra
 

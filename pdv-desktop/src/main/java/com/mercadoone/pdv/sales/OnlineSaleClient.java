@@ -123,17 +123,6 @@ public class OnlineSaleClient {
         return data(response.body()).path("id").asLong();
     }
 
-    public void finalizeSale(
-            String apiBaseUrl,
-            String bearerToken,
-            Long customerId,
-            List<SaleLine> items,
-            PaymentMethod paymentMethod,
-            BigDecimal amount
-    ) {
-        sendJson(apiBaseUrl, "/api/sales", bearerToken, buildRequestBody(customerId, items, paymentMethod, amount));
-    }
-
     public OfflineSyncResult syncOfflineSale(String apiBaseUrl, String bearerToken, OfflineSaleSyncRequest request) {
         ApiResponse response = sendJson(apiBaseUrl, "/api/offline/sales/sync", bearerToken, toJson(request));
         JsonNode data = data(response.body());
@@ -167,37 +156,6 @@ public class OnlineSaleClient {
                         textOrNull(node.path("note"))
                 ))
                 .toList();
-    }
-
-    public void finalizeSale(
-            String apiBaseUrl,
-            String bearerToken,
-            long productId,
-            BigDecimal quantity,
-            PaymentMethod paymentMethod,
-            BigDecimal amount
-    ) {
-        finalizeSale(apiBaseUrl, bearerToken, null, List.of(new SaleLine(productId, quantity)), paymentMethod, amount);
-    }
-
-    static String buildRequestBody(Long customerId, List<SaleLine> items, PaymentMethod paymentMethod, BigDecimal amount) {
-        String itemJson = items.stream()
-                .map(item -> "{\"productId\":%d,\"quantity\":%s}".formatted(item.productId(), item.quantity().toPlainString()))
-                .reduce((left, right) -> left + "," + right)
-                .orElse("");
-        String customerJson = customerId == null ? "" : "\"customerId\":%d,".formatted(customerId);
-        return """
-                {%s"items":[%s],"payments":[{"method":"%s","amount":%s}]}
-                """.formatted(customerJson, itemJson, paymentMethod.name(), amount.toPlainString()).trim();
-    }
-
-    static String buildRequestBody(
-            long productId,
-            BigDecimal quantity,
-            PaymentMethod paymentMethod,
-            BigDecimal amount
-    ) {
-        return buildRequestBody(null, List.of(new SaleLine(productId, quantity)), paymentMethod, amount);
     }
 
     String toJson(Object value) {
