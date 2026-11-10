@@ -2,6 +2,7 @@ package com.mercadoone.backend.modules.sales.api;
 
 import com.mercadoone.backend.api.common.ApiEnvelope;
 import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
+import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.catalog.domain.Product;
 import com.mercadoone.backend.modules.customer.domain.Customer;
 import com.mercadoone.backend.modules.sales.application.SalesService;
@@ -18,13 +19,16 @@ import com.mercadoone.backend.modules.sales.domain.SalePayment;
 import com.mercadoone.backend.modules.sales.domain.SaleStatus;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,7 +54,35 @@ public class SalesController {
             @Valid @RequestBody FinalizeSaleRequest request,
             @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        return ApiEnvelope.ok(SaleResponse.from(salesService.finalizeOnlineSale(request.toData(), user.id())));
+        return ApiEnvelope.ok(SaleResponse.from(salesService.finalizeOnlineSale(request.toData(), user.id(), user.role())));
+    }
+
+    @PostMapping("/{id}/cancel")
+    public ApiEnvelope<SaleResponse> cancel(
+            @PathVariable Long id,
+            @Valid @RequestBody CancelSaleRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        return ApiEnvelope.ok(SaleResponse.from(salesService.cancelSale(id, request.reason(), user.id())));
+    }
+
+    @GetMapping("/discount-policy")
+    public ApiEnvelope<DiscountPolicyResponse> discountPolicy(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ApiEnvelope.ok(new DiscountPolicyResponse(user.role(), salesService.maxDiscountPercentFor(user.role())));
+    }
+
+    @GetMapping("/mine")
+    public ApiEnvelope<SalesReportResponse> mine(
+            @RequestParam(required = false) Instant from,
+            @RequestParam(required = false) Instant to,
+            @RequestParam(required = false) SaleStatus status,
+            @RequestParam(required = false) Integer page,
+            @RequestParam(required = false) Integer size,
+            @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        return ApiEnvelope.ok(SalesReportResponse.from(salesService.listSales(
+                new SaleFilters(from, to, user.id(), null, status, page, size)
+        )));
     }
 
     @GetMapping
@@ -100,15 +132,25 @@ public class SalesController {
     public record FinalizeSaleRequest(
             Long customerId,
             @NotEmpty List<@Valid SaleItemRequest> items,
-            @NotEmpty List<@Valid SalePaymentRequest> payments
+            @NotEmpty List<@Valid SalePaymentRequest> payments,
+            @DecimalMin("0.00") BigDecimal discountAmount,
+            @Size(max = 80) String clientSaleId
     ) {
         SaleData toData() {
             return new SaleData(
                     customerId,
                     items.stream().map(SaleItemRequest::toData).toList(),
-                    payments.stream().map(SalePaymentRequest::toData).toList()
+                    payments.stream().map(SalePaymentRequest::toData).toList(),
+                    discountAmount,
+                    clientSaleId
             );
         }
+    }
+
+    public record CancelSaleRequest(@NotBlank @Size(max = 500) String reason) {
+    }
+
+    public record DiscountPolicyResponse(UserRole role, BigDecimal maxDiscountPercent) {
     }
 
     public record SalesReportResponse(
@@ -127,7 +169,9 @@ public class SalesController {
                     ),
                     new TotalsResponse(
                             report.totals().saleCount(),
+                            report.totals().canceledCount(),
                             report.totals().totalAmount(),
+                            report.totals().discountAmount(),
                             report.totals().totalItems(),
                             report.totals().totalsByPaymentMethod()
                     )
@@ -140,7 +184,9 @@ public class SalesController {
 
     public record TotalsResponse(
             long saleCount,
+            long canceledCount,
             BigDecimal totalAmount,
+            BigDecimal discountAmount,
             BigDecimal totalItems,
             java.util.Map<PaymentMethod, BigDecimal> totalsByPaymentMethod
     ) {
@@ -169,10 +215,16 @@ public class SalesController {
             Long operatorUserId,
             CustomerSummary customer,
             SaleStatus status,
+            BigDecimal grossAmount,
+            BigDecimal discountAmount,
             BigDecimal totalAmount,
             List<SaleItemResponse> items,
             List<SalePaymentResponse> payments,
-            Instant createdAt
+            Instant createdAt,
+            String clientSaleId,
+            Instant canceledAt,
+            Long canceledByUserId,
+            String cancelReason
     ) {
         public static SaleResponse from(Sale sale) {
             return new SaleResponse(
@@ -180,10 +232,16 @@ public class SalesController {
                     sale.getOperatorUserId(),
                     CustomerSummary.from(sale.getCustomer()),
                     sale.getStatus(),
+                    sale.getGrossAmount(),
+                    sale.getDiscountAmount(),
                     sale.getTotalAmount(),
                     sale.getItems().stream().map(SaleItemResponse::from).toList(),
                     sale.getPayments().stream().map(SalePaymentResponse::from).toList(),
-                    sale.getCreatedAt()
+                    sale.getCreatedAt(),
+                    sale.getClientSaleId(),
+                    sale.getCanceledAt(),
+                    sale.getCanceledByUserId(),
+                    sale.getCancelReason()
             );
         }
     }
