@@ -95,7 +95,36 @@ class OfflineSalesControllerTests {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
-        pendingConflictByLocalSale(conflictsResponse, "local-no-stock");
+        long conflictId = pendingConflictByLocalSale(conflictsResponse, "local-no-stock").get("id").asLong();
+
+        mockMvc.perform(post("/api/offline/sales/conflicts/%d/resolve".formatted(conflictId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content("""
+                                {"action":"ACCEPT","note":"Venda entregue."}
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("ACCEPTED"));
+
+        mockMvc.perform(get("/api/offline/sales/status").param("localSaleIds", "local-no-stock")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(jsonPath("$.data[0].status").value("SENT"));
+    }
+
+    @Test
+    void offlineSaleKeepsOriginalSaleTime() throws Exception {
+        String token = loginToken();
+        long productId = createProduct(token, "Offline Data", "OFF-DATE", true, "4.00");
+        registerEntry(token, productId, "2.000");
+
+        mockMvc.perform(post("/api/offline/sales/sync")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + token)
+                        .content(syncBody("local-dated", productId, "1.000", "4.00", "4.00")
+                                .replaceFirst("\"createdAt\":\"[^\"]+\"", "\"createdAt\":\"2026-01-02T10:00:00Z\"")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("SENT"))
+                .andExpect(jsonPath("$.data.sale.createdAt").value("2026-01-02T10:00:00Z"));
     }
 
     @Test

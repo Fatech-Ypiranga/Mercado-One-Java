@@ -8,10 +8,10 @@ import com.mercadoone.backend.modules.offline.application.OfflineSalesService.Lo
 import com.mercadoone.backend.modules.offline.domain.OfflineConflictStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineSaleConflictRecord;
 import com.mercadoone.backend.modules.sales.api.SalesController.SaleResponse;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleConflict;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleData;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleItemData;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleSyncResult;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleConflict;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleData;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleItemData;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleSyncResult;
 import com.mercadoone.backend.modules.sales.application.SalesService.SalePaymentData;
 import com.mercadoone.backend.modules.sales.domain.PaymentMethod;
 import jakarta.validation.Valid;

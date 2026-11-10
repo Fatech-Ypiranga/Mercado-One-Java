@@ -84,14 +84,17 @@ public class Sale {
         this.totalAmount = BigDecimal.ZERO;
     }
 
-    public Sale(Long operatorUserId, Customer customer, String clientSaleId) {
+    public Sale(Long operatorUserId, Customer customer, String clientSaleId, Instant occurredAt) {
         this(operatorUserId, customer);
         this.clientSaleId = clientSaleId;
+        this.createdAt = occurredAt;
     }
 
     @PrePersist
     void prePersist() {
-        createdAt = Instant.now();
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
     }
 
     public void addItem(SaleItem item) {

@@ -127,14 +127,20 @@ public class InventoryService {
     }
 
     @Transactional
-    public InventoryMovement registerSaleOut(Product product, BigDecimal quantity, Long createdByUserId, String saleReference) {
+    public InventoryMovement registerSaleOut(
+            Product product,
+            BigDecimal quantity,
+            Long createdByUserId,
+            String saleReference,
+            boolean allowNegative
+    ) {
         if (!product.isActive()) {
             throw new IllegalArgumentException("Produto inativo nao pode ser vendido.");
         }
         InventoryBalance balance = findOrCreateBalance(product);
         BigDecimal quantityBefore = balance.getQuantity();
         BigDecimal quantityAfter = quantityBefore.subtract(quantity);
-        if (quantityAfter.signum() < 0) {
+        if (quantityAfter.signum() < 0 && !allowNegative) {
             throw new IllegalArgumentException("Estoque insuficiente para finalizar a venda.");
         }
         balance.adjustTo(quantityAfter);

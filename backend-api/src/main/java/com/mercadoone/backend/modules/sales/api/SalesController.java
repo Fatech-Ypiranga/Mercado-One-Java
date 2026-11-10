@@ -6,12 +6,13 @@ import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.catalog.domain.Product;
 import com.mercadoone.backend.modules.customer.domain.Customer;
 import com.mercadoone.backend.modules.sales.application.SalesService;
-import com.mercadoone.backend.modules.sales.application.SalesService.ProductSalesTotal;
-import com.mercadoone.backend.modules.sales.application.SalesService.SaleData;
-import com.mercadoone.backend.modules.sales.application.SalesService.SaleFilters;
+import com.mercadoone.backend.modules.sales.application.SalesReportService;
+import com.mercadoone.backend.modules.sales.application.SalesReportService.ProductSalesTotal;
+import com.mercadoone.backend.modules.sales.application.SalesService.SaleCommand;
+import com.mercadoone.backend.modules.sales.application.SalesReportService.SaleFilters;
 import com.mercadoone.backend.modules.sales.application.SalesService.SaleItemData;
 import com.mercadoone.backend.modules.sales.application.SalesService.SalePaymentData;
-import com.mercadoone.backend.modules.sales.application.SalesService.SalesReport;
+import com.mercadoone.backend.modules.sales.application.SalesReportService.SalesReport;
 import com.mercadoone.backend.modules.sales.domain.PaymentMethod;
 import com.mercadoone.backend.modules.sales.domain.Sale;
 import com.mercadoone.backend.modules.sales.domain.SaleItem;
@@ -44,9 +45,11 @@ import java.util.List;
 public class SalesController {
 
     private final SalesService salesService;
+    private final SalesReportService reports;
 
-    SalesController(SalesService salesService) {
+    SalesController(SalesService salesService, SalesReportService reports) {
         this.salesService = salesService;
+        this.reports = reports;
     }
 
     @PostMapping
@@ -54,7 +57,7 @@ public class SalesController {
             @Valid @RequestBody FinalizeSaleRequest request,
             @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        return ApiEnvelope.ok(SaleResponse.from(salesService.finalizeOnlineSale(request.toData(), user.id(), user.role())));
+        return ApiEnvelope.ok(SaleResponse.from(salesService.confirmSale(request.toData(), user.id(), user.role(), false)));
     }
 
     @PostMapping("/{id}/cancel")
@@ -80,7 +83,7 @@ public class SalesController {
             @RequestParam(required = false) Integer size,
             @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        return ApiEnvelope.ok(SalesReportResponse.from(salesService.listSales(
+        return ApiEnvelope.ok(SalesReportResponse.from(reports.listSales(
                 new SaleFilters(from, to, user.id(), null, status, page, size)
         )));
     }
@@ -95,7 +98,7 @@ public class SalesController {
             @RequestParam(required = false) Integer page,
             @RequestParam(required = false) Integer size
     ) {
-        return ApiEnvelope.ok(SalesReportResponse.from(salesService.listSales(
+        return ApiEnvelope.ok(SalesReportResponse.from(reports.listSales(
                 new SaleFilters(from, to, operatorUserId, customerId, status, page, size)
         )));
     }
@@ -111,7 +114,7 @@ public class SalesController {
         return ResponseEntity.ok()
                 .contentType(new MediaType("text", "csv"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"vendas.csv\"")
-                .body(salesService.exportCsv(new SaleFilters(from, to, operatorUserId, customerId, status, 0, 200)));
+                .body(reports.exportCsv(new SaleFilters(from, to, operatorUserId, customerId, status, 0, 200)));
     }
 
     @GetMapping("/top-products")
@@ -123,7 +126,7 @@ public class SalesController {
             @RequestParam(required = false) SaleStatus status,
             @RequestParam(required = false) Integer limit
     ) {
-        return ApiEnvelope.ok(salesService.topProducts(
+        return ApiEnvelope.ok(reports.topProducts(
                 new SaleFilters(from, to, operatorUserId, customerId, status, 0, 200),
                 limit
         ));
@@ -136,13 +139,14 @@ public class SalesController {
             @DecimalMin("0.00") BigDecimal discountAmount,
             @Size(max = 80) String clientSaleId
     ) {
-        SaleData toData() {
-            return new SaleData(
+        SaleCommand toData() {
+            return new SaleCommand(
                     customerId,
                     items.stream().map(SaleItemRequest::toData).toList(),
                     payments.stream().map(SalePaymentRequest::toData).toList(),
                     discountAmount,
-                    clientSaleId
+                    clientSaleId,
+                    null
             );
         }
     }

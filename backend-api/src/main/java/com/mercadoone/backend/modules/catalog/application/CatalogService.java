@@ -49,6 +49,11 @@ public class CatalogService {
     }
 
     @Transactional(readOnly = true)
+    public java.util.Optional<Product> findProduct(Long id) {
+        return products.findById(id);
+    }
+
+    @Transactional(readOnly = true)
     public List<Product> listProducts(String search, Long categoryId, Boolean active) {
         return products.findAll(productFilters(search, categoryId, active), Sort.by("name").ascending());
     }
