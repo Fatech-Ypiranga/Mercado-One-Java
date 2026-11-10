@@ -47,9 +47,7 @@ export class AuthService {
   ) {}
 
   login(request: LoginRequest): Observable<ApiEnvelope<LoginResponse>> {
-    return this.http.post<ApiEnvelope<LoginResponse>>(`${this.apiClient.apiBaseUrl}/api/auth/login`, request, {
-      withCredentials: true,
-    }).pipe(
+    return this.http.post<ApiEnvelope<LoginResponse>>(`${this.apiClient.apiBaseUrl}/api/auth/login`, request).pipe(
       timeout({ first: 10000 }),
       tap((response) => {
         if (response.success && response.data) {
@@ -63,9 +61,7 @@ export class AuthService {
   }
 
   me(): Observable<ApiEnvelope<CurrentUser>> {
-    return this.http.get<ApiEnvelope<CurrentUser>>(`${this.apiClient.apiBaseUrl}/api/auth/me`, {
-      withCredentials: true,
-    }).pipe(tap((response) => {
+    return this.http.get<ApiEnvelope<CurrentUser>>(`${this.apiClient.apiBaseUrl}/api/auth/me`).pipe(tap((response) => {
       if (response.success && response.data) {
         this.storeSession({
           expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
@@ -76,27 +72,25 @@ export class AuthService {
   }
 
   logout(): void {
+    this.clearLocalSession();
+    this.http.post<ApiEnvelope<void>>(`${this.apiClient.apiBaseUrl}/api/auth/logout`, {}).subscribe({ error: () => undefined });
+  }
+
+  clearLocalSession(): void {
     sessionStorage.removeItem(SESSION_STATE_KEY);
-    this.http.post<ApiEnvelope<void>>(`${this.apiClient.apiBaseUrl}/api/auth/logout`, {}, {
-      withCredentials: true,
-    }).subscribe({ error: () => undefined });
     this.session.set(null);
   }
 
-  token(): string | null {
+  isAuthenticated(): boolean {
     const session = this.session();
     if (!session) {
-      return null;
+      return false;
     }
     if (new Date(session.expiresAt).getTime() <= Date.now()) {
       this.logout();
-      return null;
+      return false;
     }
-    return 'cookie';
-  }
-
-  isAuthenticated(): boolean {
-    return this.token() !== null;
+    return true;
   }
 
   hasAnyRole(roles: readonly UserRole[]): boolean {

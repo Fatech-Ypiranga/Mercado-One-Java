@@ -4,7 +4,7 @@ import com.mercadoone.backend.api.common.ApiEnvelope;
 import com.mercadoone.backend.modules.access.application.AuthService;
 import com.mercadoone.backend.modules.access.application.LoginResult;
 import com.mercadoone.backend.modules.access.application.UserManagementService;
-import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
+import com.mercadoone.backend.modules.access.application.AuthenticatedUser;
 import com.mercadoone.backend.modules.access.domain.AppUser;
 import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.access.domain.UserStatus;

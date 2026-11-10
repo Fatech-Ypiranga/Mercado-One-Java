@@ -1,41 +1,32 @@
 package com.mercadoone.backend.modules.sales.application;
 
 import com.mercadoone.backend.modules.access.domain.UserRole;
+import com.mercadoone.backend.modules.audit.application.AuditService;
+import com.mercadoone.backend.modules.catalog.application.CatalogService;
 import com.mercadoone.backend.modules.catalog.domain.Product;
-import com.mercadoone.backend.modules.catalog.infrastructure.ProductRepository;
 import com.mercadoone.backend.modules.customer.application.CustomerService;
 import com.mercadoone.backend.modules.customer.domain.Customer;
 import com.mercadoone.backend.modules.inventory.application.InventoryService;
-import com.mercadoone.backend.modules.audit.application.AuditService;
 import com.mercadoone.backend.modules.sales.domain.PaymentMethod;
 import com.mercadoone.backend.modules.sales.domain.Sale;
 import com.mercadoone.backend.modules.sales.domain.SaleItem;
 import com.mercadoone.backend.modules.sales.domain.SalePayment;
-import com.mercadoone.backend.modules.sales.domain.SaleStatus;
 import com.mercadoone.backend.modules.sales.infrastructure.SaleRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+/** Confirmacao e cancelamento de vendas. Relatorios ficam em {@link SalesReportService}. */
 @Service
 public class SalesService {
 
-    private final ProductRepository products;
+    private final CatalogService catalog;
     private final SaleRepository sales;
     private final InventoryService inventory;
     private final CustomerService customerService;
@@ -43,14 +34,14 @@ public class SalesService {
     private final DiscountPolicy discountPolicy;
 
     SalesService(
-            ProductRepository products,
+            CatalogService catalog,
             SaleRepository sales,
             InventoryService inventory,
             CustomerService customerService,
             AuditService auditService,
             DiscountPolicy discountPolicy
     ) {
-        this.products = products;
+        this.catalog = catalog;
         this.sales = sales;
         this.inventory = inventory;
         this.customerService = customerService;
@@ -63,40 +54,47 @@ public class SalesService {
         if (clientSaleId == null || clientSaleId.isBlank()) {
             return Optional.empty();
         }
-        return sales.findByClientSaleId(clientSaleId.trim()).map(sale -> {
-            initializeResponseGraph(sale);
-            return sale;
-        });
+        return sales.findByClientSaleId(clientSaleId.trim()).map(SalesService::initializeResponseGraph);
     }
 
+    /**
+     * Confirma uma venda. Idempotente por {@code clientSaleId}.
+     *
+     * @param command venda; itens sem {@code unitPrice} usam o preco vigente do catalogo
+     * @param operatorUserId operador que realizou a venda
+     * @param discountCheckRole perfil cujo limite de desconto se aplica; {@code null} quando o desconto ja foi aprovado
+     * @param allowNegativeStock permite saldo negativo (venda offline ja entregue e aceita no admin)
+     */
     @Transactional
-    public Sale finalizeOnlineSale(SaleData data, Long operatorUserId, UserRole operatorRole) {
-        Optional<Sale> existing = findByClientSaleId(data.clientSaleId());
+    public Sale confirmSale(SaleCommand command, Long operatorUserId, UserRole discountCheckRole, boolean allowNegativeStock) {
+        Optional<Sale> existing = findByClientSaleId(command.clientSaleId());
         if (existing.isPresent()) {
             return existing.get();
         }
-        if (data.items().isEmpty()) {
+        if (command.items().isEmpty()) {
             throw new IllegalArgumentException("Venda deve possuir ao menos um item.");
         }
-        if (data.payments().isEmpty()) {
+        if (command.payments().isEmpty()) {
             throw new IllegalArgumentException("Venda deve possuir ao menos um pagamento.");
         }
 
-        Customer customer = data.customerId() == null ? null : customerService.getActiveCustomer(data.customerId());
-        Sale sale = new Sale(operatorUserId, customer, blankToNull(data.clientSaleId()));
-        for (SaleItemData item : data.items()) {
-            Product product = products.findById(item.productId())
+        Customer customer = command.customerId() == null ? null : customerService.getActiveCustomer(command.customerId());
+        Sale sale = new Sale(operatorUserId, customer, blankToNull(command.clientSaleId()), command.occurredAt());
+        for (SaleItemData item : command.items()) {
+            Product product = catalog.findProduct(item.productId())
                     .orElseThrow(() -> new EntityNotFoundException("Produto nao encontrado."));
             if (!product.isActive()) {
                 throw new IllegalArgumentException("Produto inativo nao pode ser vendido.");
             }
-            sale.addItem(new SaleItem(product, item.quantity()));
+            sale.addItem(item.unitPrice() == null
+                    ? new SaleItem(product, item.quantity())
+                    : new SaleItem(product, item.quantity(), item.unitPrice()));
         }
-        if (!discountPolicy.allows(operatorRole, data.discountAmount(), sale.getGrossAmount())) {
+        if (discountCheckRole != null && !discountPolicy.allows(discountCheckRole, command.discountAmount(), sale.getGrossAmount())) {
             throw new IllegalArgumentException("Desconto acima do permitido para o perfil.");
         }
-        sale.applyDiscount(data.discountAmount());
-        for (SalePaymentData payment : data.payments()) {
+        sale.applyDiscount(command.discountAmount());
+        for (SalePaymentData payment : command.payments()) {
             sale.addPayment(new SalePayment(payment.method(), payment.amount()));
         }
         if (sale.paidAmount().compareTo(sale.getTotalAmount()) != 0) {
@@ -105,12 +103,8 @@ public class SalesService {
 
         Sale savedSale = sales.save(sale);
         for (SaleItem item : savedSale.getItems()) {
-            inventory.registerSaleOut(
-                    item.getProduct(),
-                    item.getQuantity(),
-                    operatorUserId,
-                    "Venda " + savedSale.getId()
-            );
+            inventory.registerSaleOut(item.getProduct(), item.getQuantity(), operatorUserId,
+                    "Venda " + savedSale.getId(), allowNegativeStock);
         }
         auditService.record("SALE_CONFIRMED", "sale", savedSale.getId(), operatorUserId, Map.of(
                 "totalAmount", savedSale.getTotalAmount(),
@@ -138,337 +132,48 @@ public class SalesService {
                 "reason", cleanReason,
                 "totalAmount", sale.getTotalAmount()
         ));
-        initializeResponseGraph(sale);
-        return sale;
+        return initializeResponseGraph(sale);
     }
 
     public BigDecimal maxDiscountPercentFor(UserRole role) {
         return discountPolicy.maxPercentFor(role);
     }
 
-    @Transactional(readOnly = true)
-    public SalesReport listSales(SaleFilters filters) {
-        int page = filters.page() == null ? 0 : Math.max(filters.page(), 0);
-        int size = filters.size() == null ? 50 : Math.clamp(filters.size(), 1, 200);
-        Specification<Sale> specification = matches(filters);
-        Page<Sale> result = sales.findAll(specification, PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
-        result.getContent().forEach(this::initializeResponseGraph);
-        SalesTotals totals = totalsFor(sales.findAll(specification));
-        return new SalesReport(
-                result.getContent(),
-                new PageData(result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages()),
-                totals
-        );
+    public boolean discountAllowed(UserRole role, BigDecimal discount, BigDecimal grossAmount) {
+        return discountPolicy.allows(role, discount, grossAmount);
     }
 
-    @Transactional(readOnly = true)
-    public String exportCsv(SaleFilters filters) {
-        List<Sale> rows = sales.findAll(matches(filters), Sort.by(Sort.Direction.DESC, "createdAt"));
-        rows.forEach(this::initializeResponseGraph);
-        StringBuilder csv = new StringBuilder("id,createdAt,status,operatorUserId,customer,grossAmount,discountAmount,totalAmount,payments,items\n");
-        for (Sale sale : rows) {
-            csv.append(sale.getId()).append(',')
-                    .append(sale.getCreatedAt()).append(',')
-                    .append(sale.getStatus()).append(',')
-                    .append(sale.getOperatorUserId()).append(',')
-                    .append(csv(sale.getCustomer() == null ? "" : sale.getCustomer().getName())).append(',')
-                    .append(sale.getGrossAmount()).append(',')
-                    .append(sale.getDiscountAmount()).append(',')
-                    .append(sale.getTotalAmount()).append(',')
-                    .append(csv(paymentSummary(sale))).append(',')
-                    .append(csv(itemSummary(sale))).append('\n');
-        }
-        return csv.toString();
-    }
-
-    @Transactional(readOnly = true)
-    public List<ProductSalesTotal> topProducts(SaleFilters filters, Integer limit) {
-        int maxRows = limit == null ? 10 : Math.clamp(limit, 1, 50);
-        Map<Long, ProductSalesTotal> totals = new HashMap<>();
-        List<Sale> rows = sales.findAll(matches(filters));
-        rows.forEach(this::initializeResponseGraph);
-        for (Sale sale : rows) {
-            if (sale.getStatus() != SaleStatus.CONFIRMED) {
-                continue;
-            }
-            for (SaleItem item : sale.getItems()) {
-                Product product = item.getProduct();
-                ProductSalesTotal current = totals.get(product.getId());
-                BigDecimal quantity = current == null ? item.getQuantity() : current.quantity().add(item.getQuantity());
-                BigDecimal totalAmount = current == null ? item.getTotalAmount() : current.totalAmount().add(item.getTotalAmount());
-                totals.put(product.getId(), new ProductSalesTotal(
-                        product.getId(),
-                        product.getName(),
-                        product.getBarcode(),
-                        product.getSku(),
-                        product.getUnit(),
-                        quantity,
-                        totalAmount
-                ));
-            }
-        }
-        return totals.values().stream()
-                .sorted(Comparator.comparing(ProductSalesTotal::quantity).reversed()
-                        .thenComparing(ProductSalesTotal::totalAmount, Comparator.reverseOrder()))
-                .limit(maxRows)
-                .toList();
-    }
-
-    @Transactional(readOnly = true)
-    public List<OfflineSaleConflict> validateOfflineSale(OfflineSaleData data, UserRole operatorRole) {
-        List<OfflineSaleConflict> conflicts = new ArrayList<>();
-        BigDecimal itemTotal = BigDecimal.ZERO;
-        Map<Long, BigDecimal> requestedByProduct = new HashMap<>();
-        for (OfflineSaleItemData item : data.items()) {
-            requestedByProduct.merge(item.productId(), item.quantity(), BigDecimal::add);
-        }
-        for (OfflineSaleItemData item : data.items()) {
-            Product product = products.findById(item.productId()).orElse(null);
-            if (product == null) {
-                conflicts.add(new OfflineSaleConflict("PRODUCT_NOT_FOUND", "Produto " + item.productId() + " nao encontrado."));
-                continue;
-            }
-            if (!product.isActive()) {
-                conflicts.add(new OfflineSaleConflict("PRODUCT_INACTIVE", "Produto " + product.getName() + " esta inativo."));
-            }
-            if (product.getSalePrice().compareTo(item.unitPrice()) != 0) {
-                conflicts.add(new OfflineSaleConflict("PRICE_CHANGED", "Preco vigente de " + product.getName() + " mudou."));
-            }
-            itemTotal = itemTotal.add(item.unitPrice().multiply(item.quantity()).setScale(2, RoundingMode.HALF_UP));
-        }
-        // Estoque validado antes de qualquer escrita: falha dentro da transacao de finalizacao
-        // marcaria a transacao como rollback-only e impediria o registro do conflito.
-        requestedByProduct.forEach((productId, requested) -> {
-            Product product = products.findById(productId).orElse(null);
-            if (product != null && inventory.availableQuantity(productId).compareTo(requested) < 0) {
-                conflicts.add(new OfflineSaleConflict("STOCK_INSUFFICIENT", "Estoque insuficiente para " + product.getName() + "."));
-            }
-        });
-        BigDecimal discount = data.discountAmount() == null
-                ? BigDecimal.ZERO
-                : data.discountAmount().setScale(2, RoundingMode.HALF_UP);
-        if (discount.signum() < 0 || (discount.signum() > 0 && discount.compareTo(itemTotal) >= 0)) {
-            conflicts.add(new OfflineSaleConflict("DISCOUNT_INVALID", "Desconto deve ser positivo e menor que o total bruto."));
-        } else if (!discountPolicy.allows(operatorRole, discount, itemTotal)) {
-            conflicts.add(new OfflineSaleConflict("DISCOUNT_NOT_ALLOWED", "Desconto acima do permitido para o perfil do operador."));
-        }
-        BigDecimal netTotal = itemTotal.subtract(discount);
-        BigDecimal paidTotal = data.payments().stream()
-                .map(SalePaymentData::amount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .setScale(2, RoundingMode.HALF_UP);
-        if (netTotal.compareTo(paidTotal) != 0) {
-            conflicts.add(new OfflineSaleConflict("PAYMENT_TOTAL", "Valor pago difere do total da venda offline."));
-        }
-        return conflicts;
-    }
-
-    @Transactional
-    public Sale finalizeOfflineSale(OfflineSaleData data, Long operatorUserId, UserRole operatorRole) {
-        return finalizeOnlineSale(new SaleData(
-                data.customerId(),
-                data.items().stream().map(item -> new SaleItemData(item.productId(), item.quantity())).toList(),
-                data.payments(),
-                data.discountAmount(),
-                data.localSaleId()
-        ), operatorUserId, operatorRole);
-    }
-
-    @Transactional
-    public Sale acceptConflictedOfflineSale(OfflineSaleData data, Long operatorUserId) {
-        Optional<Sale> existing = findByClientSaleId(data.localSaleId());
-        if (existing.isPresent()) {
-            return existing.get();
-        }
-        if (data.items().isEmpty()) {
-            throw new IllegalArgumentException("Venda deve possuir ao menos um item.");
-        }
-        if (data.payments().isEmpty()) {
-            throw new IllegalArgumentException("Venda deve possuir ao menos um pagamento.");
-        }
-
-        Customer customer = data.customerId() == null ? null : customerService.getActiveCustomer(data.customerId());
-        Sale sale = new Sale(operatorUserId, customer, blankToNull(data.localSaleId()));
-        for (OfflineSaleItemData item : data.items()) {
-            Product product = products.findById(item.productId())
-                    .orElseThrow(() -> new EntityNotFoundException("Produto nao encontrado."));
-            if (!product.isActive()) {
-                throw new IllegalArgumentException("Produto inativo nao pode ser vendido.");
-            }
-            sale.addItem(new SaleItem(product, item.quantity(), item.unitPrice()));
-        }
-        sale.applyDiscount(data.discountAmount());
-        for (SalePaymentData payment : data.payments()) {
-            sale.addPayment(new SalePayment(payment.method(), payment.amount()));
-        }
-        if (sale.paidAmount().compareTo(sale.getTotalAmount()) != 0) {
-            throw new IllegalArgumentException("Valor pago deve ser igual ao total da venda.");
-        }
-
-        Sale savedSale = sales.save(sale);
-        for (SaleItem item : savedSale.getItems()) {
-            inventory.registerSaleOut(
-                    item.getProduct(),
-                    item.getQuantity(),
-                    operatorUserId,
-                    "Venda offline aceita " + savedSale.getId()
-            );
-        }
-        auditService.record("OFFLINE_SALE_ACCEPTED", "sale", savedSale.getId(), operatorUserId, Map.of(
-                "localSaleId", data.localSaleId(),
-                "totalAmount", savedSale.getTotalAmount(),
-                "itemCount", savedSale.getItems().size()
-        ));
-        return savedSale;
-    }
-
-    private SalesTotals totalsFor(List<Sale> reportSales) {
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        BigDecimal discountAmount = BigDecimal.ZERO;
-        BigDecimal totalItems = BigDecimal.ZERO;
-        long confirmedCount = 0;
-        long canceledCount = 0;
-        Map<PaymentMethod, BigDecimal> byMethod = new EnumMap<>(PaymentMethod.class);
-        for (Sale sale : reportSales) {
-            if (sale.getStatus() != SaleStatus.CONFIRMED) {
-                canceledCount++;
-                continue;
-            }
-            confirmedCount++;
-            initializeResponseGraph(sale);
-            totalAmount = totalAmount.add(sale.getTotalAmount());
-            discountAmount = discountAmount.add(sale.getDiscountAmount());
-            for (SaleItem item : sale.getItems()) {
-                totalItems = totalItems.add(item.getQuantity());
-            }
-            for (SalePayment payment : sale.getPayments()) {
-                byMethod.merge(payment.getMethod(), payment.getAmount(), BigDecimal::add);
-            }
-        }
-        return new SalesTotals(confirmedCount, canceledCount, totalAmount, discountAmount, totalItems, byMethod);
-    }
-
-    private void initializeResponseGraph(Sale sale) {
+    static Sale initializeResponseGraph(Sale sale) {
         if (sale.getCustomer() != null) {
             sale.getCustomer().getName();
         }
         sale.getItems().forEach(item -> item.getProduct().getName());
         sale.getPayments().size();
-    }
-
-    private Specification<Sale> matches(SaleFilters filters) {
-        return (root, query, criteriaBuilder) -> {
-            var predicate = criteriaBuilder.conjunction();
-            if (filters.from() != null) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.greaterThanOrEqualTo(root.get("createdAt"), filters.from()));
-            }
-            if (filters.to() != null) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.lessThanOrEqualTo(root.get("createdAt"), filters.to()));
-            }
-            if (filters.operatorUserId() != null) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("operatorUserId"), filters.operatorUserId()));
-            }
-            if (filters.customerId() != null) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("customer").get("id"), filters.customerId()));
-            }
-            if (filters.status() != null) {
-                predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("status"), filters.status()));
-            }
-            return predicate;
-        };
-    }
-
-    private String paymentSummary(Sale sale) {
-        return sale.getPayments().stream()
-                .map(payment -> payment.getMethod() + " " + payment.getAmount())
-                .reduce((left, right) -> left + "; " + right)
-                .orElse("");
-    }
-
-    private String itemSummary(Sale sale) {
-        return sale.getItems().stream()
-                .map(item -> item.getQuantity() + " " + item.getProduct().getUnit() + " " + item.getProduct().getName())
-                .reduce((left, right) -> left + "; " + right)
-                .orElse("");
+        return sale;
     }
 
     private static String blankToNull(String value) {
         return value == null || value.isBlank() ? null : value.trim();
     }
 
-    private String csv(String value) {
-        return "\"" + value.replace("\"", "\"\"") + "\"";
-    }
-
-    public record SaleData(
+    /** {@code occurredAt} nulo usa o instante da gravacao. */
+    public record SaleCommand(
             Long customerId,
             List<SaleItemData> items,
             List<SalePaymentData> payments,
             BigDecimal discountAmount,
-            String clientSaleId
+            String clientSaleId,
+            Instant occurredAt
     ) {
     }
 
-    public record SaleItemData(Long productId, BigDecimal quantity) {
+    /** {@code unitPrice} nulo usa o preco vigente do catalogo. */
+    public record SaleItemData(Long productId, BigDecimal quantity, BigDecimal unitPrice) {
+        public SaleItemData(Long productId, BigDecimal quantity) {
+            this(productId, quantity, null);
+        }
     }
 
     public record SalePaymentData(PaymentMethod method, BigDecimal amount) {
-    }
-
-    public record SaleFilters(
-            Instant from,
-            Instant to,
-            Long operatorUserId,
-            Long customerId,
-            SaleStatus status,
-            Integer page,
-            Integer size
-    ) {
-    }
-
-    public record SalesReport(List<Sale> items, PageData page, SalesTotals totals) {
-    }
-
-    public record PageData(int page, int size, long totalElements, int totalPages) {
-    }
-
-    public record SalesTotals(
-            long saleCount,
-            long canceledCount,
-            BigDecimal totalAmount,
-            BigDecimal discountAmount,
-            BigDecimal totalItems,
-            Map<PaymentMethod, BigDecimal> totalsByPaymentMethod
-    ) {
-    }
-
-    public record ProductSalesTotal(
-            Long productId,
-            String name,
-            String barcode,
-            String sku,
-            String unit,
-            BigDecimal quantity,
-            BigDecimal totalAmount
-    ) {
-    }
-
-    public record OfflineSaleData(
-            String localSaleId,
-            Instant createdAt,
-            Long customerId,
-            List<OfflineSaleItemData> items,
-            List<SalePaymentData> payments,
-            BigDecimal discountAmount
-    ) {
-    }
-
-    public record OfflineSaleItemData(Long productId, BigDecimal quantity, BigDecimal unitPrice) {
-    }
-
-    public record OfflineSaleConflict(String code, String message) {
-    }
-
-    public record OfflineSaleSyncResult(String status, Sale sale, List<OfflineSaleConflict> conflicts) {
     }
 }

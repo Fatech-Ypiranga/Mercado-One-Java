@@ -1,0 +1,95 @@
+<section class="page-header">
+  <p>Acesso</p>
+  <h1>Auditoria</h1>
+  <span>Registro imutável de operações críticas: produto, estoque, venda, sincronização offline e usuários.</span>
+</section>
+
+<form class="filter-rule" (submit)="$event.preventDefault(); applyFilters()" aria-label="Filtrar auditoria">
+  <label>
+    Ação
+    <select [formControl]="actionControl">
+      <option value="">Todas</option>
+      @for (action of actions; track action) {
+        <option [value]="action">{{ actionLabel(action) }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    Entidade
+    <select [formControl]="entityTypeControl">
+      <option value="">Todas</option>
+      <option value="catalog_product">Produto</option>
+      <option value="sale">Venda</option>
+      <option value="inventory_movement">Movimento de estoque</option>
+      <option value="inventory_entry_document">Nota de entrada</option>
+      <option value="offline_sale">Venda offline</option>
+      <option value="offline_sale_conflict">Conflito offline</option>
+      <option value="app_user">Usuário</option>
+    </select>
+  </label>
+  <label>
+    ID da entidade
+    <input class="mono" type="text" [formControl]="entityIdControl" />
+  </label>
+  <label>
+    Usuário (ID)
+    <input class="numeric" type="number" min="1" step="1" [formControl]="actorControl" />
+  </label>
+  <label>
+    De
+    <input type="date" [formControl]="fromControl" />
+  </label>
+  <label>
+    Até
+    <input type="date" [formControl]="toControl" />
+  </label>
+  <button type="submit" class="secondary-button">Filtrar</button>
+</form>
+
+@if (errorMessage) {
+  <p class="form-error" role="alert">{{ errorMessage }} <button type="button" class="ghost-button" (click)="load()">Tentar novamente</button></p>
+}
+
+<section class="data-table">
+  <h2>Eventos <small class="result-count">{{ page?.totalElements ?? 0 }} registro(s)</small></h2>
+  @if (loading) {
+    <p class="state-message" role="status">Carregando auditoria...</p>
+  }
+  @if (!loading && !errorMessage && events.length === 0) {
+    <p class="state-message">Nenhum evento neste filtro.</p>
+  }
+  @if (events.length > 0) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Ação</th>
+            <th scope="col">Entidade</th>
+            <th scope="col">Usuário</th>
+            <th scope="col">Detalhes</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (event of events; track event.id) {
+            <tr>
+              <td data-label="Data" class="numeric">{{ event.createdAt | date:'short' }}</td>
+              <td data-label="Ação"><strong>{{ actionLabel(event.action) }}</strong><small class="mono">{{ event.action }}</small></td>
+              <td data-label="Entidade"><span class="mono">{{ event.entityType }} {{ event.entityId ? '#' + event.entityId : '' }}</span></td>
+              <td data-label="Usuário">{{ event.actorUserId ?? 'sistema' }}</td>
+              <td data-label="Detalhes"><code class="summary">{{ summary(event) }}</code></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (page && page.totalPages > 1) {
+  <section class="filter-rule">
+    <button type="button" class="ghost-button" (click)="goTo(currentPage - 1)" [disabled]="currentPage === 0">Anterior</button>
+    <span class="state-message">Página {{ currentPage + 1 }} de {{ page.totalPages }}</span>
+    <button type="button" class="ghost-button" (click)="goTo(currentPage + 1)" [disabled]="currentPage + 1 >= page.totalPages">Próxima</button>
+  </section>
+}

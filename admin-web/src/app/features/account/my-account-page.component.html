@@ -1,0 +1,33 @@
+<section class="page-header">
+  <p>Conta</p>
+  <h1>Minha conta</h1>
+  <span>{{ auth.session()?.user?.nome }} · {{ auth.session()?.user?.login }} · {{ auth.session()?.user?.perfil }}</span>
+</section>
+
+<form class="record-sheet password-form" [formGroup]="form" (ngSubmit)="save()" novalidate aria-label="Alterar senha">
+  <h2>Alterar senha</h2>
+  <label>
+    Senha atual
+    <input type="password" formControlName="currentPassword" autocomplete="current-password" />
+  </label>
+  <label>
+    Nova senha (mínimo 6 caracteres)
+    <input type="password" formControlName="newPassword" autocomplete="new-password" />
+  </label>
+  <label>
+    Confirmar nova senha
+    <input type="password" formControlName="confirmPassword" autocomplete="new-password" />
+  </label>
+  @if (form.touched && validationMessage) {
+    <p class="field-error">{{ validationMessage }}</p>
+  }
+  @if (errorMessage) {
+    <p class="form-error" role="alert">{{ errorMessage }}</p>
+  }
+  @if (successMessage) {
+    <p class="form-success" role="status">{{ successMessage }}</p>
+  }
+  <div class="button-row">
+    <button type="submit" class="primary-button" [disabled]="saving">{{ saving ? 'Salvando...' : 'Alterar senha' }}</button>
+  </div>
+</form>

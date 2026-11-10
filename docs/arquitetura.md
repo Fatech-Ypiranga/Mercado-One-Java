@@ -66,10 +66,9 @@ Flyway é a fonte de verdade para mudanças no schema servidor. O Hibernate vali
 1. Operador autentica no PDV (`POST /api/auth/login`, token Bearer).
 2. Busca produtos na API ou no catálogo local; busca clientes em `GET /api/customers/search`.
 3. Ao finalizar, o PDV grava a venda em SQLite (`PENDING`) e exibe comprovante local.
-4. Em seguida chama `POST /api/offline/sales/sync`.
-5. A API aceita (`SENT`), registra conflito (`CONFLICT`) ou a chamada falha (`ERROR`).
-6. `POST /api/sales` permanece disponível para venda com preço vigente do servidor; nenhum cliente da UI atual o dispara.
+4. Com sessão ativa, chama `POST /api/sales` com `clientSaleId = localSaleId` (idempotente). Sucesso marca `SENT`; falha de rede, 5xx, 401 ou 409 deixa a venda em `ERROR` para reenvio; recusa de regra de negócio marca `REJECTED`.
+5. A sincronização (no login e a cada 2 minutos) reenvia `PENDING`/`ERROR` por `POST /api/offline/sales/sync` e consulta `GET /api/offline/sales/status` para refletir aceite ou rejeição de conflitos. Detalhes em [Offline PDV e sincronização](offline-pdv-sync.md).
 
-## Estado do scaffold
+## Escopo
 
-A arquitetura está definida e os módulos `access`, `catalog`, `customer`, `supplier`, `inventory`, `sales`, `offline`, `audit` e `system` já possuem casos de uso iniciais. O piloto na Azure fica em [Infraestrutura](../infra/README.md): API no App Service, PostgreSQL Flexible Server e admin no Static Web Apps. Não há fila de mensageria, worker separado nem aplicação mobile neste repositório.
+O piloto na Azure fica em [Infraestrutura](../infra/README.md): API no App Service, PostgreSQL Flexible Server e admin no Static Web Apps. Não há fila de mensageria, worker separado nem aplicação mobile neste repositório.

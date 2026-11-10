@@ -1,0 +1,66 @@
+<section class="page-header">
+  <p>Caixa</p>
+  <h1>Meu caixa</h1>
+  <span>Vendas registradas por {{ auth.session()?.user?.nome }} no dia, para conferência do fechamento.</span>
+</section>
+
+<form class="filter-rule" (submit)="$event.preventDefault(); load()" aria-label="Escolher dia">
+  <label>
+    Dia
+    <input type="date" [formControl]="dayControl" />
+  </label>
+  <button type="submit" class="secondary-button">Atualizar</button>
+</form>
+
+@if (errorMessage) {
+  <p class="form-error" role="alert">{{ errorMessage }}</p>
+}
+
+<section class="ledger-figures" aria-label="Totais do dia">
+  <div><span>Vendas</span><strong>{{ report?.totals?.saleCount ?? 0 }}</strong></div>
+  <div><span>Total</span><strong>{{ report?.totals?.totalAmount ?? 0 | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+  <div><span>Descontos</span><strong>{{ report?.totals?.discountAmount ?? 0 | currency:'BRL':'symbol':'1.2-2' }}</strong></div>
+  <div><span>Canceladas</span><strong>{{ report?.totals?.canceledCount ?? 0 }}</strong></div>
+</section>
+
+@if (paymentEntries.length > 0) {
+  <ul class="payment-breakdown" aria-label="Totais por forma de pagamento">
+    @for (entry of paymentEntries; track entry.label) {
+      <li>{{ entry.label }} {{ entry.amount | currency:'BRL':'symbol':'1.2-2' }}</li>
+    }
+  </ul>
+}
+
+<section class="data-table">
+  <h2>Vendas do dia</h2>
+  @if (loading) { <p class="state-message" role="status">Carregando vendas...</p> }
+  @if (!loading && !errorMessage && sales.length === 0) {
+    <p class="state-message">Nenhuma venda sincronizada neste dia. Vendas ainda na fila offline do PDV aparecem após a sincronização.</p>
+  }
+  @if (sales.length > 0) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Venda</th>
+            <th scope="col">Pagamento</th>
+            <th class="numeric" scope="col">Total</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sale of sales; track sale.id) {
+            <tr>
+              <td data-label="Venda"><strong class="mono">#{{ sale.id }}</strong><small>{{ sale.createdAt | date:'shortTime' }} · {{ sale.items.length }} item(ns)</small></td>
+              <td data-label="Pagamento">{{ paymentSummary(sale) }}</td>
+              <td class="numeric" data-label="Total">{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
+              <td data-label="Status">
+                <span class="status-stamp" [class.inactive]="sale.status !== 'CONFIRMED'">{{ sale.status === 'CONFIRMED' ? 'Confirmada' : 'Cancelada' }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

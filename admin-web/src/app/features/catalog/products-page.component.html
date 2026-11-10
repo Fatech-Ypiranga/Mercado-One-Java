@@ -1,0 +1,159 @@
+<section class="page-header catalog-heading">
+  <div><p>Catálogo</p><h1>Produtos</h1><span>Itens vendáveis com categoria, preço de venda e dados fiscais preparatórios.</span></div>
+  <button type="button" class="primary-button mobile-only" (click)="newRecord()">Novo</button>
+</section>
+
+<form class="filter-rule" (submit)="$event.preventDefault(); loadProducts()" aria-label="Filtrar produtos">
+  <label>
+    Buscar
+    <input type="search" [formControl]="searchControl" placeholder="Nome, SKU ou código" />
+  </label>
+  <label>
+    Categoria
+    <select [formControl]="categoryFilterControl">
+      <option value="">Todas</option>
+      @for (category of categories; track category.id) {
+        <option [value]="category.id">{{ category.name }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    Status
+    <select [formControl]="activeControl">
+      <option value="">Todos</option>
+      <option value="true">Ativos</option>
+      <option value="false">Inativos</option>
+    </select>
+  </label>
+  <button type="submit" class="secondary-button">Filtrar</button>
+</form>
+@if (successMessage) { <p class="form-success" role="status">{{ successMessage }}</p> }
+
+<section class="workspace" [class.mobile-form-step]="formStep">
+  <section class="data-table">
+    <div class="section-heading"><h2 id="list-heading" tabindex="-1">Lista de produtos</h2><span class="result-count">{{ products.length }} resultado(s)</span></div>
+    @if (loading) { <p class="state-message" role="status">Atualizando produtos...</p> }
+    @if (listError) { <p class="form-error list-error" role="alert">{{ listError }} <button type="button" class="ghost-button" (click)="loadProducts()">Tentar novamente</button></p> }
+    @if (!loading && !listError && products.length === 0) {
+      <p class="state-message">Nenhum produto neste filtro. Confira a busca ou cadastre um item na ficha ao lado.</p>
+    } @else if (products.length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Produto</th>
+              <th scope="col">Categoria</th>
+              <th class="numeric" scope="col">Preço</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (product of products; track product.id) {
+              <tr [class.selected]="editingProduct?.id === product.id">
+                <td data-label="Produto">
+                  <strong>{{ product.name }}</strong>
+                  <small class="mono">{{ product.sku || product.barcode || 'Sem código' }}</small>
+                </td>
+                <td data-label="Categoria">{{ product.category.name }}</td>
+                <td class="numeric" data-label="Preço">{{ product.salePrice | currency:'BRL':'symbol':'1.2-2' }}</td>
+                <td data-label="Status">
+                  <span class="status-stamp" [class.inactive]="!product.active">
+                    {{ product.active ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+                <td data-label="Ações">
+                  <button type="button" class="ghost-button" (click)="edit(product)" [attr.aria-label]="'Editar produto ' + product.name">Editar</button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <button type="button" class="ghost-button mobile-only" (click)="showList()">Voltar à lista</button>
+    <h2 id="record-heading" tabindex="-1">{{ editingProduct ? 'Editar produto' : 'Novo produto' }}</h2>
+    <div class="form-grid">
+      <label>
+        Nome
+        <input type="text" formControlName="name" />
+      </label>
+      <label>
+        Categoria
+        <select formControlName="categoryId">
+          <option [ngValue]="null">Selecione</option>
+          @for (category of activeCategories; track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Código de barras
+        <input class="mono" type="text" formControlName="barcode" />
+      </label>
+      <label>
+        SKU
+        <input class="mono" type="text" formControlName="sku" />
+      </label>
+      <label>
+        Unidade
+        <select formControlName="unit">
+          <option value="UN">UN</option>
+          <option value="KG">KG</option>
+          <option value="LT">LT</option>
+          <option value="CX">CX</option>
+        </select>
+      </label>
+      <label>
+        Preço de venda
+        <input class="numeric" type="number" min="0.01" step="0.01" formControlName="salePrice" />
+      </label>
+      <label>
+        NCM
+        <input class="mono" type="text" formControlName="ncm" />
+      </label>
+      <label>
+        CEST
+        <input class="mono" type="text" formControlName="cest" />
+      </label>
+      <label>
+        CFOP padrão
+        <input class="mono" type="text" formControlName="defaultCfop" />
+      </label>
+      <label>
+        Origem
+        <input type="text" formControlName="merchandiseOrigin" />
+      </label>
+    </div>
+    <label>
+      Classificação tributária interna
+      <input type="text" formControlName="taxClassification" />
+    </label>
+    <label class="check-row">
+      <input type="checkbox" formControlName="active" />
+      Produto ativo para consulta e venda
+    </label>
+
+    @if (form.invalid && form.touched) {
+      <p class="field-error">Preencha nome, categoria, unidade e preço maior que zero.</p>
+    }
+    @if (errorMessage) {
+      <p class="form-error" role="alert">{{ errorMessage }}</p>
+    }
+
+    <div class="button-row">
+      <button type="submit" class="primary-button" [disabled]="saving || categories.length === 0">
+        {{ saving ? 'Salvando...' : 'Salvar' }}
+      </button>
+      @if (editingProduct) {
+        <button type="button" class="ghost-button" (click)="resetForm(); showList()">Cancelar</button>
+      }
+    </div>
+    @if (categories.length === 0) {
+      <p class="state-message compact">Crie uma categoria antes de cadastrar produtos.</p>
+    }
+  </form>
+</section>

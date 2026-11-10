@@ -2,7 +2,7 @@
 
 Mercado One é um ERP em scaffold funcional para pequenos mercados varejistas, com administrativo web, API Java e PDV desktop offline-first. O objetivo do repositório é evoluir o MVP de loja física: cadastros, estoque simples, vendas presenciais, operação offline parcial, clientes e relatórios operacionais.
 
-O que já está no código: [Estado atual](docs/estado-atual.md). O que ainda falta: [Backlog MVP](docs/backlog-mvp.md). Uso da loja: [Admin web](docs/uso-admin-web.md) e [PDV](docs/uso-pdv.md).
+Entregue e pendente: [Backlog MVP](docs/backlog-mvp.md). Uso da loja: [Admin web](docs/uso-admin-web.md) e [PDV](docs/uso-pdv.md).
 
 A UI do PDV não chama `POST /api/sales`. O caixa grava a venda localmente e sincroniza por `POST /api/offline/sales/sync`.
 
@@ -78,14 +78,13 @@ cd admin-web && npm test -- --watch=false
 cd pdv-desktop && mvn test
 ```
 
-Contagem no código-fonte, sem reexecutar a suíte nesta atualização: 33 métodos `@Test` em `backend-api`, 56 specs `it(` em `admin-web` e 8 métodos `@Test` em `pdv-desktop`.
+O CI (`.github/workflows/ci.yml`) executa as três suítes em cada pull request e push na `main`; o backend roda também a validação das migrations em PostgreSQL via Testcontainers. Localmente, `npm test` no admin precisa de Chrome ou da variável `CHROME_BIN` apontando para um navegador Chromium.
 
 ## Documentação
 
 Índice: [docs/README.md](docs/README.md).
 
 - [Glossário de domínio](CONTEXT.md)
-- [Estado atual](docs/estado-atual.md)
 - [Uso do admin web](docs/uso-admin-web.md)
 - [Uso do PDV](docs/uso-pdv.md)
 - [Arquitetura](docs/arquitetura.md)

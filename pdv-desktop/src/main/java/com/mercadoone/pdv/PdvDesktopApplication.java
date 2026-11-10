@@ -11,6 +11,7 @@ import com.mercadoone.pdv.sales.CheckoutService.Draft;
 import com.mercadoone.pdv.sales.CheckoutService.DraftLine;
 import com.mercadoone.pdv.sales.CheckoutService.Session;
 import com.mercadoone.pdv.sales.OnlineSaleClient;
+import com.mercadoone.pdv.sales.ProductSearchService;
 import com.mercadoone.pdv.sales.OnlineSaleClient.CatalogProduct;
 import com.mercadoone.pdv.sales.OnlineSaleClient.CustomerOption;
 import com.mercadoone.pdv.sales.OnlineSaleClient.DiscountLimit;
@@ -58,6 +59,7 @@ public class PdvDesktopApplication extends Application {
     private final OfflineCatalogStore offlineCatalogStore = new OfflineCatalogStore(storageConfig);
     private final OnlineSaleClient onlineSaleClient = new OnlineSaleClient();
     private final CheckoutService checkoutService = new CheckoutService(offlineSaleQueue, onlineSaleClient);
+    private final ProductSearchService productSearch = new ProductSearchService(offlineCatalogStore, onlineSaleClient, checkoutService);
     private final List<DraftLine> cart = new ArrayList<>();
     private final List<LocalSalePayment> payments = new ArrayList<>();
     private volatile String bearerToken = "";
@@ -505,21 +507,9 @@ public class PdvDesktopApplication extends Application {
     }
 
     private List<CatalogProduct> searchProducts(String term) {
-        if (!isAuthenticated()) {
-            return offlineCatalogStore.search(term);
-        }
-        try {
-            List<CatalogProduct> onlineProducts = onlineSaleClient.searchProducts(apiUrl.getText(), bearerToken, term);
-            checkoutService.markApiReachable(true);
-            if (term == null || term.isBlank()) {
-                offlineCatalogStore.replaceAll(onlineProducts);
-            }
-            return onlineProducts;
-        } catch (OnlineSaleClient.ApiUnavailableException exception) {
-            checkoutService.markApiReachable(false);
-            Platform.runLater(this::refreshStatus);
-            return offlineCatalogStore.search(term);
-        }
+        List<CatalogProduct> products = productSearch.search(new Session(apiUrl.getText(), bearerToken), term);
+        Platform.runLater(this::refreshStatus);
+        return products;
     }
 
     private void refreshLocalCatalog() {
@@ -527,15 +517,11 @@ public class PdvDesktopApplication extends Application {
             feedback.setText("Entre com um operador para atualizar o catalogo local.");
             return;
         }
-        CompletableFuture.supplyAsync(() -> onlineSaleClient.searchProducts(apiUrl.getText(), bearerToken, ""))
-                .whenComplete((products, error) -> Platform.runLater(() -> {
-                    if (error == null) {
-                        offlineCatalogStore.replaceAll(products);
-                        feedback.setText("Catalogo local atualizado com " + products.size() + " produto(s).");
-                    } else {
-                        feedback.setText("Catalogo local mantido. " + errorMessage(error));
-                    }
-                }));
+        Session session = new Session(apiUrl.getText(), bearerToken);
+        CompletableFuture.supplyAsync(() -> productSearch.refreshLocalCatalog(session))
+                .whenComplete((count, error) -> Platform.runLater(() -> feedback.setText(error == null
+                        ? "Catalogo local atualizado com " + count + " produto(s)."
+                        : "Catalogo local mantido. " + errorMessage(error))));
     }
 
     private <T> void runAsync(Button trigger, String progress, Supplier<T> work, java.util.function.Consumer<T> onSuccess) {

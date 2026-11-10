@@ -1,7 +1,7 @@
 package com.mercadoone.backend.modules.audit.application;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.mercadoone.backend.modules.audit.domain.AuditEvent;
 import com.mercadoone.backend.modules.audit.infrastructure.AuditEventRepository;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,7 @@ public class AuditService {
     private String toJson(Map<String, ?> summary) {
         try {
             return objectMapper.writeValueAsString(summary);
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Nao foi possivel registrar auditoria.", exception);
         }
     }

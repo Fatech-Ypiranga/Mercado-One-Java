@@ -26,3 +26,6 @@ output/
 *.db
 *.sqlite
 *.sqlite3
+
+# Artefatos locais do Playwright CLI
+.playwright-cli/

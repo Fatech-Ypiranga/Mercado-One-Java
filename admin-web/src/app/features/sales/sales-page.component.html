@@ -1,0 +1,205 @@
+<section class="page-header">
+  <p>Operação</p>
+  <h1>Relatório de vendas</h1>
+  <span>Vendas por período, operador de caixa ou cliente. Totais consideram apenas vendas confirmadas.</span>
+</section>
+
+<section class="filter-rule">
+  <label>
+    De
+    <input type="date" [formControl]="fromControl" />
+  </label>
+  <label>
+    Até
+    <input type="date" [formControl]="toControl" />
+  </label>
+  <label>
+    Operador (ID)
+    <input class="numeric" type="number" min="1" step="1" [formControl]="operatorIdControl" />
+  </label>
+  <label>
+    Status
+    <select [formControl]="statusControl">
+      <option value="">Todos</option>
+      <option value="CONFIRMED">Confirmada</option>
+      <option value="CANCELED">Cancelada</option>
+    </select>
+  </label>
+  <label>
+    Cliente (ID)
+    <input class="numeric" type="number" min="1" step="1" [formControl]="customerIdControl" />
+  </label>
+  <div class="button-row">
+    <button type="button" class="secondary-button" (click)="applyFilters()">Aplicar filtros</button>
+    <button type="button" class="ghost-button" (click)="exportCsv()" [disabled]="loading || exporting">{{ exporting ? 'Exportando...' : 'Exportar CSV' }}</button>
+  </div>
+</section>
+
+@if (errorMessage) {
+  <p class="form-error" role="alert">{{ errorMessage }}</p>
+}
+@if (successMessage) {
+  <p class="form-success" role="status">{{ successMessage }}</p>
+}
+<section class="ledger-figures" aria-label="Totais do período">
+  <div>
+    <span>Vendas</span>
+    <strong>{{ report?.totals?.saleCount ?? 0 }}</strong>
+  </div>
+  <div>
+    <span>Total vendido</span>
+    <strong>{{ report?.totals?.totalAmount ?? 0 | currency:'BRL':'symbol':'1.2-2' }}</strong>
+  </div>
+  <div>
+    <span>Descontos</span>
+    <strong>{{ report?.totals?.discountAmount ?? 0 | currency:'BRL':'symbol':'1.2-2' }}</strong>
+  </div>
+  <div>
+    <span>Itens</span>
+    <strong>{{ report?.totals?.totalItems ?? 0 }}</strong>
+  </div>
+  <div>
+    <span>Canceladas</span>
+    <strong>{{ report?.totals?.canceledCount ?? 0 }}</strong>
+  </div>
+  <div>
+    <span>Registros</span>
+    <strong>{{ pageSummary }}</strong>
+  </div>
+</section>
+
+@if (paymentEntries.length > 0) {
+  <ul class="payment-breakdown" aria-label="Totais por forma de pagamento">
+    @for (entry of paymentEntries; track entry.method) {
+      <li>{{ entry.label }} {{ entry.amount | currency:'BRL':'symbol':'1.2-2' }}</li>
+    }
+  </ul>
+}
+
+<section class="data-table">
+  <h2>Vendas no período</h2>
+  @if (loading) {
+    <p class="state-message" role="status">{{ report ? 'Atualizando vendas...' : 'Carregando vendas...' }}</p>
+  }
+  @if (!loading && !errorMessage && sales.length === 0) {
+    <p class="state-message">Nenhuma venda neste filtro. Amplie o período ou remova operador e cliente.</p>
+  }
+  @if (sales.length > 0) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Venda</th>
+            <th scope="col">Cliente</th>
+            <th scope="col">Itens</th>
+            <th scope="col">Pagamento</th>
+            <th class="numeric" scope="col">Total</th>
+            <th scope="col">Status</th>
+            <th scope="col"><span class="visually-hidden">Ações</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (sale of sales; track sale.id) {
+            <tr>
+              <td data-label="Venda">
+                <strong class="mono">#{{ sale.id }}</strong>
+                <small>{{ sale.createdAt | date:'short' }} · operador {{ sale.operatorUserId }}</small>
+              </td>
+              <td data-label="Cliente">
+                <strong>{{ sale.customer?.name || 'Consumidor não identificado' }}</strong>
+                <small>{{ sale.customer?.phone || sale.customer?.document || '—' }}</small>
+              </td>
+              <td data-label="Itens">
+                <strong>{{ sale.items.length }} item(ns)</strong>
+                <small>{{ itemSummary(sale) }}</small>
+              </td>
+              <td data-label="Pagamento">{{ paymentSummary(sale) }}</td>
+              <td class="numeric" data-label="Total">
+                <strong>{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</strong>
+                @if (sale.discountAmount > 0) {
+                  <small>desconto {{ sale.discountAmount | currency:'BRL':'symbol':'1.2-2' }}</small>
+                }
+              </td>
+              <td data-label="Status">
+                <span class="status-stamp" [class.inactive]="sale.status !== 'CONFIRMED'">
+                  {{ statusLabel(sale.status) }}
+                </span>
+                @if (sale.status === 'CANCELED') {
+                  <small>{{ sale.canceledAt | date:'short' }} · {{ sale.cancelReason }}</small>
+                }
+              </td>
+              <td data-label="Ações">
+                @if (sale.status === 'CONFIRMED' && cancelingId !== sale.id) {
+                  <button type="button" class="ghost-button" (click)="startCancel(sale)">Cancelar venda</button>
+                }
+              </td>
+            </tr>
+            @if (cancelingId === sale.id) {
+              <tr class="inline-form-row">
+                <td colspan="7">
+                  <form class="inline-form" (submit)="$event.preventDefault(); confirmCancel(sale)">
+                    <label>
+                      Motivo do cancelamento de #{{ sale.id }} (obrigatório)
+                      <input type="text" maxlength="500" [formControl]="cancelReasonControl" required />
+                    </label>
+                    <p class="state-message">O estoque dos itens volta ao saldo e a venda sai dos totais.</p>
+                    <div class="button-row">
+                      <button type="submit" class="danger-button" [disabled]="canceling">{{ canceling ? 'Cancelando...' : 'Confirmar cancelamento' }}</button>
+                      <button type="button" class="ghost-button" (click)="cancelingId = null" [disabled]="canceling">Voltar</button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<section class="ledger-block">
+  <h2>Produtos mais vendidos</h2>
+  @if (loadingTopProducts) {
+    <p class="state-message" role="status">Atualizando ranking...</p>
+  }
+  @if (topProductsError) {
+    <p class="form-error" role="alert">{{ topProductsError }}</p>
+  }
+  @if (!loadingTopProducts && !topProductsError && topProducts.length === 0) {
+    <p class="state-message">Nenhum produto vendido neste filtro.</p>
+  }
+  @if (topProducts.length > 0) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Produto</th>
+            <th class="numeric" scope="col">Quantidade</th>
+            <th class="numeric" scope="col">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (product of topProducts; track product.productId) {
+            <tr>
+              <td data-label="Produto">
+                <strong>{{ product.name }}</strong>
+                <small class="mono">{{ product.sku || product.barcode || 'Sem código' }}</small>
+              </td>
+              <td class="numeric" data-label="Quantidade">{{ product.quantity }} {{ product.unit }}</td>
+              <td class="numeric" data-label="Total">{{ product.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+@if (report && report.page.totalPages > 1) {
+  <section class="filter-rule">
+    <button type="button" class="ghost-button" (click)="previousPage()" [disabled]="currentPage === 0">Anterior</button>
+    <span class="state-message">Página {{ currentPage + 1 }} de {{ report.page.totalPages }}</span>
+    <button type="button" class="ghost-button" (click)="nextPage()" [disabled]="currentPage + 1 >= report.page.totalPages">Próxima</button>
+  </section>
+}

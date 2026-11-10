@@ -49,7 +49,7 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 - README raiz deve ser mapa do projeto.
 - `docs/README.md` deve continuar como índice dos guias.
 - READMEs locais devem explicar responsabilidades e comandos do subprojeto.
-- `docs/estado-atual.md` deve mudar quando scaffold virar funcionalidade real.
+- `docs/backlog-mvp.md` deve mudar no mesmo PR que entrega ou remove funcionalidade.
 - `docs/backlog-mvp.md` deve mudar quando fatias forem entregues ou repriorizadas.
 - `docs/diagramas.md` é a fonte normativa dos fluxos.
 - ADRs em `docs/adr/` devem ser curtos e usados apenas para decisões relevantes.

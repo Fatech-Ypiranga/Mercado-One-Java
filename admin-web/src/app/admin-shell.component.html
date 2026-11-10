@@ -1,0 +1,43 @@
+<div class="app-shell">
+  <a class="skip-link" href="#conteudo">Ir para o conteúdo</a>
+  <aside class="sidebar" aria-label="Navegação principal" (keydown.escape)="closeNavigation(true)">
+    <div class="sidebar-heading">
+      <a class="brand" [routerLink]="auth.homePath()" (click)="closeNavigation()">
+        <span class="brand-mark" aria-hidden="true">M1</span>
+        <span>
+          <strong>Mercado One</strong>
+          <small>Administrativo</small>
+        </span>
+      </a>
+      <button #menuButton type="button" class="menu-toggle ghost-button" [attr.aria-expanded]="navigationOpen" aria-controls="admin-navigation" (click)="toggleNavigation()">
+        {{ navigationOpen ? 'Fechar menu' : 'Menu' }}
+      </button>
+    </div>
+
+    <nav #navigation id="admin-navigation" class="sidebar-nav" [class.mobile-collapsed]="!navigationOpen" aria-label="Áreas do administrativo">
+      @for (group of visibleNavGroups; track group.label) {
+        <p class="nav-department">{{ group.label }}</p>
+        @for (item of group.items; track item.path) {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+            (click)="closeNavigation()"
+          >
+            {{ item.label }}
+          </a>
+        }
+      }
+    </nav>
+
+    <section class="user-panel" [class.mobile-collapsed]="!navigationOpen" aria-label="Usuário autenticado">
+      <span>{{ auth.session()?.user?.nome ?? 'Sessão ativa' }}</span>
+      <small>{{ auth.session()?.user?.perfil ?? 'ADMIN' }}</small>
+      <button type="button" class="ghost-button" (click)="logout()">Sair</button>
+    </section>
+  </aside>
+
+  <main #mainContent id="conteudo" tabindex="-1">
+    <router-outlet />
+  </main>
+</div>

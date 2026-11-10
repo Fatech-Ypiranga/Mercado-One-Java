@@ -2,7 +2,12 @@ package com.mercadoone.backend.api.common;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -65,6 +70,32 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiEnvelope<Void>> handleBusinessRule(IllegalArgumentException exception) {
         return ResponseEntity.badRequest().body(ApiEnvelope.failed(
                 ApiError.of("BUSINESS_RULE", exception.getMessage())
+        ));
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiEnvelope<Void>> handleIntegrity(DataIntegrityViolationException exception) {
+        LOG.warn("Data integrity violation: {}", exception.getMostSpecificCause().getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ApiEnvelope.failed(
+                ApiError.of("DATA_CONFLICT", "Registro conflita com dados existentes (valor duplicado ou referencia invalida).")
+        ));
+    }
+
+    @ExceptionHandler({
+            HttpMessageNotReadableException.class,
+            MissingServletRequestParameterException.class,
+            MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ApiEnvelope<Void>> handleMalformedRequest(Exception exception) {
+        return ResponseEntity.badRequest().body(ApiEnvelope.failed(
+                ApiError.of("MALFORMED_REQUEST", "Requisicao invalida: verifique formato, parametros e valores enviados.")
+        ));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiEnvelope<Void>> handleNoResource(NoResourceFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiEnvelope.failed(
+                ApiError.of("NOT_FOUND", "Recurso nao encontrado.")
         ));
     }
 

@@ -29,7 +29,7 @@ Aceite mínimo:
 - [x] Exibir saldo atual por produto.
 - [x] Exibir movimentações por produto.
 - [x] Exibir movimentações por período.
-- [ ] Entrada como documento com vários produtos em um único POST (hoje `POST /api/inventory/entries` recebe um produto).
+- [x] Entrada como documento com vários produtos (`POST /api/inventory/entry-documents`).
 
 Aceite mínimo do que está entregue:
 
@@ -47,9 +47,9 @@ Aceite mínimo do que está entregue:
 - [x] Contrato `POST /api/sales` para venda confirmada com preço vigente do servidor.
 - [x] Baixar estoque após confirmação no servidor.
 - [x] Gerar comprovante simples sem valor fiscal.
-- [ ] A UI do PDV passar a usar `POST /api/sales` quando a API estiver disponível (hoje sempre usa fila + `POST /api/offline/sales/sync`).
-- [ ] Desconto simples quando o perfil permitir (requisito conceitual, sem código).
-- [ ] Mais de um pagamento na mesma venda na UI do PDV (a API já aceita lista).
+- [x] PDV confirma online por `POST /api/sales` (idempotente por `clientSaleId`) e usa a fila quando a API não responde.
+- [x] Desconto limitado por perfil (`GET /api/sales/discount-policy`).
+- [x] Mais de um pagamento na mesma venda.
 
 Aceite mínimo do que está entregue:
 
@@ -87,11 +87,11 @@ Aceite mínimo:
 - [x] Carregar catálogo local de produtos ativos e preços vigentes.
 - [x] Registrar venda offline com identificador local.
 - [x] Persistir venda em fila offline.
-- [x] Enviar vendas pendentes quando a comunicação retornar (login reenvia `PENDING` e `ERROR`).
+- [x] Enviar vendas pendentes quando a comunicação retornar (no login e a cada 2 minutos; reenvia `PENDING` e `ERROR`).
 - [x] Registrar conflitos de preço, produto, pagamento ou estoque.
 - [x] Preservar venda offline original em conflito ou falha.
-- [ ] Badge de sincronização no cabeçalho do PDV (enum `SyncStatus` existe, mas não é atualizado na tela).
-- [ ] Refletir no PDV o aceite/rejeição feito no admin (o status local permanece `CONFLICT`).
+- [x] Indicador de sincronização no PDV (`SyncStatus`) calculado a partir da fila local.
+- [x] Refletir no PDV o aceite/rejeição feito no admin (`GET /api/offline/sales/status`).
 
 Aceite mínimo do que está entregue:
 
@@ -113,15 +113,6 @@ Aceite mínimo:
 
 - Relatórios respeitam filtros básicos.
 - Operador de caixa não acessa relatórios gerenciais salvo autorização explícita.
-
-## Lacunas em relação aos requisitos conceituais
-
-Ainda não há código para:
-
-- Consulta administrativa de `audit_events`.
-- Auditoria de criação e alteração de produto.
-- Cancelamento pós-venda.
-- Fluxo dedicado de redefinição de senha além do `password` opcional em `PUT /api/access/users/{id}`.
 
 ## Fora do MVP
 

@@ -1,6 +1,6 @@
 # Documentação do Mercado One
 
-Índice dos guias. O mapa de comandos e pastas é o `README.md` da raiz. O glossário de domínio é o `CONTEXT.md`. O inventário do que o código faz hoje é [estado-atual.md](estado-atual.md).
+Índice dos guias. O mapa de comandos e pastas é o `README.md` da raiz. O glossário de domínio é o `CONTEXT.md`. Entregue e pendente: [backlog-mvp.md](backlog-mvp.md).
 
 ## Entrada
 
@@ -9,9 +9,8 @@
 | [../README.md](../README.md) | Mapa do monorepo, stack e comandos |
 | [../CONTEXT.md](../CONTEXT.md) | Glossário de domínio |
 | [../AGENTS.md](../AGENTS.md) | Ponte para docs de agentes |
-| [estado-atual.md](estado-atual.md) | O que existe no código agora |
 | [arquitetura.md](arquitetura.md) | Componentes, fronteiras e fluxo de venda |
-| [backlog-mvp.md](backlog-mvp.md) | Trabalho restante |
+| [backlog-mvp.md](backlog-mvp.md) | Entregue e pendente |
 
 ## Uso da loja
 

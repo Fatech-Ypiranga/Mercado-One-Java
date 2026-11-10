@@ -2,7 +2,7 @@
 
 Administrativo web do Mercado One em Angular 22. Interface de administrador, gerente e estoquista. `OPERADOR_CAIXA` autentica, mas não tem rota no shell.
 
-O que as telas fazem: [Uso do admin web](../docs/uso-admin-web.md). Inventário implementado: [Estado atual](../docs/estado-atual.md).
+O que as telas fazem: [Uso do admin web](../docs/uso-admin-web.md). Entregue e pendente: [Backlog MVP](../docs/backlog-mvp.md).
 
 Credencial inicial de desenvolvimento: `admin` / `admin123`.
 

@@ -1,73 +1,52 @@
 # Offline PDV e Sincronização
 
-O modo offline parcial do PDV está implementado. O sistema registra vendas localmente antes de acessar a rede, mantém um catálogo local em SQLite, sincroniza com a API e preserva conflitos para resolução administrativa.
+O PDV registra toda venda no SQLite local antes de acessar a rede. A venda local é a fonte de verdade até o servidor confirmá-la.
 
-## Objetivo
+## Armazenamento local
 
-Permitir que o operador registre vendas presenciais mesmo quando a comunicação com a API estiver temporariamente indisponível, preservando a venda localmente até a sincronização.
+- Caminho padrão: `~/.mercado-one/pdv-offline.sqlite3` (`OfflineStorageConfig`).
+- Fila: `offline_sales`, `offline_sale_items`, `offline_sale_payments` e `offline_sale_sync_attempts` (histórico de tentativas).
+- Catálogo: `local_catalog_products`, substituído por completo no login, na busca vazia bem-sucedida e no botão de atualizar catálogo. Usado quando a API não responde ou não há sessão.
 
-## Estado atual
+## Estados da venda local (`LocalSaleStatus`)
 
-Implementado:
+| Estado | Significado | Reenviada? |
+| --- | --- | --- |
+| `PENDING` | Gravada, ainda não enviada | Sim |
+| `ERROR` | Falha técnica (rede, 5xx, sessão expirada, 409) | Sim |
+| `SENT` | Confirmada no servidor; guarda `remote_sale_id` | Não |
+| `CONFLICT` | Servidor registrou conflito; aguarda decisão no admin | Não; status consultado |
+| `REJECTED` | Recusada (regra de negócio no envio online ou conflito rejeitado no admin) | Não |
 
-- `OfflineStorageConfig` define o caminho local `~/.mercado-one/pdv-offline.sqlite3`.
-- Toda finalização na UI grava a venda na fila (`PENDING`) e só depois chama `POST /api/offline/sales/sync`. Isso vale também quando a API está no ar.
-- Fila SQLite local com venda, itens, pagamentos e tentativas.
-- Catálogo local SQLite com produtos ativos e preços vigentes, atualizado na busca vazia com sucesso, no botão de sincronizar catálogo e no login.
-- Endpoints administrativos para listar e resolver conflitos de sincronização.
-- No login, reenvio de vendas `PENDING` e `ERROR`.
+`SyncStatus` (`ONLINE`, `OFFLINE_READY`, `SYNC_PENDING`, `SYNC_FAILED`) é o indicador exibido no PDV, calculado a partir da fila e da última resposta da API.
 
-Não implementado ainda:
+## Fluxo
 
-- Uso da UI de `POST /api/sales` quando houver rede.
-- Badge `SyncStatus` no cabeçalho (o enum existe; o label inicial `OFFLINE_READY` não muda).
-- Atualização do status local após `ACCEPT`/`REJECT` no admin. A venda no PDV permanece `CONFLICT`.
-- Tela no PDV para revisar a fila de conflitos.
+1. Finalização grava a venda como `PENDING` e mostra o comprovante não fiscal.
+2. Com sessão, o PDV chama `POST /api/sales` com `clientSaleId = localSaleId`. Preço é o vigente no servidor.
+3. A sincronização roda no login, a cada 2 minutos e pelo botão da fila. Uma execução por vez.
+   - Reenvia `PENDING`/`ERROR` em `POST /api/offline/sales/sync`, com os preços praticados no PDV e o `createdAt` local.
+   - Falha de rede interrompe a rodada; 5xx marca só aquela venda como `ERROR` e segue para a próxima.
+   - Consulta `GET /api/offline/sales/status` para vendas em `CONFLICT` e aplica `SENT` ou `REJECTED`.
 
-## Estados locais persistidos
+## Servidor
 
-O PDV persiste os seguintes estados de venda offline (`LocalSaleStatus`):
+`POST /api/offline/sales/sync`:
 
-- `PENDING`: pendente de sincronização.
-- `SENT`: sincronizada e aceita pela API.
-- `CONFLICT`: a API registrou conflito; a venda local é preservada.
-- `ERROR`: falha técnica de sincronização; reenviada no próximo login.
+1. Se já existe venda com o mesmo `clientSaleId`, devolve `SENT` (idempotência; índice único `ux_sales_client_sale_id`).
+2. Valida sem gravar: produto existe e está ativo, preço igual ao vigente, estoque disponível, desconto válido e dentro do limite do perfil, pagamento igual ao total.
+3. Com conflito, grava ou atualiza `offline_sale_conflicts` (`PENDING`) e devolve `CONFLICT`.
+4. Sem conflito, confirma a venda com a data local (`createdAt`) e fecha conflito pendente anterior da mesma venda.
 
-O enum `SyncStatus` cobre rótulos de exibição (`ONLINE`, `OFFLINE_READY`, `SYNC_PENDING`, `SYNC_FAILED`). Não é o status persistido da venda.
+Códigos de conflito: `PRODUCT_NOT_FOUND`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `STOCK_INSUFFICIENT`, `DISCOUNT_INVALID`, `DISCOUNT_NOT_ALLOWED`, `PAYMENT_TOTAL`.
 
-No servidor, `OfflineConflictStatus` assume um dos valores `PENDING`, `ACCEPTED` e `REJECTED`. Esses valores não são escritos de volta no SQLite.
+## Resolução no admin
 
-## Fluxo atual
+`POST /api/offline/sales/conflicts/{id}/resolve` (ADMIN, GERENTE):
 
-1. Operador monta o carrinho (API ou catálogo local).
-2. PDV gera `localSaleId`, grava venda/itens/pagamentos em SQLite e mostra comprovante.
-3. PDV chama `POST /api/offline/sales/sync`.
-4. API valida produto, preço local vs vigente, pagamento e, na confirmação, estoque.
-5. Aceite automático: status local `SENT` e `remoteSaleId`.
-6. Conflito: status local `CONFLICT`; pendência no admin.
-7. Falha de rede/servidor: status local `ERROR`.
-8. Administrador ou gerente aceita ou rejeita no admin web. O PDV não é notificado.
+- `ACCEPT`: confirma a venda com preços, desconto, data e operador originais. Como a mercadoria já foi entregue, o estoque pode ficar negativo. Produto inativo ou inexistente impede o aceite.
+- `REJECT`: exige observação. A venda local passa a `REJECTED` na próxima sincronização.
 
-## Conflitos
+## Limites
 
-Códigos devolvidos pela API:
-
-- `PRODUCT_NOT_FOUND`
-- `PRODUCT_INACTIVE`
-- `PRICE_CHANGED`
-- `PAYMENT_TOTAL`
-- `STOCK_INSUFFICIENT` (saldo atual menor que a quantidade vendida; verificado antes de gravar)
-- `DISCOUNT_INVALID` e `DISCOUNT_NOT_ALLOWED`
-
-`ACCEPT` registra a venda com os preços praticados pelo PDV, baixa estoque e vincula `remoteSaleId`. `REJECT` encerra a pendência no servidor. Em ambos os casos a linha SQLite permanece `CONFLICT`.
-
-## Limites do MVP
-
-O modo offline não permite:
-
-- Cadastro de produtos.
-- Cadastro completo de clientes.
-- Cancelamento pós-venda.
-- Ajuste de estoque.
-- Emissão fiscal.
-- Desconto.
+Offline não permite cadastro de produto, ajuste de estoque, cancelamento pós-venda nem emissão fiscal.

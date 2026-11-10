@@ -1,7 +1,7 @@
 package com.mercadoone.backend.modules.access.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -133,7 +133,7 @@ class UserControllerTests {
     }
 
     @Test
-    void staleTokenUsesCurrentRoleFromDatabase() throws Exception {
+    void staleTokenIsRevokedAfterUserChange() throws Exception {
         String adminToken = loginToken("admin", "admin123");
         long userId = createUser(adminToken, "Admin Temporario", "admin-temp", "ADMIN", true);
         String staleAdminToken = loginToken("admin-temp", "senha123");
@@ -153,7 +153,7 @@ class UserControllerTests {
 
         mockMvc.perform(get("/api/access/users")
                         .header("Authorization", "Bearer " + staleAdminToken))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     private long createUser(String token, String name, String login, String role, boolean active) throws Exception {

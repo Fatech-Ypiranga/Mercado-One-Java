@@ -6,7 +6,7 @@ O Mercado One será um ERP para pequenos mercados varejistas, com CRM e PDV inte
 
 O documento define requisitos em nível suficiente para orientar backlog, modelagem de dados e implementação futura usando a stack restrita do projeto: Java, Angular, TypeScript, HTML, CSS e SQL.
 
-Nota de manutenção: este documento é conceitual e registra requisitos/critérios de aceite do MVP. Para saber o que já está implementado no código, consulte `docs/estado-atual.md`, `docs/backlog-mvp.md` e os READMEs dos subprojetos.
+Nota de manutenção: este documento é conceitual e registra requisitos/critérios de aceite do MVP. Para saber o que já está implementado no código, consulte `docs/backlog-mvp.md` e os READMEs dos subprojetos.
 
 Requisitos conceituais ainda sem código correspondente: desconto simples no PDV, cancelamento pós-venda, entrada de estoque como documento multi-item, consulta administrativa de auditoria e auditoria de criação/alteração de produto. O PDV atual sempre persiste a venda localmente e sincroniza por `POST /api/offline/sales/sync`; `POST /api/sales` existe na API, mas não é o caminho da UI de caixa.
 

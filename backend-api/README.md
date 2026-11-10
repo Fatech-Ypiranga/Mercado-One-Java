@@ -2,7 +2,7 @@
 
 API REST do Mercado One: contratos de servidor, regras centrais do MVP e persistência em PostgreSQL.
 
-O que está implementado: [Estado atual](../docs/estado-atual.md). Fatias e acoplamento: [Arquitetura](../docs/arquitetura.md).
+Entregue e pendente: [Backlog MVP](../docs/backlog-mvp.md). Fatias e acoplamento: [Arquitetura](../docs/arquitetura.md).
 
 ## Comandos
 

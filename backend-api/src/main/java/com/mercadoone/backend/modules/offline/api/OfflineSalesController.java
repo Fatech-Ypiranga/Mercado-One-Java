@@ -1,17 +1,17 @@
 package com.mercadoone.backend.modules.offline.api;
 
 import com.mercadoone.backend.api.common.ApiEnvelope;
-import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
+import com.mercadoone.backend.modules.access.application.AuthenticatedUser;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService.ConflictResolutionAction;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService.LocalSaleRemoteStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineConflictStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineSaleConflictRecord;
-import com.mercadoone.backend.modules.sales.api.SalesController.SaleResponse;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleConflict;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleData;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleItemData;
-import com.mercadoone.backend.modules.sales.application.SalesService.OfflineSaleSyncResult;
+import com.mercadoone.backend.modules.sales.domain.Sale;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleConflict;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleData;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleItemData;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.OfflineSaleSyncResult;
 import com.mercadoone.backend.modules.sales.application.SalesService.SalePaymentData;
 import com.mercadoone.backend.modules.sales.domain.PaymentMethod;
 import jakarta.validation.Valid;
@@ -123,15 +123,21 @@ public class OfflineSalesController {
 
     public record OfflineSaleSyncResponse(
             String status,
-            SaleResponse sale,
+            SyncedSale sale,
             List<OfflineSaleConflict> conflicts
     ) {
         static OfflineSaleSyncResponse from(OfflineSaleSyncResult result) {
             return new OfflineSaleSyncResponse(
                     result.status(),
-                    result.sale() == null ? null : SaleResponse.from(result.sale()),
+                    result.sale() == null ? null : SyncedSale.from(result.sale()),
                     result.conflicts()
             );
+        }
+    }
+
+    public record SyncedSale(Long id, String clientSaleId, java.time.Instant createdAt, BigDecimal grossAmount, BigDecimal discountAmount, BigDecimal totalAmount) {
+        static SyncedSale from(Sale sale) {
+            return new SyncedSale(sale.getId(), sale.getClientSaleId(), sale.getCreatedAt(), sale.getGrossAmount(), sale.getDiscountAmount(), sale.getTotalAmount());
         }
     }
 

@@ -141,7 +141,7 @@ public class CheckoutService {
                     "API indisponivel. Venda salva na fila offline e sera reenviada.");
         } catch (ApiRejectedException exception) {
             lastApiReachable = true;
-            if (exception.isAuthenticationFailure()) {
+            if (exception.isAuthenticationFailure() || exception.statusCode() == 409) {
                 queue.markError(sale.localSaleId(), exception.getMessage());
                 return new CheckoutResult(Outcome.QUEUED_OFFLINE, sale, null,
                         "Sessao expirada. Venda salva na fila offline; entre novamente para enviar.");
@@ -155,7 +155,7 @@ public class CheckoutService {
      * Reenvia vendas {@code PENDING}/{@code ERROR} e consulta a API sobre vendas em {@code CONFLICT}
      * para refletir aceite ou rejeicao feitos no admin.
      */
-    public SyncSummary synchronize(Session session) {
+    public synchronized SyncSummary synchronize(Session session) {
         if (!session.authenticated()) {
             return new SyncSummary(0, 0, 0, 0, 0);
         }
