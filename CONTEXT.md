@@ -73,7 +73,7 @@ Alteração manual de saldo feita por usuário autorizado, sempre com justificat
 _Avoid_: Correção solta, acerto
 
 **Movimentação de Estoque**:
-Registro imutável de alteração no saldo de um produto, originada por entrada, venda sincronizada ou ajuste manual.
+Registro imutável de alteração no saldo de um produto, originada por entrada, venda confirmada, cancelamento de venda ou ajuste manual.
 _Avoid_: Lançamento, baixa
 
 **Fila Offline**:

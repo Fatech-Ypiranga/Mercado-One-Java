@@ -2,7 +2,7 @@
 
 Este documento registra o esquema físico implementado no PostgreSQL da API e no SQLite do PDV. Para entidades, relacionamentos e cardinalidades de negócio, consulte o [MER conceitual](modelo-conceitual.md).
 
-Fontes: [migrações Flyway V1–V7](../backend-api/src/main/resources/db/migration/), [OfflineSaleQueue.java](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineSaleQueue.java) e [OfflineCatalogStore.java](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineCatalogStore.java).
+Fontes: [migrações Flyway V1–V8](../backend-api/src/main/resources/db/migration/), [OfflineSaleQueue.java](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineSaleQueue.java) e [OfflineCatalogStore.java](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineCatalogStore.java).
 
 ## Convenções do dicionário
 
@@ -85,7 +85,13 @@ Fontes: [migrações Flyway V1–V7](../backend-api/src/main/resources/db/migrat
 | | `operator_user_id` | bigint | FK → `app_users.id`, N | Operador responsável. |
 | | `customer_id` | bigint | FK → `customers.id`, O | Cliente identificado, se houver. |
 | | `status` | varchar(32) | N | Estado da venda. |
-| | `total_amount` | numeric(14,2) | N | Total da venda. |
+| | `gross_amount` | numeric(14,2) | N | Total bruto, antes do desconto. |
+| | `discount_amount` | numeric(14,2) | N | Desconto concedido na venda. |
+| | `total_amount` | numeric(14,2) | N | Total líquido (bruto menos desconto). |
+| | `client_sale_id` | varchar(80) | O, UK | ID gerado pelo PDV; garante idempotência no envio. |
+| | `canceled_at` | timestamptz | O | Momento do cancelamento. |
+| | `canceled_by_user_id` | bigint | FK → `app_users.id`, O | Usuário que cancelou. |
+| | `cancel_reason` | varchar(500) | O | Motivo do cancelamento. |
 | | `created_at` | timestamptz | N | Momento da venda. |
 | `sale_items` | `id` | bigserial | PK, N | Identificador do item. |
 | | `sale_id` | bigint | FK → `sales.id`, N | Venda que contém o item. |
@@ -129,6 +135,7 @@ Fontes: [migrações Flyway V1–V7](../backend-api/src/main/resources/db/migrat
 | `offline_sales` | `local_sale_id` | text | PK, N | ID da venda no PDV. |
 | | `created_at` | text | N | Data/hora de criação em ISO-8601. |
 | | `customer_id` | integer | O | ID lógico do cliente no servidor. |
+| | `discount_amount` | text | N, padrão `'0'` | Desconto decimal da venda, em texto. |
 | | `status` | text | N | Situação local da sincronização. |
 | | `remote_sale_id` | integer | O | ID lógico da venda confirmada no servidor. |
 | | `last_error` | text | O | Última mensagem de erro ou conflito. |
@@ -159,10 +166,10 @@ Fontes: [migrações Flyway V1–V7](../backend-api/src/main/resources/db/migrat
 | Campo | Valores implementados | Fonte |
 | --- | --- | --- |
 | `app_users.role` | `ADMIN`, `GERENTE`, `OPERADOR_CAIXA`, `ESTOQUISTA` | [UserRole.java](../backend-api/src/main/java/com/mercadoone/backend/modules/access/domain/UserRole.java) |
-| `inventory_movements.type` | `ENTRY`, `ADJUSTMENT`, `SALE` | [InventoryMovementType.java](../backend-api/src/main/java/com/mercadoone/backend/modules/inventory/domain/InventoryMovementType.java) |
-| `sales.status` | `CONFIRMED` | [SaleStatus.java](../backend-api/src/main/java/com/mercadoone/backend/modules/sales/domain/SaleStatus.java) |
+| `inventory_movements.type` | `ENTRY`, `ADJUSTMENT`, `SALE`, `SALE_CANCELLATION` | [InventoryMovementType.java](../backend-api/src/main/java/com/mercadoone/backend/modules/inventory/domain/InventoryMovementType.java) |
+| `sales.status` | `CONFIRMED`, `CANCELED` | [SaleStatus.java](../backend-api/src/main/java/com/mercadoone/backend/modules/sales/domain/SaleStatus.java) |
 | `sale_payments.method`, `offline_sale_payments.method` | `CASH`, `CARD`, `PIX`, `STORE_CREDIT` | [PaymentMethod da API](../backend-api/src/main/java/com/mercadoone/backend/modules/sales/domain/PaymentMethod.java) e [PaymentMethod do PDV](../pdv-desktop/src/main/java/com/mercadoone/pdv/sales/PaymentMethod.java) |
 | `offline_sale_conflicts.status` | `PENDING`, `ACCEPTED`, `REJECTED` | [OfflineConflictStatus.java](../backend-api/src/main/java/com/mercadoone/backend/modules/offline/domain/OfflineConflictStatus.java) |
-| `offline_sales.status` | `PENDING`, `SENT`, `CONFLICT`, `ERROR` | [LocalSaleStatus.java](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/LocalSaleStatus.java) |
+| `offline_sales.status` | `PENDING`, `SENT`, `CONFLICT`, `ERROR`, `REJECTED` | [LocalSaleStatus.java](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/LocalSaleStatus.java) |
 
 Esses domínios são enums do código; as migrações não criam `CHECK`/enum SQL para eles. Os índices de busca e filtros adicionais constam nas migrações, mas não mudam as cardinalidades. A presença de `references` no DDL do SQLite declara a relação; o código de conexão não habilita explicitamente `PRAGMA foreign_keys`, portanto não se deve presumir sua fiscalização em tempo de execução.

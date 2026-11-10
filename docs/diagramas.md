@@ -151,7 +151,12 @@ classDiagram
         Long id
         Long operatorUserId
         SaleStatus status
+        BigDecimal grossAmount
+        BigDecimal discountAmount
         BigDecimal totalAmount
+        String clientSaleId
+        Instant canceledAt
+        String cancelReason
     }
 
     class SaleItem {
@@ -204,6 +209,7 @@ classDiagram
         ENTRY
         ADJUSTMENT
         SALE
+        SALE_CANCELLATION
     }
 
     class PaymentMethod {
@@ -217,6 +223,7 @@ classDiagram
     class SaleStatus {
         <<enumeration>>
         CONFIRMED
+        CANCELED
     }
 
     class OfflineConflictStatus {
@@ -243,7 +250,7 @@ classDiagram
 
 ## Banco servidor
 
-Use este ERD para revisar as tabelas servidoras criadas pelas migrations Flyway de `V2` a `V7`. O SQLite local do PDV aparece em diagramas separados porque não é fonte primária de cadastro.
+Use este ERD para revisar as tabelas servidoras criadas pelas migrations Flyway de `V2` a `V8`. O SQLite local do PDV aparece em diagramas separados porque não é fonte primária de cadastro.
 
 ```mermaid
 erDiagram
@@ -322,7 +329,13 @@ erDiagram
         bigint operator_user_id FK
         bigint customer_id FK
         varchar status
+        numeric gross_amount
+        numeric discount_amount
         numeric total_amount
+        varchar client_sale_id UK
+        datetime canceled_at
+        bigint canceled_by_user_id FK
+        varchar cancel_reason
         datetime created_at
     }
 
@@ -370,6 +383,7 @@ erDiagram
     suppliers ||--o{ inventory_movements : fornece
     app_users ||--o{ inventory_movements : cria
     app_users ||--o{ sales : opera
+    app_users |o--o{ sales : cancela
     customers ||--o{ sales : compra
     sales ||--|{ sale_items : contém
     catalog_products ||--o{ sale_items : vendido_em
@@ -512,7 +526,7 @@ stateDiagram-v2
 
 ## Fluxo de estoque
 
-Use este diagrama para entender as três origens de movimentação de estoque no MVP: entrada, ajuste manual e baixa por venda.
+Use este diagrama para entender as quatro origens de movimentação de estoque no MVP: entrada (avulsa ou nota com vários produtos), ajuste manual, baixa por venda e devolução por cancelamento de venda.
 
 ```mermaid
 flowchart TB
@@ -520,25 +534,30 @@ flowchart TB
 
     Start --> Choice{Tipo de operação}
 
-    Choice -->|"Entrada"| Entry["Registrar entrada\nproduto ativo, quantidade,\nfornecedor opcional"]
+    Choice -->|"Entrada"| Entry["Registrar entrada ou nota\nprodutos ativos, quantidades,\nfornecedor opcional"]
     Choice -->|"Ajuste"| Adjustment["Registrar ajuste manual\nnova quantidade e justificativa"]
     Choice -->|"Venda confirmada"| SaleOut["Baixa por venda\nonline ou offline aceita"]
+    Choice -->|"Venda cancelada"| SaleReturn["Devolução por cancelamento\nmotivo obrigatório"]
 
     Entry --> BalanceEntry["Localizar ou criar saldo\nInventoryBalance"]
     Adjustment --> BalanceAdjustment["Localizar ou criar saldo\nInventoryBalance"]
     SaleOut --> BalanceSale["Bloquear saldo do produto\nvalidar estoque suficiente"]
+    SaleReturn --> BalanceReturn["Localizar ou criar saldo\nInventoryBalance"]
 
-    BalanceEntry --> MovementEntry["Gravar InventoryMovement\nENTRY com fornecedor opcional"]
+    BalanceEntry --> MovementEntry["Gravar InventoryMovement\nENTRY por item"]
     BalanceAdjustment --> MovementAdjustment["Gravar InventoryMovement\nADJUSTMENT com motivo"]
     BalanceSale --> MovementSale["Gravar InventoryMovement\nSALE com delta negativo"]
+    BalanceReturn --> MovementReturn["Gravar InventoryMovement\nSALE_CANCELLATION com delta positivo"]
 
-    MovementEntry --> AuditEntry["Auditar INVENTORY_ENTRY"]
+    MovementEntry --> AuditEntry["Auditar INVENTORY_ENTRY\nou INVENTORY_ENTRY_DOCUMENT"]
     MovementAdjustment --> AuditAdjustment["Auditar INVENTORY_ADJUSTMENT"]
     MovementSale --> AuditSale["Auditar INVENTORY_SALE_OUT"]
+    MovementReturn --> AuditReturn["Auditar INVENTORY_SALE_RETURN"]
 
     AuditEntry --> Current["Saldo atual atualizado\ne movimentação imutável"]
     AuditAdjustment --> Current
     AuditSale --> Current
+    AuditReturn --> Current
 
     Current --> Reports["Consultas e relatórios\nsaldos, movimentações,\nvendas e produtos mais vendidos"]
 ```
@@ -546,6 +565,6 @@ flowchart TB
 ## Fora do escopo destes diagramas
 
 - Casos de uso detalhados: o backlog MVP já comunica esse escopo com mais precisão.
-- Deployment cloud ou produção: a infraestrutura documentada hoje é local.
+- Deployment: o piloto na Azure (App Service, PostgreSQL Flexible Server e Static Web Apps) está descrito em `infra/README.md`, sem diagrama próprio.
 - Diagramas de telas Angular ou JavaFX: o uso das telas está em `docs/uso-admin-web.md` e `docs/uso-pdv.md`.
 - Módulos fora do MVP, como NFC-e, NF-e, TEF, financeiro completo, multi-loja, e-commerce ou aplicativo mobile.

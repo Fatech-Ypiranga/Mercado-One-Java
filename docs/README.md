@@ -29,6 +29,8 @@
 | [dados-e-migracoes.md](dados-e-migracoes.md) | PostgreSQL, Flyway e SQLite do PDV |
 | [modelo-conceitual.md](modelo-conceitual.md) | MER conceitual com entidades, relacionamentos, atributos e cardinalidades |
 | [dicionario-de-dados.md](dicionario-de-dados.md) | Dicionário físico dos campos persistidos |
+| [modelo-logico-relacional.md](modelo-logico-relacional.md) | MLR derivado do schema real, cardinalidades e normalização |
+| [assets/modelo-fisico.sql](assets/modelo-fisico.sql) | Modelo físico: DDL do PostgreSQL gerado das migrations V1–V8 |
 | [seguranca.md](seguranca.md) | JWT, cookie, CORS, perfis e auditoria |
 | [offline-pdv-sync.md](offline-pdv-sync.md) | Fila local, sync e conflitos |
 | [diagramas.md](diagramas.md) | Mermaid de arquitetura, domínio e fluxos |

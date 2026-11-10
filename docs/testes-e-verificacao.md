@@ -42,8 +42,17 @@ mvn test
 - Backend: testes de criação, atualização, filtros e autorização básica de clientes.
 - Backend: teste de `GET /api/system/info` validando envelope e roles.
 - Backend: testes de fornecedores, sincronização offline, resolução manual de conflitos offline e produtos mais vendidos.
+- Backend (`SaleLifecycleTests`): desconto do gerente, limite de desconto do operador, idempotência por `clientSaleId`, cancelamento com devolução de estoque, "minhas vendas" do operador e cadastro rápido de cliente.
+- Backend (`OfflineStatusTests`): reenvio sem duplicar venda, venda offline com desconto, desconto acima do limite virando conflito e consulta de status após resolução.
+- Backend (`AuditControllerTests`): auditoria de produto, consulta restrita a `ADMIN` e nota de entrada multi-item atômica.
+- Backend (`PasswordAndOriginTests`): redefinição de senha pelo admin, troca da própria senha, admin impedido de se desativar ou rebaixar e recusa de escrita por cookie de origem não confiável.
+- Backend (`ModuleBoundaryTests`, ArchUnit): módulos não dependem de `api` nem de `infrastructure` de outros módulos.
+- Backend (`PostgresMigrationTests`, Testcontainers): migrations Flyway V1–V8 aplicadas em PostgreSQL real, validação das entidades e fluxo básico de venda. Ignorado sem Docker.
 - Admin web: testes de raiz/shell, `AuthService` (cookie/`sessionStorage`, sem JWT em `localStorage`), `AccessService`, `InventoryService`, `CustomerService`, `SalesService`, `CatalogService`, `SupplierService`, `OfflineService`, interceptor com `withCredentials`, validação/erro do login, timeout de requisição sem resposta, dashboard, vendas e formulários/páginas de usuários, estoque, categorias, produtos, clientes, fornecedores e conflitos offline.
 - PDV desktop: teste de `OfflineStorageConfig`, fila offline SQLite, catálogo local SQLite e cliente HTTP (login, consultas e corpo de `POST /api/sales` / sync).
+- PDV desktop (`CheckoutServiceTests`): confirmação online com `clientSaleId`, fila quando a API cai e reenvio, erro 5xx sem travar a fila, recusa de negócio como `REJECTED`, sessão expirada, venda sem sessão, validação de pagamentos múltiplos e desconto, reflexo da resolução de conflito e comprovante com desconto e aviso não fiscal.
+
+O CI (`.github/workflows/ci.yml`) roda `mvn -B test` no backend e no PDV e `npm test` e `npm run build` no admin web, em pull requests e em push na `main`. Os testes e2e (Playwright) não rodam no CI.
 
 ## Estado de verificação desta atualização
 

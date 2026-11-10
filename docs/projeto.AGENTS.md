@@ -11,8 +11,7 @@ Antes de editar, leia nesta ordem:
 3. `docs/README.md`
 4. `docs/backlog-mvp.md`
 5. `docs/arquitetura.md`
-6. `docs/backlog-mvp.md`
-7. `docs/diagramas.md`
+6. `docs/diagramas.md`
 
 Depois leia o README do subprojeto afetado:
 

@@ -8,7 +8,7 @@ O documento define requisitos em nível suficiente para orientar backlog, modela
 
 Nota de manutenção: este documento é conceitual e registra requisitos/critérios de aceite do MVP. Para saber o que já está implementado no código, consulte `docs/backlog-mvp.md` e os READMEs dos subprojetos.
 
-Requisitos conceituais ainda sem código correspondente: desconto simples no PDV, cancelamento pós-venda, entrada de estoque como documento multi-item, consulta administrativa de auditoria e auditoria de criação/alteração de produto. O PDV atual sempre persiste a venda localmente e sincroniza por `POST /api/offline/sales/sync`; `POST /api/sales` existe na API, mas não é o caminho da UI de caixa.
+O PDV atual sempre persiste a venda localmente antes da rede, confirma online por `POST /api/sales` e reenvia a fila por `POST /api/offline/sales/sync`.
 
 ## 2. Objetivos do MVP
 

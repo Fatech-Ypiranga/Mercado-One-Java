@@ -32,8 +32,9 @@ Flyway está habilitado no backend. As migrations atuais são:
 - `V5__customers.sql`: clientes e vínculo opcional da venda ao cliente.
 - `V6__suppliers_offline_audit.sql`: fornecedores, vínculo real opcional em movimentações de estoque e eventos de auditoria.
 - `V7__offline_conflict_resolution.sql`: conflitos de venda offline, status de resolução e vínculo opcional com venda aceita.
+- `V8__sales_discount_cancel_idempotency.sql`: total bruto e desconto da venda, `client_sale_id` único para idempotência, dados de cancelamento (`canceled_at`, `canceled_by_user_id`, `cancel_reason`) e índices de status da venda e de ação da auditoria.
 
-O campo `sales.status` no servidor só persiste `CONFIRMED`. O valor `CANCELED` aparece em tipo TypeScript do admin e em diagramas antigos; não existe no enum Java.
+`sales.status` persiste `CONFIRMED` ou `CANCELED`. `inventory_movements.type` persiste `ENTRY`, `ADJUSTMENT`, `SALE` ou `SALE_CANCELLATION`.
 
 Diretrizes:
 
@@ -58,7 +59,7 @@ spring:
 
 Isso significa que a aplicação valida o schema existente em vez de criá-lo automaticamente.
 
-Os testes do backend não usam esse PostgreSQL. Cada teste sobe H2 em memória, desliga o Flyway (`spring.flyway.enabled=false`) e deixa o Hibernate criar o schema (`ddl-auto=create-drop`).
+Os testes do backend não usam esse PostgreSQL. A maioria sobe H2 em memória, desliga o Flyway (`spring.flyway.enabled=false`) e deixa o Hibernate criar o schema (`ddl-auto=create-drop`). `PostgresMigrationTests` aplica as migrations Flyway num PostgreSQL via Testcontainers e é ignorado quando não há Docker.
 
 ## SQLite do PDV
 
@@ -78,10 +79,10 @@ O SQLite local não deve virar fonte primária de cadastro. O servidor continua 
 
 Schema local atual do PDV:
 
-- `offline_sales`: venda local, cliente opcional, status, venda remota quando sincronizada, erro e tentativas.
+- `offline_sales`: venda local, cliente opcional, desconto, status, venda remota quando sincronizada, erro e tentativas. A coluna `discount_amount` é adicionada na abertura do banco quando falta em arquivos antigos.
 - `offline_sale_items`: itens da venda local com produto, quantidade e preço local.
 - `offline_sale_payments`: pagamentos locais.
 - `offline_sale_sync_attempts`: histórico simples de tentativas de sincronização.
 - `local_catalog_products`: catálogo local de produtos ativos usado como fallback de busca e venda offline.
 
-Status local da venda (`LocalSaleStatus`): `PENDING`, `SENT`, `CONFLICT`, `ERROR`, `REJECTED`. Resolução administrativa `ACCEPTED`/`REJECTED` vive na tabela servidor `offline_sale_conflicts` e não é copiada de volta para o SQLite.
+Status local da venda (`LocalSaleStatus`): `PENDING`, `SENT`, `CONFLICT`, `ERROR`, `REJECTED`. A resolução administrativa `ACCEPTED`/`REJECTED` vive na tabela servidor `offline_sale_conflicts`; o PDV a consulta por `GET /api/offline/sales/status` e grava `SENT` ou `REJECTED` na venda local.
