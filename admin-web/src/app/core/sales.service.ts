@@ -41,10 +41,16 @@ export interface Sale {
   operatorUserId: number;
   customer: SaleCustomerSummary | null;
   status: SaleStatus;
+  grossAmount: number;
+  discountAmount: number;
   totalAmount: number;
   items: SaleItem[];
   payments: SalePayment[];
   createdAt: string;
+  clientSaleId: string | null;
+  canceledAt: string | null;
+  canceledByUserId: number | null;
+  cancelReason: string | null;
 }
 
 export interface SaleFilters {
@@ -66,7 +72,9 @@ export interface PageData {
 
 export interface SalesTotals {
   saleCount: number;
+  canceledCount: number;
   totalAmount: number;
+  discountAmount: number;
   totalItems: number;
   totalsByPaymentMethod: Partial<Record<PaymentMethod, number>>;
 }
@@ -98,6 +106,16 @@ export class SalesService {
     return this.http.get<ApiEnvelope<SalesReport>>(`${this.apiClient.apiBaseUrl}/api/sales`, {
       params: this.params(filters),
     });
+  }
+
+  mySales(filters: Pick<SaleFilters, 'from' | 'to' | 'status' | 'page' | 'size'> = {}): Observable<ApiEnvelope<SalesReport>> {
+    return this.http.get<ApiEnvelope<SalesReport>>(`${this.apiClient.apiBaseUrl}/api/sales/mine`, {
+      params: this.params(filters),
+    });
+  }
+
+  cancelSale(id: number, reason: string): Observable<ApiEnvelope<Sale>> {
+    return this.http.post<ApiEnvelope<Sale>>(`${this.apiClient.apiBaseUrl}/api/sales/${id}/cancel`, { reason });
   }
 
   exportCsv(filters: SaleFilters = {}): Observable<string> {
