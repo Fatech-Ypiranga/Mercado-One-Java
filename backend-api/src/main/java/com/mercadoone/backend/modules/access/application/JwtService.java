@@ -33,16 +33,31 @@ public class JwtService {
         Instant expiresAt = Instant.now().plusSeconds(expirationSeconds);
         String header = encode("{\"alg\":\"HS256\",\"typ\":\"JWT\"}");
         String payload = encode("""
-                {"sub":"%s","login":"%s","name":"%s","role":"%s","exp":%d}
+                {"sub":"%s","login":"%s","name":"%s","role":"%s","iat":%d,"exp":%d}
                 """.formatted(
                 user.getId(),
                 escapeJson(user.getLogin()),
                 escapeJson(user.getName()),
                 user.getRole().name(),
+                Instant.now().toEpochMilli(),
                 expiresAt.getEpochSecond()
         ).trim());
         String unsignedToken = header + "." + payload;
         return new TokenPayload(unsignedToken + "." + sign(unsignedToken), expiresAt);
+    }
+
+    /**
+     * Token emitido antes da ultima alteracao do usuario (senha, perfil, status) deixa de valer.
+     * {@code iat} em milissegundos; tokens antigos sem {@code iat} sao recusados.
+     */
+    public boolean issuedBefore(String token, Instant instant) {
+        String[] parts = token.split("\\.");
+        try {
+            String payload = new String(URL_DECODER.decode(parts[1]), StandardCharsets.UTF_8);
+            return Long.parseLong(readString(payload, "iat")) < instant.toEpochMilli();
+        } catch (RuntimeException exception) {
+            return true;
+        }
     }
 
     public Optional<AuthenticatedUser> validate(String token) {
@@ -140,6 +155,4 @@ public class JwtService {
     public record TokenPayload(String accessToken, Instant expiresAt) {
     }
 
-    public record AuthenticatedUser(Long id, String login, String name, UserRole role) {
-    }
 }

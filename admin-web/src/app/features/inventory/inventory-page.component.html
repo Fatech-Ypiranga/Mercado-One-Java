@@ -1,0 +1,245 @@
+<section class="page-header">
+  <p>Estoque</p>
+  <h1>Saldos e movimentações</h1>
+  <span>Entradas e ajustes manuais com histórico imutável por produto.</span>
+</section>
+
+<section class="filter-rule" aria-label="Filtros de estoque">
+  <label>
+    Buscar saldo
+    <input type="search" [formControl]="searchControl" placeholder="Produto, SKU ou código" />
+  </label>
+  <label>
+    Status do produto
+    <select [formControl]="activeControl">
+      <option value="">Todos</option>
+      <option value="true">Ativos</option>
+      <option value="false">Inativos</option>
+    </select>
+  </label>
+  <label>
+    Tipo de movimento
+    <select [formControl]="movementTypeControl">
+      <option value="">Todos</option>
+      <option value="ENTRY">Entradas</option>
+      <option value="ADJUSTMENT">Ajustes</option>
+      <option value="SALE">Vendas</option>
+      <option value="SALE_CANCELLATION">Cancelamentos de venda</option>
+    </select>
+  </label>
+  <label>
+    Fornecedor
+    <select [formControl]="supplierFilterControl">
+      <option [ngValue]="null">Todos</option>
+      @for (supplier of activeSuppliers; track supplier.id) {
+        <option [ngValue]="supplier.id">{{ supplier.name }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    De
+    <input type="date" [formControl]="movementFromControl" />
+  </label>
+  <label>
+    Até
+    <input type="date" [formControl]="movementToControl" />
+  </label>
+  <button type="button" class="secondary-button" (click)="load()">Aplicar filtros</button>
+</section>
+
+@if (errorMessage && !saving) {
+  <p class="form-error" role="alert">{{ errorMessage }}</p>
+}
+@if (successMessage) {
+  <p class="form-success" role="status">{{ successMessage }}</p>
+}
+
+<section class="workspace">
+  <section class="data-table" aria-labelledby="balances-heading">
+    <h2 id="balances-heading">Saldos atuais</h2>
+    @if (loadingBalances) {
+      <p class="state-message" role="status">{{ balances.length ? 'Atualizando saldos...' : 'Carregando saldos...' }}</p>
+    }
+    @if (!loadingBalances && balances.length === 0) {
+      <p class="state-message">Nenhum saldo neste filtro. Produtos só aparecem após a primeira movimentação.</p>
+    }
+    @if (balances.length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Produto</th>
+              <th class="numeric" scope="col">Saldo</th>
+              <th scope="col">Status</th>
+              <th scope="col">Atualizado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (balance of balances; track balance.id) {
+              <tr>
+                <td data-label="Produto">
+                  <strong>{{ balance.product.name }}</strong>
+                  <small class="mono">{{ balance.product.sku || balance.product.barcode || 'Sem código' }}</small>
+                </td>
+                <td class="numeric" data-label="Saldo">{{ balance.quantity | number:'1.0-3' }} {{ balance.product.unit }}</td>
+                <td data-label="Status">
+                  <span class="status-stamp" [class.inactive]="!balance.product.active">
+                    {{ balance.product.active ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+                <td class="numeric" data-label="Atualizado">{{ balance.updatedAt | date:'short' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <h2>Registrar movimentação</h2>
+    <label>
+      Tipo
+      <select formControlName="type">
+        <option value="ENTRY">Entrada de um produto</option>
+        <option value="DOCUMENT">Nota de entrada (vários produtos)</option>
+        <option value="ADJUSTMENT">Ajuste manual</option>
+      </select>
+    </label>
+    @if (!isDocument) {
+      <label>
+        Produto
+        <select formControlName="productId">
+          <option [ngValue]="null">Selecione</option>
+          @for (product of activeProducts; track product.id) {
+            <option [ngValue]="product.id">{{ product.name }} - {{ product.sku || product.barcode || product.unit }}</option>
+          }
+        </select>
+      </label>
+    }
+
+    @if (isDocument) {
+      <fieldset class="document-lines" formArrayName="lines">
+        <legend>Itens da nota</legend>
+        @for (line of lines.controls; track line; let index = $index) {
+          <div class="document-line" [formGroupName]="index">
+            <label>
+              Produto {{ index + 1 }}
+              <select formControlName="productId">
+                <option [ngValue]="null">Selecione</option>
+                @for (product of activeProducts; track product.id) {
+                  <option [ngValue]="product.id">{{ product.name }} - {{ product.sku || product.barcode || product.unit }}</option>
+                }
+              </select>
+            </label>
+            <label>
+              Quantidade
+              <input class="numeric" type="number" min="0.001" step="0.001" formControlName="quantity" />
+            </label>
+            <button type="button" class="ghost-button" (click)="removeLine(index)" [disabled]="lines.length === 1" [attr.aria-label]="'Remover item ' + (index + 1)">Remover</button>
+          </div>
+        }
+        <button type="button" class="ghost-button" (click)="addLine()">Adicionar item</button>
+      </fieldset>
+    }
+
+    @if (isEntry || isDocument) {
+      @if (isEntry) {
+        <label>
+          Quantidade de entrada
+          <input class="numeric" type="number" min="0.001" step="0.001" formControlName="quantity" />
+        </label>
+      }
+      <label>
+        Fornecedor
+        <select formControlName="supplierId">
+          <option [ngValue]="null">Sem fornecedor</option>
+          @for (supplier of activeSuppliers; track supplier.id) {
+            <option [ngValue]="supplier.id">{{ supplier.name }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Documento
+        <input class="mono" type="text" formControlName="documentNumber" />
+      </label>
+    } @else {
+      <label>
+        Novo saldo
+        <input class="numeric" type="number" min="0" step="0.001" formControlName="newQuantity" />
+      </label>
+      <label>
+        Justificativa
+        <input type="text" formControlName="reason" />
+      </label>
+    }
+
+    <label>
+      Observação
+      <textarea formControlName="note" rows="3"></textarea>
+    </label>
+
+    @if (form.invalid && form.touched) {
+      <p class="field-error">{{ isDocument ? 'Informe produto e quantidade válida em todos os itens da nota, sem repetir produto.' : 'Informe produto, quantidade válida e justificativa quando for ajuste.' }}</p>
+    }
+    <div class="button-row">
+      <button type="submit" class="primary-button" [disabled]="saving || activeProducts.length === 0">
+        {{ saving ? 'Registrando...' : 'Registrar' }}
+      </button>
+      <button type="button" class="ghost-button" (click)="resetForm()" [disabled]="saving">Limpar</button>
+    </div>
+
+    @if (activeProducts.length === 0) {
+      <p class="state-message compact">Cadastre um produto ativo antes de movimentar estoque.</p>
+    }
+  </form>
+</section>
+
+<section class="ledger-block">
+  <h2>Histórico de movimentações</h2>
+  @if (loadingMovements) {
+    <p class="state-message" role="status">{{ movements.length ? 'Atualizando movimentações...' : 'Carregando movimentações...' }}</p>
+  }
+  @if (!loadingMovements && movements.length === 0) {
+    <p class="state-message">Nenhuma movimentação no período. Altere as datas ou o tipo de movimento.</p>
+  }
+  @if (movements.length > 0) {
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Data</th>
+            <th scope="col">Produto</th>
+            <th scope="col">Tipo</th>
+            <th class="numeric" scope="col">Antes</th>
+            <th class="numeric" scope="col">Depois</th>
+            <th scope="col">Motivo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (movement of movements; track movement.id) {
+            <tr>
+              <td class="numeric" data-label="Data">{{ movement.createdAt | date:'short' }}</td>
+              <td data-label="Produto">
+                <strong>{{ movement.product.name }}</strong>
+                <small class="mono">{{ movement.product.sku || movement.product.barcode || 'Sem código' }}</small>
+              </td>
+              <td data-label="Tipo">{{ movementLabel(movement.type) }}</td>
+              <td class="numeric" data-label="Antes">{{ movement.quantityBefore | number:'1.0-3' }}</td>
+              <td class="numeric" data-label="Depois">
+                <strong>{{ movement.quantityAfter | number:'1.0-3' }}</strong>
+                <small>{{ signedDelta(movement.quantityDelta) }}</small>
+              </td>
+              <td data-label="Motivo">
+                {{ movement.reason }}
+                @if (movement.supplier?.name || movement.supplierName) {
+                  <small>{{ movement.supplier?.name || movement.supplierName }}</small>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

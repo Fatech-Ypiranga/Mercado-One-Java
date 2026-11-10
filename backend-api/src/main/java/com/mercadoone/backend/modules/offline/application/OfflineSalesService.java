@@ -1,7 +1,7 @@
 package com.mercadoone.backend.modules.offline.application;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.audit.application.AuditService;
 import com.mercadoone.backend.modules.catalog.application.CatalogService;
@@ -36,7 +36,7 @@ public class OfflineSalesService {
     private final InventoryService inventory;
     private final OfflineSaleConflictRepository conflicts;
     private final AuditService auditService;
-    private final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     OfflineSalesService(
             SalesService salesService,
@@ -217,7 +217,7 @@ public class OfflineSalesService {
     private String writePayload(OfflineSaleData data) {
         try {
             return objectMapper.writeValueAsString(OfflineSalePayload.from(data));
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Nao foi possivel registrar venda offline em conflito.", exception);
         }
     }
@@ -225,7 +225,7 @@ public class OfflineSalesService {
     private OfflineSaleData readPayload(String payload) {
         try {
             return objectMapper.readValue(payload, OfflineSalePayload.class).toData();
-        } catch (JsonProcessingException exception) {
+        } catch (JacksonException exception) {
             throw new IllegalStateException("Nao foi possivel ler venda offline em conflito.", exception);
         }
     }

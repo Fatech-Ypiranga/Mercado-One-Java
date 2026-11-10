@@ -1,6 +1,6 @@
 package com.mercadoone.backend.modules.audit.api;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.mercadoone.backend.support.ApiIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;

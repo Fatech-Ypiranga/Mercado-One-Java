@@ -1,0 +1,140 @@
+<section class="page-header catalog-heading">
+  <div><p>Acesso</p><h1>Usuários e perfis</h1><span>Contas operacionais, perfil de autorização e status de uso do sistema.</span></div>
+  <button type="button" class="primary-button mobile-only" (click)="newRecord()">Novo</button>
+</section>
+
+<form class="filter-rule" (submit)="$event.preventDefault(); loadUsers()" aria-label="Filtrar usuários">
+  <label>
+    Buscar
+    <input type="search" [formControl]="searchControl" placeholder="Nome ou login" />
+  </label>
+  <label>
+    Perfil
+    <select [formControl]="roleControl">
+      <option value="">Todos</option>
+      @for (role of roles; track role.value) {
+        <option [value]="role.value">{{ role.label }}</option>
+      }
+    </select>
+  </label>
+  <label>
+    Status
+    <select [formControl]="activeControl">
+      <option value="">Todos</option>
+      <option value="true">Ativos</option>
+      <option value="false">Inativos</option>
+    </select>
+  </label>
+  <button type="submit" class="secondary-button">Filtrar</button>
+</form>
+@if (successMessage) { <p class="form-success" role="status">{{ successMessage }}</p> }
+
+<section class="workspace" [class.mobile-form-step]="formStep">
+  <section class="data-table">
+    <div class="section-heading"><h2 id="list-heading" tabindex="-1">Lista de usuários</h2><span class="result-count">{{ users.length }} resultado(s)</span></div>
+    @if (loading) { <p class="state-message" role="status">Atualizando usuários...</p> }
+    @if (listError) { <p class="form-error list-error" role="alert">{{ listError }} <button type="button" class="ghost-button" (click)="loadUsers()">Tentar novamente</button></p> }
+    @if (!loading && !listError && users.length === 0) {
+      <p class="state-message">Nenhum usuário neste filtro. Cadastre um acesso na ficha ou altere o perfil/status.</p>
+    } @else if (users.length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Usuário</th>
+              <th scope="col">Perfil</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (user of users; track user.id) {
+              <tr [class.selected]="editingUser?.id === user.id">
+                <td data-label="Usuário">
+                  <strong>{{ user.nome }}</strong>
+                  <small class="mono">{{ user.login }}</small>
+                </td>
+                <td data-label="Perfil">{{ roleLabel(user.perfil) }}</td>
+                <td data-label="Status">
+                  <span class="status-stamp" [class.inactive]="user.status === 'INACTIVE'">
+                    {{ user.status === 'ACTIVE' ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+                <td data-label="Ações">
+                  <div class="button-row">
+                    <button type="button" class="ghost-button" (click)="edit(user)" [attr.aria-label]="'Editar usuário ' + user.nome">Editar</button>
+                    <button type="button" class="ghost-button" (click)="startReset(user)" [attr.aria-label]="'Redefinir senha de ' + user.nome">Redefinir senha</button>
+                  </div>
+                </td>
+              </tr>
+              @if (resettingUser?.id === user.id) {
+                <tr>
+                  <td colspan="4">
+                    <form class="inline-form" (submit)="$event.preventDefault(); confirmReset()" [attr.aria-label]="'Nova senha de ' + user.nome">
+                      <label>
+                        Nova senha para {{ user.login }} (mínimo 6 caracteres)
+                        <input type="password" autocomplete="new-password" [formControl]="resetPasswordControl" />
+                      </label>
+                      @if (resetError) { <p class="form-error" role="alert">{{ resetError }}</p> }
+                      <div class="button-row">
+                        <button type="submit" class="primary-button" [disabled]="resetting">{{ resetting ? 'Salvando...' : 'Definir senha' }}</button>
+                        <button type="button" class="ghost-button" (click)="resettingUser = null" [disabled]="resetting">Voltar</button>
+                      </div>
+                    </form>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <button type="button" class="ghost-button mobile-only" (click)="showList()">Voltar à lista</button>
+    <h2 id="record-heading" tabindex="-1">{{ editingUser ? 'Editar usuário' : 'Novo usuário' }}</h2>
+    <div class="form-grid">
+      <label>
+        Nome
+        <input type="text" formControlName="nome" />
+      </label>
+      <label>
+        Login
+        <input class="mono" type="text" formControlName="login" autocomplete="username" />
+      </label>
+      <label>
+        Perfil
+        <select formControlName="perfil">
+          @for (role of roles; track role.value) {
+            <option [value]="role.value">{{ role.label }}</option>
+          }
+        </select>
+      </label>
+      <label>
+        Senha {{ editingUser ? 'nova' : '' }}
+        <input type="password" formControlName="password" autocomplete="new-password" />
+      </label>
+    </div>
+    <label class="check-row">
+      <input type="checkbox" formControlName="active" />
+      Usuário ativo
+    </label>
+
+    @if (form.invalid && form.touched) {
+      <p class="field-error">Preencha nome, login, perfil e senha com no mínimo 6 caracteres.</p>
+    }
+    @if (errorMessage) {
+      <p class="form-error" role="alert">{{ errorMessage }}</p>
+    }
+
+    <div class="button-row">
+      <button type="submit" class="primary-button" [disabled]="saving">
+        {{ saving ? 'Salvando...' : 'Salvar' }}
+      </button>
+      @if (editingUser) {
+        <button type="button" class="ghost-button" (click)="resetForm(); showList()">Cancelar</button>
+      }
+    </div>
+  </form>
+</section>

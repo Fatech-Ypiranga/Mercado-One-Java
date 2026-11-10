@@ -1,0 +1,84 @@
+<section class="page-header catalog-heading">
+  <div><p>Catálogo</p><h1>Categorias</h1><span>Agrupamentos operacionais usados para organizar produtos na loja.</span></div>
+  <button type="button" class="primary-button mobile-only" (click)="newRecord()">Nova</button>
+</section>
+
+<form class="filter-rule" (submit)="$event.preventDefault(); load()" aria-label="Filtrar categorias">
+  <label>
+    Buscar
+    <input type="search" [formControl]="searchControl" placeholder="Nome da categoria" />
+  </label>
+  <label>
+    Status
+    <select [formControl]="activeControl">
+      <option value="">Todos</option>
+      <option value="true">Ativos</option>
+      <option value="false">Inativos</option>
+    </select>
+  </label>
+  <button type="submit" class="secondary-button">Filtrar</button>
+</form>
+@if (successMessage) { <p class="form-success" role="status">{{ successMessage }}</p> }
+
+<section class="workspace" [class.mobile-form-step]="formStep">
+  <section class="data-table">
+    <div class="section-heading"><h2 id="list-heading" tabindex="-1">Lista de categorias</h2><span class="result-count">{{ categories.length }} resultado(s)</span></div>
+    @if (loading) { <p class="state-message" role="status">Atualizando categorias...</p> }
+    @if (listError) { <p class="form-error list-error" role="alert">{{ listError }} <button type="button" class="ghost-button" (click)="load()">Tentar novamente</button></p> }
+    @if (!loading && !listError && categories.length === 0) {
+      <p class="state-message">Nenhuma categoria neste filtro. Ajuste a busca ou cadastre a primeira à direita.</p>
+    } @else if (categories.length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Nome</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (category of categories; track category.id) {
+              <tr [class.selected]="editingCategory?.id === category.id">
+                <td data-label="Nome">{{ category.name }}</td>
+                <td data-label="Status">
+                  <span class="status-stamp" [class.inactive]="!category.active">
+                    {{ category.active ? 'Ativa' : 'Inativa' }}
+                  </span>
+                </td>
+                <td data-label="Ações"><button type="button" class="ghost-button" (click)="edit(category)" [attr.aria-label]="'Editar categoria ' + category.name">Editar</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <button type="button" class="ghost-button mobile-only" (click)="showList()">Voltar à lista</button>
+    <h2 id="record-heading" tabindex="-1">{{ editingCategory ? 'Editar categoria' : 'Nova categoria' }}</h2>
+    <label>
+      Nome
+      <input type="text" formControlName="name" />
+    </label>
+    @if (form.controls.name.touched && form.controls.name.invalid) {
+      <p class="field-error">Informe um nome com até 120 caracteres.</p>
+    }
+    <label class="check-row">
+      <input type="checkbox" formControlName="active" />
+      Categoria ativa
+    </label>
+    @if (errorMessage) {
+      <p class="form-error" role="alert">{{ errorMessage }}</p>
+    }
+    <div class="button-row">
+      <button type="submit" class="primary-button" [disabled]="saving">
+        {{ saving ? 'Salvando...' : 'Salvar' }}
+      </button>
+      @if (editingCategory) {
+        <button type="button" class="ghost-button" (click)="resetForm(); showList()">Cancelar</button>
+      }
+    </div>
+  </form>
+</section>

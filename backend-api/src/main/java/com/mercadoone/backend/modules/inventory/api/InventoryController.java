@@ -1,7 +1,7 @@
 package com.mercadoone.backend.modules.inventory.api;
 
 import com.mercadoone.backend.api.common.ApiEnvelope;
-import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
+import com.mercadoone.backend.modules.access.application.AuthenticatedUser;
 import com.mercadoone.backend.modules.catalog.domain.Product;
 import com.mercadoone.backend.modules.inventory.application.InventoryService;
 import com.mercadoone.backend.modules.inventory.application.InventoryService.AdjustmentData;

@@ -1,0 +1,52 @@
+<main class="login-layout">
+  <section class="login-intro">
+    <div class="brand-row">
+      <span class="brand-mark" aria-hidden="true">M1</span>
+      <span>
+        <strong>Mercado One</strong>
+        <small>Administrativo</small>
+      </span>
+    </div>
+    <p class="eyebrow">Operação do mercado</p>
+    <p class="display">Tudo em ordem, em um só lugar.</p>
+    <p>Cadastros, estoque e vendas para quem cuida da operação todos os dias.</p>
+  </section>
+
+  <section class="login-panel" aria-labelledby="login-title">
+    <header>
+      <p class="eyebrow">Acesso</p>
+      <h1 id="login-title">Acesse sua conta</h1>
+      <p class="login-subtitle">Entre com suas credenciais do Mercado One.</p>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label>
+        Login ou email
+        <input type="text" formControlName="login" autocomplete="username" [attr.aria-invalid]="form.controls.login.touched && form.controls.login.invalid" aria-describedby="login-validation" />
+      </label>
+      @if (form.controls.login.touched && form.controls.login.invalid) {
+        <p id="login-validation" class="field-error">Informe o login.</p>
+      }
+
+      <label>
+        Senha
+        <input type="password" formControlName="password" autocomplete="current-password" [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid" aria-describedby="password-validation" />
+      </label>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <p id="password-validation" class="field-error">Informe a senha.</p>
+      }
+
+      @if (errorMessage) {
+        <p class="form-error" role="alert">{{ errorMessage }}</p>
+      }
+
+      <button type="submit" class="primary-button" [disabled]="loading">
+        {{ loading ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    @if (!production) {
+      <p class="login-hint">Admin inicial de desenvolvimento: admin</p>
+    }
+  </section>
+</main>

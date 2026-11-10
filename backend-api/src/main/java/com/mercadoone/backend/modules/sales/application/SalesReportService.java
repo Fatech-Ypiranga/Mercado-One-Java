@@ -7,6 +7,13 @@ import com.mercadoone.backend.modules.sales.domain.SaleItem;
 import com.mercadoone.backend.modules.sales.domain.SalePayment;
 import com.mercadoone.backend.modules.sales.domain.SaleStatus;
 import com.mercadoone.backend.modules.sales.infrastructure.SaleRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -27,9 +34,11 @@ import java.util.Map;
 public class SalesReportService {
 
     private final SaleRepository sales;
+    private final EntityManager entityManager;
 
-    SalesReportService(SaleRepository sales) {
+    SalesReportService(SaleRepository sales, EntityManager entityManager) {
         this.sales = sales;
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
@@ -42,7 +51,7 @@ public class SalesReportService {
         return new SalesReport(
                 result.getContent(),
                 new PageData(result.getNumber(), result.getSize(), result.getTotalElements(), result.getTotalPages()),
-                totalsFor(sales.findAll(specification))
+                totalsFor(filters)
         );
     }
 
@@ -94,29 +103,57 @@ public class SalesReportService {
                 .toList();
     }
 
-    private static SalesTotals totalsFor(List<Sale> reportSales) {
-        BigDecimal totalAmount = BigDecimal.ZERO;
-        BigDecimal discountAmount = BigDecimal.ZERO;
-        BigDecimal totalItems = BigDecimal.ZERO;
+    /** Totais agregados no banco, sem carregar as vendas do periodo. */
+    private SalesTotals totalsFor(SaleFilters filters) {
+        Specification<Sale> specification = matches(filters);
+        CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+
+        CriteriaQuery<Tuple> byStatus = builder.createTupleQuery();
+        Root<Sale> sale = byStatus.from(Sale.class);
+        byStatus.multiselect(sale.get("status"), builder.count(sale), builder.sum(sale.<BigDecimal>get("totalAmount")),
+                        builder.sum(sale.<BigDecimal>get("discountAmount")))
+                .where(specification.toPredicate(sale, byStatus, builder))
+                .groupBy(sale.get("status"));
         long confirmedCount = 0;
         long canceledCount = 0;
-        Map<PaymentMethod, BigDecimal> byMethod = new EnumMap<>(PaymentMethod.class);
-        for (Sale sale : reportSales) {
-            if (sale.getStatus() != SaleStatus.CONFIRMED) {
-                canceledCount++;
-                continue;
-            }
-            confirmedCount++;
-            totalAmount = totalAmount.add(sale.getTotalAmount());
-            discountAmount = discountAmount.add(sale.getDiscountAmount());
-            for (SaleItem item : sale.getItems()) {
-                totalItems = totalItems.add(item.getQuantity());
-            }
-            for (SalePayment payment : sale.getPayments()) {
-                byMethod.merge(payment.getMethod(), payment.getAmount(), BigDecimal::add);
+        BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        for (Tuple row : entityManager.createQuery(byStatus).getResultList()) {
+            if (row.get(0) == SaleStatus.CONFIRMED) {
+                confirmedCount = row.get(1, Long.class);
+                totalAmount = orZero(row.get(2, BigDecimal.class));
+                discountAmount = orZero(row.get(3, BigDecimal.class));
+            } else {
+                canceledCount += row.get(1, Long.class);
             }
         }
+
+        CriteriaQuery<BigDecimal> itemsQuery = builder.createQuery(BigDecimal.class);
+        Root<Sale> itemSale = itemsQuery.from(Sale.class);
+        Join<Sale, SaleItem> item = itemSale.join("items");
+        itemsQuery.select(builder.sum(item.<BigDecimal>get("quantity")))
+                .where(confirmed(specification, itemSale, itemsQuery, builder));
+        BigDecimal totalItems = orZero(entityManager.createQuery(itemsQuery).getSingleResult());
+
+        CriteriaQuery<Tuple> paymentsQuery = builder.createTupleQuery();
+        Root<Sale> paymentSale = paymentsQuery.from(Sale.class);
+        Join<Sale, SalePayment> payment = paymentSale.join("payments");
+        paymentsQuery.multiselect(payment.get("method"), builder.sum(payment.<BigDecimal>get("amount")))
+                .where(confirmed(specification, paymentSale, paymentsQuery, builder))
+                .groupBy(payment.get("method"));
+        Map<PaymentMethod, BigDecimal> byMethod = new EnumMap<>(PaymentMethod.class);
+        for (Tuple row : entityManager.createQuery(paymentsQuery).getResultList()) {
+            byMethod.put(row.get(0, PaymentMethod.class), row.get(1, BigDecimal.class));
+        }
         return new SalesTotals(confirmedCount, canceledCount, totalAmount, discountAmount, totalItems, byMethod);
+    }
+
+    private static Predicate confirmed(Specification<Sale> specification, Root<Sale> root, CriteriaQuery<?> query, CriteriaBuilder builder) {
+        return builder.and(specification.toPredicate(root, query, builder), builder.equal(root.get("status"), SaleStatus.CONFIRMED));
+    }
+
+    private static BigDecimal orZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 
     private static Specification<Sale> matches(SaleFilters filters) {

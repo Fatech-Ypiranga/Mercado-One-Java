@@ -1,0 +1,117 @@
+<section class="page-header catalog-heading">
+  <div><p>Relacionamento</p><h1>Clientes</h1><span>Contatos ativos para vínculo opcional em vendas e histórico de compras.</span></div>
+  <button type="button" class="primary-button mobile-only" (click)="newRecord()">Novo</button>
+</section>
+
+<form class="filter-rule" (submit)="$event.preventDefault(); loadCustomers()" aria-label="Filtrar clientes">
+  <label>
+    Buscar
+    <input type="search" [formControl]="searchControl" placeholder="Nome, telefone, e-mail ou documento" />
+  </label>
+  <label>
+    Status
+    <select [formControl]="activeControl">
+      <option value="">Todos</option>
+      <option value="true">Ativos</option>
+      <option value="false">Inativos</option>
+    </select>
+  </label>
+  <button type="submit" class="secondary-button">Filtrar</button>
+</form>
+@if (successMessage) { <p class="form-success" role="status">{{ successMessage }}</p> }
+
+<section class="workspace" [class.mobile-form-step]="formStep">
+  <section class="data-table">
+    <div class="section-heading"><h2 id="list-heading" tabindex="-1">Lista de clientes</h2><span class="result-count">{{ customers.length }} resultado(s)</span></div>
+    @if (loading) { <p class="state-message" role="status">Atualizando clientes...</p> }
+    @if (listError) { <p class="form-error list-error" role="alert">{{ listError }} <button type="button" class="ghost-button" (click)="loadCustomers()">Tentar novamente</button></p> }
+    @if (!loading && !listError && customers.length === 0) {
+      <p class="state-message">Nenhum cliente neste filtro. Cadastre um contato na ficha ou limpe a busca.</p>
+    } @else if (customers.length > 0) {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Cliente</th>
+              <th scope="col">Contato</th>
+              <th scope="col">Status</th>
+              <th scope="col">Criado em</th>
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (customer of customers; track customer.id) {
+              <tr [class.selected]="editingCustomer?.id === customer.id">
+                <td data-label="Cliente">
+                  <strong>{{ customer.name }}</strong>
+                  <small class="mono">{{ customer.document || 'Sem documento' }}</small>
+                </td>
+                <td data-label="Contato">
+                  <strong>{{ customer.phone || '—' }}</strong>
+                  <small>{{ customer.email || '—' }}</small>
+                </td>
+                <td data-label="Status">
+                  <span class="status-stamp" [class.inactive]="!customer.active">
+                    {{ customer.active ? 'Ativo' : 'Inativo' }}
+                  </span>
+                </td>
+                <td class="numeric" data-label="Criado em">{{ customer.createdAt | date:'shortDate' }}</td>
+                <td data-label="Ações">
+                  <div class="button-row">
+                    <button type="button" class="ghost-button" (click)="edit(customer)" [attr.aria-label]="'Editar cliente ' + customer.name">Editar</button>
+                    <a class="ghost-button" [routerLink]="['/vendas']" [queryParams]="{ customerId: customer.id }" (click)="$event.stopPropagation()">Vendas</a>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <form class="record-sheet" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <button type="button" class="ghost-button mobile-only" (click)="showList()">Voltar à lista</button>
+    <h2 id="record-heading" tabindex="-1">{{ editingCustomer ? 'Editar cliente' : 'Novo cliente' }}</h2>
+    <div class="form-grid">
+      <label>
+        Nome
+        <input type="text" formControlName="name" />
+      </label>
+      <label>
+        Telefone
+        <input type="tel" formControlName="phone" />
+      </label>
+      <label>
+        E-mail
+        <input type="email" formControlName="email" />
+      </label>
+      <label>
+        Documento
+        <input class="mono" type="text" formControlName="document" />
+      </label>
+    </div>
+    <label class="check-row">
+      <input type="checkbox" formControlName="contactConsent" />
+      Autoriza contato
+    </label>
+    <label class="check-row">
+      <input type="checkbox" formControlName="active" />
+      Cliente ativo
+    </label>
+
+    @if (form.invalid && form.touched) {
+      <p class="field-error">Preencha o nome e use um e-mail válido.</p>
+    }
+    @if (errorMessage) {
+      <p class="form-error" role="alert">{{ errorMessage }}</p>
+    }
+
+    <div class="button-row">
+      <button type="submit" class="primary-button" [disabled]="saving">{{ saving ? 'Salvando...' : 'Salvar' }}</button>
+      @if (editingCustomer) {
+        <button type="button" class="ghost-button" (click)="resetForm(); showList()">Cancelar</button>
+      }
+    </div>
+  </form>
+</section>

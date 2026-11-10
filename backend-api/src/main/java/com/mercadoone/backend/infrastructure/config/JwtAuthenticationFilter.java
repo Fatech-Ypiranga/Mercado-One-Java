@@ -1,7 +1,7 @@
 package com.mercadoone.backend.infrastructure.config;
 
 import com.mercadoone.backend.modules.access.application.JwtService;
-import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
+import com.mercadoone.backend.modules.access.application.AuthenticatedUser;
 import com.mercadoone.backend.modules.access.domain.AppUser;
 import com.mercadoone.backend.modules.access.infrastructure.AppUserRepository;
 import jakarta.servlet.FilterChain;
@@ -67,6 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             jwtService.validate(token)
                     .flatMap(user -> users.findById(user.id()))
                     .filter(AppUser::isActive)
+                    .filter(user -> !jwtService.issuedBefore(token, user.getUpdatedAt()))
                     .ifPresent(this::authenticate);
         }
         filterChain.doFilter(request, response);
