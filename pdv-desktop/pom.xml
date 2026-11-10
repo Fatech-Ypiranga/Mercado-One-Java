@@ -72,4 +72,82 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!--
+            Empacotamento do PDV com jpackage (JDK 25).
+            mvn -Pinstaller package                      -> imagem de aplicacao em target/dist (sem instalador)
+            mvn -Pinstaller package -Djpackage.type=msi  -> instalador Windows (exige WiX Toolset)
+            mvn -Pinstaller package -Djpackage.type=deb  -> pacote Debian/Ubuntu
+        -->
+        <profile>
+            <id>installer</id>
+            <properties>
+                <jpackage.type>app-image</jpackage.type>
+                <jpackage.input>${project.build.directory}/jpackage-input</jpackage.input>
+                <jpackage.appVersion>0.1.0</jpackage.appVersion>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <version>3.8.1</version>
+                        <executions>
+                            <execution>
+                                <id>copy-runtime-dependencies</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <includeScope>runtime</includeScope>
+                                    <outputDirectory>${jpackage.input}</outputDirectory>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <copy file="${project.build.directory}/${project.build.finalName}.jar"
+                                              todir="${jpackage.input}"/>
+                                        <delete dir="${project.build.directory}/dist" quiet="true"/>
+                                        <exec executable="${java.home}/bin/jpackage" failonerror="true">
+                                            <arg value="--type"/>
+                                            <arg value="${jpackage.type}"/>
+                                            <arg value="--name"/>
+                                            <arg value="MercadoOnePDV"/>
+                                            <arg value="--app-version"/>
+                                            <arg value="${jpackage.appVersion}"/>
+                                            <arg value="--vendor"/>
+                                            <arg value="Mercado One"/>
+                                            <arg value="--input"/>
+                                            <arg value="${jpackage.input}"/>
+                                            <arg value="--main-jar"/>
+                                            <arg value="${project.build.finalName}.jar"/>
+                                            <arg value="--main-class"/>
+                                            <arg value="com.mercadoone.pdv.Launcher"/>
+                                            <arg value="--dest"/>
+                                            <arg value="${project.build.directory}/dist"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
