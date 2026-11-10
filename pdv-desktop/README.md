@@ -4,7 +4,7 @@ Cliente desktop do PDV Mercado One em JavaFX 25. Venda presencial com fila local
 
 Uso do caixa: [Uso do PDV](../docs/uso-pdv.md). Fila, sync e conflitos: [Offline PDV e sync](../docs/offline-pdv-sync.md).
 
-A UI não chama `POST /api/sales`. Toda finalização grava em SQLite e depois tenta `POST /api/offline/sales/sync`. O campo de login vem preenchido com `operador`; o seed local cria `admin` / `admin123`. A URL padrão da API é `http://localhost:8080`. O SQLite fica em `~/.mercado-one/pdv-offline.sqlite3`.
+O PDV confirma online por `POST /api/sales` (idempotente por `clientSaleId`) depois de gravar a venda no SQLite; sem API, a venda fica na fila e sincroniza por `POST /api/offline/sales/sync`. O campo de login vem preenchido com `operador`; o seed local cria `admin` / `admin123`. A URL padrão da API é `http://localhost:8080`. O SQLite fica em `~/.mercado-one/pdv-offline.sqlite3`.
 
 ## Comandos
 

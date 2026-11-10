@@ -25,12 +25,12 @@ O que está entregue e pendente fica em `docs/backlog-mvp.md`. Não copie essa l
 
 ## Fatos fáceis de documentar errado
 
-- A UI do PDV não chama `POST /api/sales`. Toda finalização grava em SQLite e depois tenta `POST /api/offline/sales/sync`.
-- `SaleStatus` no backend só tem `CONFIRMED`. Não existe cancelamento pós-venda.
+- O PDV grava toda venda em SQLite antes da rede, confirma online por `POST /api/sales` e usa `POST /api/offline/sales/sync` para reenvio.
+- `SaleStatus` tem `CONFIRMED` e `CANCELED`; cancelamento (`POST /api/sales/{id}/cancel`) devolve o estoque.
 - Login seed de desenvolvimento é `admin` / `admin123`, não `admin@mercado.one`.
 - `MERCADO_ONE_JWT_SECRET` é obrigatório para `mvn spring-boot:run`.
-- `OPERADOR_CAIXA` é perfil do PDV; o admin web não tem telas para esse perfil.
-- Conflito resolvido no admin não atualiza o status local da venda no PDV; o registro local permanece `CONFLICT`.
+- `OPERADOR_CAIXA` usa o PDV; no admin web acessa apenas "Meu caixa" e "Minha conta".
+- Conflito resolvido no admin é refletido no PDV pela consulta `GET /api/offline/sales/status` (`SENT` ou `REJECTED`).
 
 ## Regras importantes
 

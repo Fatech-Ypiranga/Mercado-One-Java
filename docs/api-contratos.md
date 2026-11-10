@@ -181,7 +181,7 @@ Exemplo de payload:
 - Protegido para `ADMIN`, `GERENTE` e `OPERADOR_CAIXA`.
 - Confirma uma venda no servidor com cliente opcional, itens e pagamentos manuais.
 - Usa o preço vigente do produto no servidor.
-- A UI do PDV **não** chama este endpoint; o caixa atual usa `POST /api/offline/sales/sync`. Testes e o cliente HTTP `OnlineSaleClient.finalizeSale` cobrem o contrato.
+- Usado pelo PDV na finalização com API disponível. Idempotente por `clientSaleId`: reenvio devolve a venda existente.
 - Rejeita produto inativo, cliente inativo, estoque insuficiente e pagamento diferente do total.
 - Baixa estoque após confirmação da venda e registra movimentação `SALE`.
 - Request:

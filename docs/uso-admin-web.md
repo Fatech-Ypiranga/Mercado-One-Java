@@ -82,7 +82,7 @@ O saldo sobe na entrada confirmada. O ajuste substitui o saldo pelo valor inform
 
 Administrador e gerente. Tela **Relatório de vendas**.
 
-Filtre por período, identificador do operador, status e identificador do cliente. O único status disponível é **Confirmada**. Não há cancelamento de venda depois de confirmada.
+Filtre por período, identificador do operador, status e identificador do cliente. Status: **Confirmada** ou **Cancelada**. Administrador e gerente cancelam uma venda confirmada informando o motivo; o estoque é devolvido.
 
 **Filtrar** atualiza a lista e os totais. **CSV** baixa o relatório do filtro atual. **Anterior** e **Próxima** trocam a página.
 

@@ -4,7 +4,7 @@ Mercado One é um ERP em scaffold funcional para pequenos mercados varejistas, c
 
 Entregue e pendente: [Backlog MVP](docs/backlog-mvp.md). Uso da loja: [Admin web](docs/uso-admin-web.md) e [PDV](docs/uso-pdv.md).
 
-A UI do PDV não chama `POST /api/sales`. O caixa grava a venda localmente e sincroniza por `POST /api/offline/sales/sync`.
+O PDV confirma online por `POST /api/sales` (idempotente por `clientSaleId`) depois de gravar a venda no SQLite; sem API, a venda fica na fila e sincroniza por `POST /api/offline/sales/sync`.
 
 ## Stack
 

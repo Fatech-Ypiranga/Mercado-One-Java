@@ -30,7 +30,7 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 - Usar `ApiClientService` ou services dedicados para contratos HTTP.
 - Tipos TypeScript devem refletir o envelope da API.
 - Telas administrativas devem tratar loading, vazio, erro e sucesso.
-- Guards por perfil acompanham a autorização da API. `OPERADOR_CAIXA` não tem rota no shell; o perfil é do PDV.
+- Guards por perfil acompanham a autorização da API. `OPERADOR_CAIXA` só acessa `meu-caixa` e `minha-conta`.
 - Sessão do admin: cookie HttpOnly `mercado_one_admin_session` + metadados em `sessionStorage`. Não gravar JWT em `localStorage`.
 - Histórico de cliente é a tela `/vendas?customerId=`.
 
@@ -42,7 +42,7 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 - Fluxo de venda deve priorizar operação rápida de caixa.
 - Catálogo local e fila offline devem continuar separados do servidor como fonte de verdade.
 - Reenvio automático cobre vendas `PENDING` e `ERROR` no login. `CONFLICT` não é reenviado; a resolução fica no admin web e não altera o status local.
-- O enum `SyncStatus` existe, mas o cabeçalho da tela atual não atualiza o badge após o start; o operador vê feedback textual e status por venda na fila.
+- `SyncStatus` é calculado por `CheckoutService.currentStatus()` a partir da fila local e da última resposta da API.
 
 ## Documentação
 

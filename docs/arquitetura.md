@@ -39,21 +39,19 @@ Pacotes transversais:
 
 ## Fronteiras
 
-Regra pretendida:
+- Um módulo usa outro apenas pela camada `application` (services e seus records) e por entidades de `domain` em relações JPA (`Product`, `Customer`, `Supplier`).
+- `api` e `infrastructure` de um módulo são internos. O teste `ModuleBoundaryTests` (ArchUnit) falha se outro módulo depender deles.
+- `api/common` guarda contratos HTTP transversais; `infrastructure/config` guarda segurança e configuração.
+- Regras de domínio vivem no módulo dono, não em helpers globais.
 
-- Módulos não devem chamar classes internas de outros módulos.
-- Dados compartilhados devem passar por interfaces pequenas de aplicação, contratos HTTP, eventos ou consultas publicadas.
-- `api/common` é reservado para contratos HTTP transversais.
-- `infrastructure` na raiz é reservado para configurações e adaptadores transversais.
-- Regras de domínio devem viver no módulo dono, não em helpers globais.
+Dependências atuais:
 
-Acoplamento atual no código (não idealizar como alvo, apenas registrar):
-
-- `sales` usa `ProductRepository`, `CustomerService`, `InventoryService` e `AuditService`.
-- `inventory` usa entidade `Product`, `ProductRepository`, `SupplierService` e `AuditService`.
-- `offline` usa `SalesService` e `AuditService`.
-- `access` (gestão de usuários) usa `AuditService`.
-- Entidades JPA de `sales`/`inventory` referenciam `Product`, `Customer` e `Supplier`.
+| Módulo | Usa |
+| --- | --- |
+| `sales` | `CatalogService`, `CustomerService`, `InventoryService`, `AuditService` |
+| `inventory` | `CatalogService`, `SupplierService`, `AuditService` |
+| `offline` | `SalesService`, `CatalogService`, `InventoryService`, `AuditService` |
+| `catalog`, `access` | `AuditService` |
 
 ## Dados
 

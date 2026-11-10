@@ -418,21 +418,21 @@ sequenceDiagram
 
 ## Venda confirmada no servidor (`POST /api/sales`)
 
-Use este diagrama para o contrato HTTP de venda com preço vigente do servidor. A UI do PDV **não** dispara este endpoint; o caixa atual usa o fluxo da seção seguinte. Testes de `SalesController` e `OnlineSaleClient.finalizeSale` exercitam este contrato.
+Contrato de venda com preço vigente do servidor, usado pelo PDV quando a API está disponível. Idempotente por `clientSaleId`.
 
 ```mermaid
 sequenceDiagram
-    actor ClienteHttp as Cliente HTTP (teste ou futuro)
+    actor ClienteHttp as PDV Desktop
     participant Api as Backend API
     participant Sales as SalesService
     participant Customers as CustomerService
-    participant Products as ProductRepository
+    participant Products as CatalogService
     participant Inventory as InventoryService
     participant Audit as AuditService
     participant Db as PostgreSQL
 
     ClienteHttp->>Api: POST /api/sales
-    Api->>Sales: finalizeOnlineSale(dados, operador)
+    Api->>Sales: confirmSale(dados, operador)
 
     opt cliente informado
         Sales->>Customers: getActiveCustomer(customerId)
@@ -463,81 +463,51 @@ sequenceDiagram
 
 ## Venda no PDV (fila local e sincronização)
 
-Use este diagrama para o fluxo real da UI JavaFX: a venda é gravada localmente antes de qualquer tentativa de rede, inclusive quando a API está no ar. Conflitos ou falhas não apagam o registro original. `ACCEPT`/`REJECT` no admin não alteram o SQLite do PDV.
+A venda é gravada localmente antes de qualquer rede. Detalhes e regras em [offline-pdv-sync.md](offline-pdv-sync.md).
 
 ```mermaid
 sequenceDiagram
     actor Operador as Operador de Caixa
     participant Pdv as PDV Desktop
-    participant Queue as OfflineSaleQueue
     participant Sqlite as SQLite local
     participant Api as Backend API
-    participant Offline as OfflineSalesService
-    participant Sales as SalesService
-    participant Admin as Admin Web
+    actor Admin as Admin Web
 
-    Operador->>Pdv: finaliza venda presencial
-    Pdv->>Queue: enqueue(LocalSale PENDING)
-    Queue->>Sqlite: salvar venda, itens e pagamentos
-    Queue-->>Pdv: venda preservada localmente
-
-    Pdv->>Api: POST /api/offline/sales/sync
-    Api->>Offline: syncOfflineSale(dados, operador)
-    Offline->>Sales: validateOfflineSale(dados)
-
-    alt venda aceita automaticamente
-        Offline->>Sales: finalizeOfflineSale(dados, operador)
-        Sales-->>Offline: Sale CONFIRMED
-        Offline-->>Api: status SENT + sale
-        Api-->>Pdv: ApiEnvelope<OfflineSaleSyncResult>
-        Pdv->>Queue: markSent(localSaleId, remoteSaleId)
-        Queue->>Sqlite: status SENT + tentativa
-    else conflito de preço, produto, estoque ou pagamento
-        Offline->>Sqlite: não altera SQLite do PDV
-        Offline->>Offline: salvar OfflineSaleConflictRecord
-        Offline-->>Api: status CONFLICT + conflitos
-        Api-->>Pdv: ApiEnvelope<OfflineSaleSyncResult>
-        Pdv->>Queue: markConflict(localSaleId, mensagem)
-        Queue->>Sqlite: status CONFLICT + tentativa
-        Admin->>Api: GET /api/offline/sales/conflicts
-        Api-->>Admin: conflitos pendentes
-        Admin->>Api: POST /api/offline/sales/conflicts/{id}/resolve
-        Api->>Offline: ACCEPT ou REJECT
-    else falha técnica de rede ou servidor
-        Api--xPdv: erro ou indisponibilidade
-        Pdv->>Queue: markError(localSaleId, mensagem)
-        Queue->>Sqlite: status ERROR + tentativa
+    Operador->>Pdv: finaliza venda
+    Pdv->>Sqlite: grava venda PENDING
+    alt API disponível
+        Pdv->>Api: POST /api/sales (clientSaleId)
+        Api-->>Pdv: venda confirmada
+        Pdv->>Sqlite: SENT
+    else rede, 5xx, 401 ou 409
+        Pdv->>Sqlite: ERROR (reenvio na sincronização)
     end
+    loop login, a cada 2 min ou botão
+        Pdv->>Api: POST /api/offline/sales/sync (PENDING/ERROR)
+        Api-->>Pdv: SENT ou CONFLICT
+        Pdv->>Sqlite: SENT ou CONFLICT
+        Pdv->>Api: GET /api/offline/sales/status (CONFLICT)
+        Api-->>Pdv: SENT, REJECTED ou pendente
+        Pdv->>Sqlite: SENT ou REJECTED
+    end
+    Admin->>Api: POST /api/offline/sales/conflicts/{id}/resolve
 ```
 
 ## Estado da venda offline local
 
-Use este diagrama para revisar o ciclo de vida persistido no SQLite do PDV. `PENDING`, `ERROR` e `CONFLICT` mantêm a venda local preservada.
-
 ```mermaid
 stateDiagram-v2
     [*] --> PENDING: venda gravada localmente
-
-    PENDING --> SENT: API aceita sync
-    PENDING --> CONFLICT: API registra conflito
+    PENDING --> SENT: API confirma
     PENDING --> ERROR: falha técnica
-
-    ERROR --> SENT: reenvio no login aceito
-    ERROR --> CONFLICT: reenvio no login gera conflito
-
-    CONFLICT --> CONFLICT: venda original preservada\nadmin resolve no servidor;\nSQLite permanece CONFLICT
-    SENT --> [*]: venda sincronizada
-
-    note right of PENDING
-        PDV sempre grava antes
-        de tentar comunicar com a API.
-    end note
-
-    note right of CONFLICT
-        Conflito não apaga a venda.
-        Admin Web aceita ou rejeita
-        a pendência no servidor.
-    end note
+    PENDING --> REJECTED: regra de negócio no envio online
+    PENDING --> CONFLICT: API registra conflito
+    ERROR --> SENT: reenvio aceito
+    ERROR --> CONFLICT: reenvio gera conflito
+    CONFLICT --> SENT: admin aceita
+    CONFLICT --> REJECTED: admin rejeita
+    SENT --> [*]
+    REJECTED --> [*]
 ```
 
 ## Fluxo de estoque

@@ -7,7 +7,7 @@ Este documento registra o estado atual de segurança e as diretrizes para evolu�
 O backend possui `SecurityConfig` com:
 
 - JWT Bearer (`Authorization: Bearer`) ou cookie HttpOnly `mercado_one_admin_session`.
-- Cada request autenticado reconsulta o usuário atual no banco para aplicar inativação e mudança de perfil sem esperar o token expirar.
+- Cada request autenticado reconsulta o usuário no banco. Usuário inativo é recusado, e token emitido antes da última alteração do usuário (senha, perfil, status) deixa de valer (401).
 - `POST /api/auth/login` público. Sempre devolve `accessToken` no JSON e seta o cookie de sessão do admin.
 - `POST /api/auth/logout` autenticado; expira o cookie.
 - CSRF desabilitado. Sessão HTTP `STATELESS`.

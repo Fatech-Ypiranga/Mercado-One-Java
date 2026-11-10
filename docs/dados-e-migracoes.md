@@ -84,4 +84,4 @@ Schema local atual do PDV:
 - `offline_sale_sync_attempts`: histórico simples de tentativas de sincronização.
 - `local_catalog_products`: catálogo local de produtos ativos usado como fallback de busca e venda offline.
 
-Status local da venda (`LocalSaleStatus`): `PENDING`, `SENT`, `CONFLICT`, `ERROR`. Resolução administrativa `ACCEPTED`/`REJECTED` vive na tabela servidor `offline_sale_conflicts` e não é copiada de volta para o SQLite.
+Status local da venda (`LocalSaleStatus`): `PENDING`, `SENT`, `CONFLICT`, `ERROR`, `REJECTED`. Resolução administrativa `ACCEPTED`/`REJECTED` vive na tabela servidor `offline_sale_conflicts` e não é copiada de volta para o SQLite.
