@@ -61,4 +61,35 @@ class OfflineSaleQueueTests {
         assertEquals(1, queue.pendingSales().size());
         assertEquals(LocalSaleStatus.ERROR, queue.pendingSales().getFirst().status());
     }
+
+    @Test
+    void migratesLegacySchemaAddingDiscountColumn() throws Exception {
+        Path database = tempDir.resolve("legacy.sqlite3");
+        try (var connection = java.sql.DriverManager.getConnection("jdbc:sqlite:" + database);
+             var statement = connection.createStatement()) {
+            statement.executeUpdate("""
+                    create table offline_sales (
+                        local_sale_id text primary key, created_at text not null, customer_id integer,
+                        status text not null, remote_sale_id integer, last_error text,
+                        sync_attempts integer not null default 0, updated_at text not null)
+                    """);
+            statement.executeUpdate("""
+                    insert into offline_sales(local_sale_id, created_at, status, updated_at)
+                    values ('old-1', '2026-01-01T00:00:00Z', 'PENDING', '2026-01-01T00:00:00Z')
+                    """);
+        }
+        OfflineSaleQueue queue = new OfflineSaleQueue(new OfflineStorageConfig(database));
+        queue.initialize();
+        queue.initialize();
+
+        LocalSale legacy = queue.pendingSales().getFirst();
+        assertEquals(0, legacy.discountAmount().signum());
+
+        queue.enqueue(new LocalSale("new-1", Instant.now(), null, LocalSaleStatus.PENDING,
+                List.of(new LocalSaleItem(1L, new BigDecimal("1"), new BigDecimal("10.00"))),
+                List.of(new LocalSalePayment(PaymentMethod.CASH, new BigDecimal("9.00"))),
+                new BigDecimal("1.00")));
+        assertEquals(new BigDecimal("9.00"), queue.recentSales(5).getFirst().netAmount());
+        assertEquals(2, queue.countByStatus().get(LocalSaleStatus.PENDING));
+    }
 }

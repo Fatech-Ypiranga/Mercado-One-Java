@@ -4,5 +4,7 @@ public enum LocalSaleStatus {
     PENDING,
     SENT,
     CONFLICT,
-    ERROR
+    ERROR,
+    /** Recusada pela API (venda online invalida) ou conflito rejeitado no admin. Nao e reenviada. */
+    REJECTED
 }

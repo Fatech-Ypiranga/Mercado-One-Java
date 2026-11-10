@@ -1,5 +1,6 @@
 package com.mercadoone.pdv.sales;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,14 +14,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 
 public class OnlineSaleClient {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_NULL);
     private final Transport transport;
 
     public OnlineSaleClient() {
@@ -33,9 +35,9 @@ public class OnlineSaleClient {
                 return new ApiResponse(response.statusCode(), response.body());
             } catch (InterruptedException exception) {
                 Thread.currentThread().interrupt();
-                throw new IllegalStateException("Operacao interrompida antes da resposta da API.", exception);
+                throw new ApiUnavailableException("Operacao interrompida antes da resposta da API.", exception);
             } catch (IOException exception) {
-                throw new IllegalStateException("Nao foi possivel comunicar com a API.", exception);
+                throw new ApiUnavailableException("Nao foi possivel comunicar com a API.", exception);
             }
         };
     }
@@ -83,13 +85,42 @@ public class OnlineSaleClient {
                 bearerToken
         );
         return StreamSupport.stream(data(response.body()).spliterator(), false)
-                .map(customer -> new CustomerOption(
-                        customer.path("id").asLong(),
-                        customer.path("name").asText(),
-                        textOrNull(customer.path("phone")),
-                        textOrNull(customer.path("document"))
-                ))
+                .map(OnlineSaleClient::customerOption)
                 .toList();
+    }
+
+    public CustomerOption quickCreateCustomer(
+            String apiBaseUrl,
+            String bearerToken,
+            String name,
+            String phone,
+            String document,
+            boolean contactConsent
+    ) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("name", name);
+        body.put("phone", phone);
+        body.put("document", document);
+        body.put("contactConsent", contactConsent);
+        ApiResponse response = sendJson(apiBaseUrl, "/api/customers/quick", bearerToken, toJson(body));
+        return customerOption(data(response.body()));
+    }
+
+    /**
+     * Percentual maximo de desconto do operador autenticado. {@code null} significa sem limite alem do total.
+     */
+    public DiscountLimit discountPolicy(String apiBaseUrl, String bearerToken) {
+        JsonNode data = data(sendGet(apiBaseUrl, "/api/sales/discount-policy", bearerToken).body());
+        JsonNode max = data.path("maxDiscountPercent");
+        return new DiscountLimit(max.isMissingNode() || max.isNull() ? null : max.decimalValue());
+    }
+
+    /**
+     * Confirma a venda online em {@code POST /api/sales}. O {@code clientSaleId} torna a chamada idempotente.
+     */
+    public Long finalizeOnlineSale(String apiBaseUrl, String bearerToken, OnlineSaleRequest request) {
+        ApiResponse response = sendJson(apiBaseUrl, "/api/sales", bearerToken, toJson(request));
+        return data(response.body()).path("id").asLong();
     }
 
     public void finalizeSale(
@@ -115,6 +146,27 @@ public class OnlineSaleClient {
         JsonNode sale = data.path("sale");
         Long saleId = sale.isMissingNode() || sale.isNull() ? null : sale.path("id").asLong();
         return new OfflineSyncResult(data.path("status").asText(), saleId, conflicts);
+    }
+
+    public List<RemoteSaleStatus> remoteStatus(String apiBaseUrl, String bearerToken, List<String> localSaleIds) {
+        if (localSaleIds.isEmpty()) {
+            return List.of();
+        }
+        String query = localSaleIds.stream()
+                .map(id -> "localSaleIds=" + encode(id))
+                .reduce((left, right) -> left + "&" + right)
+                .orElse("");
+        JsonNode data = data(sendGet(apiBaseUrl, "/api/offline/sales/status?" + query, bearerToken).body());
+        return StreamSupport.stream(data.spliterator(), false)
+                .map(node -> new RemoteSaleStatus(
+                        node.path("localSaleId").asText(),
+                        node.path("status").asText(),
+                        node.path("remoteSaleId").isNull() || node.path("remoteSaleId").isMissingNode()
+                                ? null
+                                : node.path("remoteSaleId").asLong(),
+                        textOrNull(node.path("note"))
+                ))
+                .toList();
     }
 
     public void finalizeSale(
@@ -148,6 +200,14 @@ public class OnlineSaleClient {
         return buildRequestBody(null, List.of(new SaleLine(productId, quantity)), paymentMethod, amount);
     }
 
+    String toJson(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException exception) {
+            throw new IllegalStateException("Nao foi possivel montar requisicao JSON.", exception);
+        }
+    }
+
     private ApiResponse sendGet(String apiBaseUrl, String path, String bearerToken) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(normalize(apiBaseUrl) + path))
@@ -171,10 +231,20 @@ public class OnlineSaleClient {
     }
 
     private ApiResponse requireSuccess(ApiResponse response) {
-        if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IllegalStateException(apiErrorMessage(response));
+        int status = response.statusCode();
+        if (status >= 200 && status < 300) {
+            return response;
         }
-        return response;
+        if (status >= 500) {
+            throw new ApiUnavailableException("API indisponivel (status " + status + ").", null);
+        }
+        if (status == 401) {
+            throw new ApiRejectedException(status, "Sessao expirada ou credenciais invalidas. Entre novamente.");
+        }
+        if (status == 403) {
+            throw new ApiRejectedException(status, "Perfil sem permissao para esta operacao.");
+        }
+        throw new ApiRejectedException(status, apiErrorMessage(response));
     }
 
     private String apiErrorMessage(ApiResponse response) {
@@ -189,10 +259,19 @@ public class OnlineSaleClient {
             if (!error.path("message").asText("").isBlank()) {
                 return error.path("message").asText();
             }
-        } catch (JsonProcessingException exception) {
+        } catch (JsonProcessingException | IllegalArgumentException exception) {
             return "API respondeu com status " + response.statusCode() + ".";
         }
         return "API respondeu com status " + response.statusCode() + ".";
+    }
+
+    private static CustomerOption customerOption(JsonNode customer) {
+        return new CustomerOption(
+                customer.path("id").asLong(),
+                customer.path("name").asText(),
+                textOrNull(customer.path("phone")),
+                textOrNull(customer.path("document"))
+        );
     }
 
     private static String normalize(String apiBaseUrl) {
@@ -211,14 +290,6 @@ public class OnlineSaleClient {
         }
     }
 
-    private String toJson(Object value) {
-        try {
-            return objectMapper.writeValueAsString(value);
-        } catch (JsonProcessingException exception) {
-            throw new IllegalStateException("Nao foi possivel montar requisicao JSON.", exception);
-        }
-    }
-
     private static String textOrNull(JsonNode node) {
         if (node.isMissingNode() || node.isNull()) {
             return null;
@@ -232,6 +303,31 @@ public class OnlineSaleClient {
     }
 
     record ApiResponse(int statusCode, String body) {
+    }
+
+    /** Falha de comunicacao ou erro 5xx: a venda deve seguir para a fila offline. */
+    public static class ApiUnavailableException extends IllegalStateException {
+        public ApiUnavailableException(String message, Throwable cause) {
+            super(message, cause);
+        }
+    }
+
+    /** A API respondeu e recusou a operacao (4xx). */
+    public static class ApiRejectedException extends IllegalStateException {
+        private final int statusCode;
+
+        public ApiRejectedException(int statusCode, String message) {
+            super(message);
+            this.statusCode = statusCode;
+        }
+
+        public int statusCode() {
+            return statusCode;
+        }
+
+        public boolean isAuthenticationFailure() {
+            return statusCode == 401;
+        }
     }
 
     public record CatalogProduct(Long id, String name, String barcode, String sku, String unit, BigDecimal salePrice) {
@@ -249,15 +345,37 @@ public class OnlineSaleClient {
         }
     }
 
+    public record DiscountLimit(BigDecimal maxPercent) {
+        public static final DiscountLimit NONE = new DiscountLimit(BigDecimal.ZERO);
+
+        public boolean unlimited() {
+            return maxPercent == null;
+        }
+    }
+
     public record SaleLine(Long productId, BigDecimal quantity) {
     }
 
+    public record OnlineSaleRequest(
+            String clientSaleId,
+            Long customerId,
+            List<SaleLine> items,
+            List<OfflineSalePayment> payments,
+            BigDecimal discountAmount
+    ) {
+    }
+
+    /**
+     * Payload de {@code POST /api/offline/sales/sync}. {@code createdAt} vai como texto ISO-8601
+     * para nao depender do modulo jsr310 do Jackson.
+     */
     public record OfflineSaleSyncRequest(
             String localSaleId,
-            Instant createdAt,
+            String createdAt,
             Long customerId,
             List<OfflineSaleItem> items,
-            List<OfflineSalePayment> payments
+            List<OfflineSalePayment> payments,
+            BigDecimal discountAmount
     ) {
     }
 
@@ -277,5 +395,8 @@ public class OnlineSaleClient {
     }
 
     public record OfflineConflict(String code, String message) {
+    }
+
+    public record RemoteSaleStatus(String localSaleId, String status, Long remoteSaleId, String note) {
     }
 }

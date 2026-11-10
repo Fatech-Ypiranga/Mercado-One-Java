@@ -13,7 +13,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 public class OfflineSaleQueue {
 
@@ -68,6 +70,9 @@ public class OfflineSaleQueue {
                         created_at text not null
                     )
                     """);
+            if (!hasColumn(connection, "offline_sales", "discount_amount")) {
+                statement.executeUpdate("alter table offline_sales add column discount_amount text not null default '0'");
+            }
         } catch (SQLException exception) {
             throw new IllegalStateException("Nao foi possivel inicializar fila offline.", exception);
         }
@@ -102,10 +107,80 @@ public class OfflineSaleQueue {
         updateStatus(localSaleId, LocalSaleStatus.ERROR, null, message);
     }
 
+    public void markRejected(String localSaleId, String message) {
+        updateStatus(localSaleId, LocalSaleStatus.REJECTED, null, message);
+    }
+
+    public List<String> conflictSaleIds() {
+        try (Connection connection = connect();
+             PreparedStatement statement = connection.prepareStatement("""
+                     select local_sale_id from offline_sales where status = 'CONFLICT' order by created_at asc
+                     """);
+             ResultSet rows = statement.executeQuery()) {
+            List<String> ids = new ArrayList<>();
+            while (rows.next()) {
+                ids.add(rows.getString(1));
+            }
+            return ids;
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Nao foi possivel ler conflitos offline.", exception);
+        }
+    }
+
+    public Map<LocalSaleStatus, Integer> countByStatus() {
+        Map<LocalSaleStatus, Integer> counts = new EnumMap<>(LocalSaleStatus.class);
+        for (LocalSaleStatus status : LocalSaleStatus.values()) {
+            counts.put(status, 0);
+        }
+        try (Connection connection = connect();
+             PreparedStatement statement = connection.prepareStatement("""
+                     select status, count(*) from offline_sales group by status
+                     """);
+             ResultSet rows = statement.executeQuery()) {
+            while (rows.next()) {
+                counts.put(LocalSaleStatus.valueOf(rows.getString(1)), rows.getInt(2));
+            }
+            return counts;
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Nao foi possivel contar fila offline.", exception);
+        }
+    }
+
+    public List<LocalSaleSummary> recentSales(int limit) {
+        try (Connection connection = connect();
+             PreparedStatement statement = connection.prepareStatement("""
+                     select s.local_sale_id, s.created_at, s.status, s.remote_sale_id, s.last_error, s.discount_amount,
+                            (select coalesce(sum(cast(i.quantity as real) * cast(i.unit_price as real)), 0)
+                             from offline_sale_items i where i.local_sale_id = s.local_sale_id) as gross
+                     from offline_sales s
+                     order by s.created_at desc
+                     limit ?
+                     """)) {
+            statement.setInt(1, limit);
+            List<LocalSaleSummary> summaries = new ArrayList<>();
+            try (ResultSet rows = statement.executeQuery()) {
+                while (rows.next()) {
+                    BigDecimal gross = BigDecimal.valueOf(rows.getDouble("gross")).setScale(2, java.math.RoundingMode.HALF_UP);
+                    summaries.add(new LocalSaleSummary(
+                            rows.getString("local_sale_id"),
+                            Instant.parse(rows.getString("created_at")),
+                            LocalSaleStatus.valueOf(rows.getString("status")),
+                            nullableLong(rows, "remote_sale_id"),
+                            rows.getString("last_error"),
+                            gross.subtract(new BigDecimal(rows.getString("discount_amount")))
+                    ));
+                }
+            }
+            return summaries;
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Nao foi possivel ler fila offline.", exception);
+        }
+    }
+
     public List<LocalSale> pendingSales() {
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement("""
-                     select local_sale_id, created_at, customer_id, status
+                     select local_sale_id, created_at, customer_id, status, discount_amount
                      from offline_sales
                      where status in ('PENDING', 'ERROR')
                      order by created_at asc
@@ -120,7 +195,8 @@ public class OfflineSaleQueue {
                             nullableLong(rows, "customer_id"),
                             LocalSaleStatus.valueOf(rows.getString("status")),
                             items(connection, localSaleId),
-                            payments(connection, localSaleId)
+                            payments(connection, localSaleId),
+                            new BigDecimal(rows.getString("discount_amount"))
                     ));
                 }
             }
@@ -132,8 +208,8 @@ public class OfflineSaleQueue {
 
     private void insertSale(Connection connection, LocalSale sale) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
-                insert into offline_sales(local_sale_id, created_at, customer_id, status, updated_at)
-                values (?, ?, ?, ?, ?)
+                insert into offline_sales(local_sale_id, created_at, customer_id, status, updated_at, discount_amount)
+                values (?, ?, ?, ?, ?, ?)
                 """)) {
             statement.setString(1, sale.localSaleId());
             statement.setString(2, sale.createdAt().toString());
@@ -144,7 +220,20 @@ public class OfflineSaleQueue {
             }
             statement.setString(4, sale.status().name());
             statement.setString(5, Instant.now().toString());
+            statement.setString(6, sale.discountAmount().toPlainString());
             statement.executeUpdate();
+        }
+    }
+
+    private static boolean hasColumn(Connection connection, String table, String column) throws SQLException {
+        try (Statement statement = connection.createStatement();
+             ResultSet rows = statement.executeQuery("pragma table_info(" + table + ")")) {
+            while (rows.next()) {
+                if (column.equalsIgnoreCase(rows.getString("name"))) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -269,11 +358,49 @@ public class OfflineSaleQueue {
             Long customerId,
             LocalSaleStatus status,
             List<LocalSaleItem> items,
-            List<LocalSalePayment> payments
+            List<LocalSalePayment> payments,
+            BigDecimal discountAmount
+    ) {
+        public LocalSale {
+            discountAmount = discountAmount == null ? BigDecimal.ZERO : discountAmount;
+        }
+
+        public LocalSale(
+                String localSaleId,
+                Instant createdAt,
+                Long customerId,
+                LocalSaleStatus status,
+                List<LocalSaleItem> items,
+                List<LocalSalePayment> payments
+        ) {
+            this(localSaleId, createdAt, customerId, status, items, payments, BigDecimal.ZERO);
+        }
+
+        public BigDecimal grossAmount() {
+            return items.stream()
+                    .map(LocalSaleItem::totalAmount)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+        }
+
+        public BigDecimal netAmount() {
+            return grossAmount().subtract(discountAmount);
+        }
+    }
+
+    public record LocalSaleSummary(
+            String localSaleId,
+            Instant createdAt,
+            LocalSaleStatus status,
+            Long remoteSaleId,
+            String lastMessage,
+            BigDecimal netAmount
     ) {
     }
 
     public record LocalSaleItem(Long productId, BigDecimal quantity, BigDecimal unitPrice) {
+        public BigDecimal totalAmount() {
+            return unitPrice.multiply(quantity).setScale(2, java.math.RoundingMode.HALF_UP);
+        }
     }
 
     public record LocalSalePayment(PaymentMethod method, BigDecimal amount) {
