@@ -236,7 +236,7 @@ public class OnlineSaleClient {
             return response;
         }
         if (status >= 500) {
-            throw new ApiUnavailableException("API indisponivel (status " + status + ").", null);
+            throw new ApiUnavailableException("API indisponivel (status " + status + ").", null, true);
         }
         if (status == 401) {
             throw new ApiRejectedException(status, "Sessao expirada ou credenciais invalidas. Entre novamente.");
@@ -307,8 +307,20 @@ public class OnlineSaleClient {
 
     /** Falha de comunicacao ou erro 5xx: a venda deve seguir para a fila offline. */
     public static class ApiUnavailableException extends IllegalStateException {
+        private final boolean serverError;
+
         public ApiUnavailableException(String message, Throwable cause) {
+            this(message, cause, false);
+        }
+
+        public ApiUnavailableException(String message, Throwable cause, boolean serverError) {
             super(message, cause);
+            this.serverError = serverError;
+        }
+
+        /** A API respondeu 5xx: o servidor esta no ar, a falha pode ser especifica da requisicao. */
+        public boolean serverError() {
+            return serverError;
         }
     }
 

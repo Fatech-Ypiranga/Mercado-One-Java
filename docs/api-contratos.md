@@ -230,7 +230,7 @@ Exemplo de payload:
 - Consumidor atual da UI do PDV para toda finalização de venda.
 - Recebe venda local do PDV com `localSaleId`, `createdAt`, cliente opcional, itens com `unitPrice` local e pagamentos.
 - Retorna `status="SENT"` com venda confirmada ou `status="CONFLICT"` com lista de conflitos.
-- Códigos de conflito observados no código: `PRODUCT_NOT_FOUND`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `PAYMENT_TOTAL`, `STOCK_OR_PAYMENT`.
+- Códigos de conflito observados no código: `PRODUCT_NOT_FOUND`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `PAYMENT_TOTAL`, `STOCK_INSUFFICIENT`, `DISCOUNT_INVALID`, `DISCOUNT_NOT_ALLOWED`.
 - Quando há conflito, registra uma pendência administrativa consultável. Aceite/rejeição no admin não possui callback para atualizar o SQLite do PDV.
 
 `GET /api/offline/sales/conflicts`

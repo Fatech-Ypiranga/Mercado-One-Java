@@ -56,7 +56,8 @@ Códigos devolvidos pela API:
 - `PRODUCT_INACTIVE`
 - `PRICE_CHANGED`
 - `PAYMENT_TOTAL`
-- `STOCK_OR_PAYMENT` (estoque insuficiente ou outra regra na finalização)
+- `STOCK_INSUFFICIENT` (saldo atual menor que a quantidade vendida; verificado antes de gravar)
+- `DISCOUNT_INVALID` e `DISCOUNT_NOT_ALLOWED`
 
 `ACCEPT` registra a venda com os preços praticados pelo PDV, baixa estoque e vincula `remoteSaleId`. `REJECT` encerra a pendência no servidor. Em ambos os casos a linha SQLite permanece `CONFLICT`.
 

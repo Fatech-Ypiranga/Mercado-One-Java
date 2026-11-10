@@ -98,6 +98,23 @@ class CheckoutServiceTests {
     }
 
     @Test
+    void serverErrorOnOneSaleDoesNotBlockTheRestOfTheQueue() {
+        responder = request -> {
+            throw new OnlineSaleClient.ApiUnavailableException("Nao foi possivel comunicar com a API.", null);
+        };
+        service.checkout(SESSION, draft("0", payment(PaymentMethod.CASH, "20.00")));
+        service.checkout(SESSION, draft("0", payment(PaymentMethod.CASH, "20.00")));
+
+        responder = request -> bodies.getLast().contains("\"local-1\"")
+                ? new OnlineSaleClient.ApiResponse(500, "{}")
+                : ok("{\"status\":\"SENT\",\"sale\":{\"id\":9},\"conflicts\":[]}");
+        var summary = service.synchronize(SESSION);
+
+        assertEquals(1, summary.sent());
+        assertEquals(1, summary.errors());
+    }
+
+    @Test
     void businessRejectionMarksSaleRejectedAndKeepsItOutOfRetry() {
         responder = request -> new OnlineSaleClient.ApiResponse(400,
                 "{\"success\":false,\"error\":{\"code\":\"BUSINESS_RULE\",\"message\":\"Estoque insuficiente para finalizar a venda.\"}}");
