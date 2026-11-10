@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, DestroyRef, ElementRef, inject } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
+import { ApiClientService } from '../core/api-client.service';
 import { Category, CatalogService } from '../core/catalog.service';
 
 @Component({
@@ -121,6 +122,7 @@ import { Category, CatalogService } from '../core/catalog.service';
 export class CategoriesPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly catalog = inject(CatalogService);
+  private readonly apiClient = inject(ApiClientService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
@@ -163,9 +165,9 @@ export class CategoriesPageComponent {
           this.categories = response.data ?? [];
           this.syncView();
         },
-        error: () => {
+        error: (error) => {
           if (requestId !== this.listRequestId) return;
-          this.listError = 'Não foi possível carregar categorias.';
+          this.listError = this.apiClient.errorMessage(error, 'Não foi possível carregar categorias.');
           this.syncView();
         },
       });
@@ -196,8 +198,8 @@ export class CategoriesPageComponent {
         this.showList();
         this.load();
       },
-      error: () => {
-        this.errorMessage = 'Revise os dados da categoria.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Revise os dados da categoria.');
         this.syncView();
       },
     });

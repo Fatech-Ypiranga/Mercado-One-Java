@@ -3,6 +3,7 @@ import { ChangeDetectorRef, Component, DestroyRef, ElementRef, inject } from '@a
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
+import { ApiClientService } from '../core/api-client.service';
 import { CatalogService, Category, Product, ProductRequest } from '../core/catalog.service';
 
 @Component({
@@ -197,6 +198,7 @@ import { CatalogService, Category, Product, ProductRequest } from '../core/catal
 export class ProductsPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly catalog = inject(CatalogService);
+  private readonly apiClient = inject(ApiClientService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
@@ -257,9 +259,9 @@ export class ProductsPageComponent {
           this.products = response.data ?? [];
           this.syncView();
         },
-        error: () => {
+        error: (error) => {
           if (requestId !== this.listRequestId) return;
-          this.listError = 'Não foi possível carregar produtos.';
+          this.listError = this.apiClient.errorMessage(error, 'Não foi possível carregar produtos.');
           this.syncView();
         },
       });
@@ -290,8 +292,8 @@ export class ProductsPageComponent {
         this.showList();
         this.loadProducts();
       },
-      error: () => {
-        this.errorMessage = 'Revise os dados do produto.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Revise os dados do produto.');
         this.syncView();
       },
     });
@@ -345,8 +347,8 @@ export class ProductsPageComponent {
         this.categories = response.data ?? [];
         this.syncView();
       },
-      error: () => {
-        this.errorMessage = 'Não foi possível carregar categorias.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar categorias.');
         this.syncView();
       },
     });
