@@ -25,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "mercado-one.security.seed-admin.enabled=true",
         "mercado-one.security.seed-admin.name=Administrador",
         "mercado-one.security.seed-admin.login=admin@mercado.one",
-        "mercado-one.security.seed-admin.password=admin123",
+        "mercado-one.security.seed-admin.password=Remote-Strong-Pass-9",
         "mercado-one.security.cookie-secure=true",
         "mercado-one.security.cors-allowed-origins=https://admin.example.test"
 })
@@ -40,7 +40,7 @@ class RemoteAdminSecurityTests {
         var login = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"login":"admin@mercado.one","password":"admin123"}
+                                {"login":"admin@mercado.one","password":"Remote-Strong-Pass-9"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(header().string(HttpHeaders.SET_COOKIE,
