@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 
 import { ApiClientService, ApiEnvelope } from './api-client.service';
 
-export type InventoryMovementType = 'ENTRY' | 'ADJUSTMENT' | 'SALE';
+export type InventoryMovementType = 'ENTRY' | 'ADJUSTMENT' | 'SALE' | 'SALE_CANCELLATION';
 
 export interface InventoryProduct {
   id: number;
@@ -62,6 +62,14 @@ export interface EntryRequest {
   note: string | null;
 }
 
+export interface EntryDocumentRequest {
+  supplierId: number | null;
+  supplierName: string | null;
+  documentNumber: string | null;
+  note: string | null;
+  items: { productId: number; quantity: number }[];
+}
+
 export interface AdjustmentRequest {
   productId: number | null;
   newQuantity: number | null;
@@ -90,6 +98,10 @@ export class InventoryService {
 
   registerEntry(request: EntryRequest): Observable<ApiEnvelope<InventoryMovement>> {
     return this.http.post<ApiEnvelope<InventoryMovement>>(`${this.apiClient.apiBaseUrl}/api/inventory/entries`, request);
+  }
+
+  registerEntryDocument(request: EntryDocumentRequest): Observable<ApiEnvelope<InventoryMovement[]>> {
+    return this.http.post<ApiEnvelope<InventoryMovement[]>>(`${this.apiClient.apiBaseUrl}/api/inventory/entry-documents`, request);
   }
 
   registerAdjustment(request: AdjustmentRequest): Observable<ApiEnvelope<InventoryMovement>> {

@@ -1,6 +1,7 @@
 package com.mercadoone.backend.modules.catalog.api;
 
 import com.mercadoone.backend.api.common.ApiEnvelope;
+import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
 import com.mercadoone.backend.modules.catalog.application.CatalogService;
 import com.mercadoone.backend.modules.catalog.domain.Category;
 import com.mercadoone.backend.modules.catalog.domain.Product;
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,16 +47,20 @@ public class ProductController {
     }
 
     @PostMapping
-    public ApiEnvelope<ProductResponse> create(@Valid @RequestBody ProductRequest request) {
-        return ApiEnvelope.ok(ProductResponse.from(catalogService.createProduct(request.toData(), request.categoryId())));
+    public ApiEnvelope<ProductResponse> create(
+            @Valid @RequestBody ProductRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        return ApiEnvelope.ok(ProductResponse.from(catalogService.createProduct(request.toData(), request.categoryId(), user.id())));
     }
 
     @PutMapping("/{id}")
     public ApiEnvelope<ProductResponse> update(
             @PathVariable Long id,
-            @Valid @RequestBody ProductRequest request
+            @Valid @RequestBody ProductRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        return ApiEnvelope.ok(ProductResponse.from(catalogService.updateProduct(id, request.toData(), request.categoryId())));
+        return ApiEnvelope.ok(ProductResponse.from(catalogService.updateProduct(id, request.toData(), request.categoryId(), user.id())));
     }
 
     public record ProductRequest(

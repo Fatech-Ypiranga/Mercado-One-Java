@@ -1,12 +1,13 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { finalize } from 'rxjs';
+import { FormArray, FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Observable, finalize } from 'rxjs';
 
 import { ApiClientService } from '../core/api-client.service';
 import { CatalogService, Product } from '../core/catalog.service';
 import {
   AdjustmentRequest,
+  EntryDocumentRequest,
   EntryRequest,
   InventoryBalance,
   InventoryMovement,
@@ -14,6 +15,8 @@ import {
   InventoryService,
 } from '../core/inventory.service';
 import { Supplier, SupplierService } from '../core/supplier.service';
+
+type MovementMode = 'ENTRY' | 'DOCUMENT' | 'ADJUSTMENT';
 
 @Component({
   selector: 'mo-inventory-page',
@@ -46,6 +49,7 @@ import { Supplier, SupplierService } from '../core/supplier.service';
           <option value="ENTRY">Entradas</option>
           <option value="ADJUSTMENT">Ajustes</option>
           <option value="SALE">Vendas</option>
+          <option value="SALE_CANCELLATION">Cancelamentos de venda</option>
         </select>
       </label>
       <label>
@@ -122,25 +126,55 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         <label>
           Tipo
           <select formControlName="type">
-            <option value="ENTRY">Entrada</option>
+            <option value="ENTRY">Entrada de um produto</option>
+            <option value="DOCUMENT">Nota de entrada (vários produtos)</option>
             <option value="ADJUSTMENT">Ajuste manual</option>
           </select>
         </label>
-        <label>
-          Produto
-          <select formControlName="productId">
-            <option [ngValue]="null">Selecione</option>
-            @for (product of activeProducts; track product.id) {
-              <option [ngValue]="product.id">{{ product.name }} - {{ product.sku || product.barcode || product.unit }}</option>
-            }
-          </select>
-        </label>
-
-        @if (isEntry) {
+        @if (!isDocument) {
           <label>
-            Quantidade de entrada
-            <input class="numeric" type="number" min="0.001" step="0.001" formControlName="quantity" />
+            Produto
+            <select formControlName="productId">
+              <option [ngValue]="null">Selecione</option>
+              @for (product of activeProducts; track product.id) {
+                <option [ngValue]="product.id">{{ product.name }} - {{ product.sku || product.barcode || product.unit }}</option>
+              }
+            </select>
           </label>
+        }
+
+        @if (isDocument) {
+          <fieldset class="document-lines" formArrayName="lines">
+            <legend>Itens da nota</legend>
+            @for (line of lines.controls; track line; let index = $index) {
+              <div class="document-line" [formGroupName]="index">
+                <label>
+                  Produto {{ index + 1 }}
+                  <select formControlName="productId">
+                    <option [ngValue]="null">Selecione</option>
+                    @for (product of activeProducts; track product.id) {
+                      <option [ngValue]="product.id">{{ product.name }} - {{ product.sku || product.barcode || product.unit }}</option>
+                    }
+                  </select>
+                </label>
+                <label>
+                  Quantidade
+                  <input class="numeric" type="number" min="0.001" step="0.001" formControlName="quantity" />
+                </label>
+                <button type="button" class="ghost-button" (click)="removeLine(index)" [disabled]="lines.length === 1" [attr.aria-label]="'Remover item ' + (index + 1)">Remover</button>
+              </div>
+            }
+            <button type="button" class="ghost-button" (click)="addLine()">Adicionar item</button>
+          </fieldset>
+        }
+
+        @if (isEntry || isDocument) {
+          @if (isEntry) {
+            <label>
+              Quantidade de entrada
+              <input class="numeric" type="number" min="0.001" step="0.001" formControlName="quantity" />
+            </label>
+          }
           <label>
             Fornecedor
             <select formControlName="supplierId">
@@ -171,7 +205,7 @@ import { Supplier, SupplierService } from '../core/supplier.service';
         </label>
 
         @if (form.invalid && form.touched) {
-          <p class="field-error">Informe produto, quantidade válida e justificativa quando for ajuste.</p>
+          <p class="field-error">{{ isDocument ? 'Informe produto e quantidade válida em todos os itens da nota, sem repetir produto.' : 'Informe produto, quantidade válida e justificativa quando for ajuste.' }}</p>
         }
         <div class="button-row">
           <button type="submit" class="primary-button" [disabled]="saving || activeProducts.length === 0">
@@ -238,6 +272,10 @@ import { Supplier, SupplierService } from '../core/supplier.service';
   styles: [`
     .data-table h2 { margin: 0 0 16px; }
     .form-error, .form-success { margin-bottom: 16px; }
+    .document-lines { display: grid; gap: 10px; border: 1px solid var(--color-border); border-radius: var(--radius-input); padding: 12px; margin: 0; }
+    .document-lines legend { font-weight: 600; padding: 0 4px; }
+    .document-line { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+    @media (max-width: 719px) { .document-line { grid-template-columns: minmax(0, 1fr); } }
     @media (max-width: 719px) {
       .workspace { display: grid; grid-template-columns: minmax(0, 1fr); }
       .table-wrap { overflow: visible; }
@@ -278,7 +316,8 @@ export class InventoryPageComponent {
   protected readonly movementFromControl = this.fb.nonNullable.control('');
   protected readonly movementToControl = this.fb.nonNullable.control('');
   protected readonly form = this.fb.group({
-    type: this.fb.nonNullable.control<InventoryMovementType>('ENTRY', Validators.required),
+    type: this.fb.nonNullable.control<MovementMode>('ENTRY', Validators.required),
+    lines: this.fb.array([this.newLine()]),
     productId: [null as number | null, Validators.required],
     quantity: [null as number | null, [Validators.min(0.001)]],
     supplierId: [null as number | null],
@@ -305,6 +344,24 @@ export class InventoryPageComponent {
     return this.form.controls.type.value === 'ENTRY';
   }
 
+  protected get isDocument(): boolean {
+    return this.form.controls.type.value === 'DOCUMENT';
+  }
+
+  protected get lines(): FormArray<FormGroup<{ productId: FormControl<number | null>; quantity: FormControl<number | null> }>> {
+    return this.form.controls.lines;
+  }
+
+  protected addLine(): void {
+    this.lines.push(this.newLine());
+  }
+
+  protected removeLine(index: number): void {
+    if (this.lines.length > 1) {
+      this.lines.removeAt(index);
+    }
+  }
+
   protected get activeSuppliers(): Supplier[] {
     return this.suppliers.filter((supplier) => supplier.active);
   }
@@ -322,24 +379,33 @@ export class InventoryPageComponent {
       return;
     }
 
+    if (this.isDocument && this.hasDuplicatedLines()) {
+      this.errorMessage = 'Produto repetido na nota. Some as quantidades em uma única linha.';
+      return;
+    }
+
     this.saving = true;
     this.errorMessage = '';
     this.successMessage = '';
-    const operation = this.isEntry
-      ? this.inventory.registerEntry(this.toEntryRequest())
-      : this.inventory.registerAdjustment(this.toAdjustmentRequest());
+    const itemCount = this.lines.length;
+    const operation: Observable<unknown> = this.isDocument
+      ? this.inventory.registerEntryDocument(this.toEntryDocumentRequest())
+      : this.isEntry
+        ? this.inventory.registerEntry(this.toEntryRequest())
+        : this.inventory.registerAdjustment(this.toAdjustmentRequest());
+    const documentSaved = this.isDocument;
 
     operation.pipe(finalize(() => {
       this.saving = false;
       this.syncView();
     })).subscribe({
       next: () => {
-        this.successMessage = 'Movimentação registrada.';
+        this.successMessage = documentSaved ? `Nota registrada com ${itemCount} item(ns).` : 'Movimentação registrada.';
         this.resetForm();
         this.load();
       },
-      error: () => {
-        this.errorMessage = 'Não foi possível registrar a movimentação.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível registrar a movimentação.');
         this.syncView();
       },
     });
@@ -357,6 +423,8 @@ export class InventoryPageComponent {
       documentNumber: '',
       note: '',
     });
+    this.lines.clear();
+    this.lines.push(this.newLine());
     this.syncValidators();
   }
 
@@ -372,7 +440,22 @@ export class InventoryPageComponent {
     if (type === 'ADJUSTMENT') {
       return 'Ajuste';
     }
+    if (type === 'SALE_CANCELLATION') {
+      return 'Cancelamento de venda';
+    }
     return 'Venda';
+  }
+
+  private newLine(): FormGroup<{ productId: FormControl<number | null>; quantity: FormControl<number | null> }> {
+    return this.fb.group({
+      productId: this.fb.control<number | null>(null, Validators.required),
+      quantity: this.fb.control<number | null>(null, [Validators.required, Validators.min(0.001)]),
+    });
+  }
+
+  private hasDuplicatedLines(): boolean {
+    const ids = this.lines.controls.map((line) => line.controls.productId.value);
+    return new Set(ids).size !== ids.length;
   }
 
   private loadProducts(): void {
@@ -381,8 +464,8 @@ export class InventoryPageComponent {
         this.products = response.data ?? [];
         this.syncView();
       },
-      error: () => {
-        this.errorMessage = 'Não foi possível carregar produtos.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar produtos.');
         this.syncView();
       },
     });
@@ -418,9 +501,9 @@ export class InventoryPageComponent {
         this.balances = response.data ?? [];
         this.syncView();
       },
-      error: () => {
+      error: (error) => {
         if (request !== this.balanceSequence) return;
-        this.errorMessage = 'Não foi possível carregar saldos.';
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar saldos.');
         this.syncView();
       },
     });
@@ -448,19 +531,31 @@ export class InventoryPageComponent {
         this.movements = response.data ?? [];
         this.syncView();
       },
-      error: () => {
+      error: (error) => {
         if (request !== this.movementSequence) return;
-        this.errorMessage = 'Não foi possível carregar movimentações.';
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar movimentações.');
         this.syncView();
       },
     });
   }
 
   private syncValidators(): void {
+    const productId = this.form.controls.productId;
     const quantity = this.form.controls.quantity;
     const newQuantity = this.form.controls.newQuantity;
     const reason = this.form.controls.reason;
-    if (this.isEntry) {
+    productId.setValidators(this.isDocument ? [] : [Validators.required]);
+    productId.updateValueAndValidity({ emitEvent: false });
+    if (this.isDocument) {
+      this.lines.enable({ emitEvent: false });
+    } else {
+      this.lines.disable({ emitEvent: false });
+    }
+    if (this.isDocument) {
+      quantity.setValidators([]);
+      newQuantity.setValidators([]);
+      reason.setValidators([]);
+    } else if (this.isEntry) {
       quantity.setValidators([Validators.required, Validators.min(0.001)]);
       newQuantity.setValidators([Validators.min(0)]);
       reason.setValidators([]);
@@ -483,6 +578,20 @@ export class InventoryPageComponent {
       supplierId: value.supplierId,
       documentNumber: this.blankToNull(value.documentNumber),
       note: this.blankToNull(value.note),
+    };
+  }
+
+  private toEntryDocumentRequest(): EntryDocumentRequest {
+    const value = this.form.getRawValue();
+    return {
+      supplierId: value.supplierId,
+      supplierName: this.blankToNull(value.supplierName),
+      documentNumber: this.blankToNull(value.documentNumber),
+      note: this.blankToNull(value.note),
+      items: this.lines.controls.map((line) => ({
+        productId: Number(line.controls.productId.value),
+        quantity: Number(line.controls.quantity.value),
+      })),
     };
   }
 

@@ -1,5 +1,6 @@
 package com.mercadoone.backend.modules.sales.application;
 
+import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.catalog.domain.Product;
 import com.mercadoone.backend.modules.catalog.infrastructure.ProductRepository;
 import com.mercadoone.backend.modules.customer.application.CustomerService;
@@ -29,6 +30,7 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class SalesService {
@@ -38,23 +40,41 @@ public class SalesService {
     private final InventoryService inventory;
     private final CustomerService customerService;
     private final AuditService auditService;
+    private final DiscountPolicy discountPolicy;
 
     SalesService(
             ProductRepository products,
             SaleRepository sales,
             InventoryService inventory,
             CustomerService customerService,
-            AuditService auditService
+            AuditService auditService,
+            DiscountPolicy discountPolicy
     ) {
         this.products = products;
         this.sales = sales;
         this.inventory = inventory;
         this.customerService = customerService;
         this.auditService = auditService;
+        this.discountPolicy = discountPolicy;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Sale> findByClientSaleId(String clientSaleId) {
+        if (clientSaleId == null || clientSaleId.isBlank()) {
+            return Optional.empty();
+        }
+        return sales.findByClientSaleId(clientSaleId.trim()).map(sale -> {
+            initializeResponseGraph(sale);
+            return sale;
+        });
     }
 
     @Transactional
-    public Sale finalizeOnlineSale(SaleData data, Long operatorUserId) {
+    public Sale finalizeOnlineSale(SaleData data, Long operatorUserId, UserRole operatorRole) {
+        Optional<Sale> existing = findByClientSaleId(data.clientSaleId());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
         if (data.items().isEmpty()) {
             throw new IllegalArgumentException("Venda deve possuir ao menos um item.");
         }
@@ -63,7 +83,7 @@ public class SalesService {
         }
 
         Customer customer = data.customerId() == null ? null : customerService.getActiveCustomer(data.customerId());
-        Sale sale = new Sale(operatorUserId, customer);
+        Sale sale = new Sale(operatorUserId, customer, blankToNull(data.clientSaleId()));
         for (SaleItemData item : data.items()) {
             Product product = products.findById(item.productId())
                     .orElseThrow(() -> new EntityNotFoundException("Produto nao encontrado."));
@@ -72,6 +92,10 @@ public class SalesService {
             }
             sale.addItem(new SaleItem(product, item.quantity()));
         }
+        if (!discountPolicy.allows(operatorRole, data.discountAmount(), sale.getGrossAmount())) {
+            throw new IllegalArgumentException("Desconto acima do permitido para o perfil.");
+        }
+        sale.applyDiscount(data.discountAmount());
         for (SalePaymentData payment : data.payments()) {
             sale.addPayment(new SalePayment(payment.method(), payment.amount()));
         }
@@ -90,10 +114,36 @@ public class SalesService {
         }
         auditService.record("SALE_CONFIRMED", "sale", savedSale.getId(), operatorUserId, Map.of(
                 "totalAmount", savedSale.getTotalAmount(),
+                "discountAmount", savedSale.getDiscountAmount(),
                 "itemCount", savedSale.getItems().size(),
-                "customerId", customer == null ? "" : customer.getId()
+                "customerId", customer == null ? "" : customer.getId(),
+                "clientSaleId", savedSale.getClientSaleId() == null ? "" : savedSale.getClientSaleId()
         ));
         return savedSale;
+    }
+
+    @Transactional
+    public Sale cancelSale(Long saleId, String reason, Long userId) {
+        String cleanReason = blankToNull(reason);
+        if (cleanReason == null) {
+            throw new IllegalArgumentException("Informe o motivo do cancelamento.");
+        }
+        Sale sale = sales.findById(saleId)
+                .orElseThrow(() -> new EntityNotFoundException("Venda nao encontrada."));
+        sale.cancel(userId, cleanReason);
+        for (SaleItem item : sale.getItems()) {
+            inventory.registerSaleReturn(item.getProduct(), item.getQuantity(), userId, "Cancelamento venda " + sale.getId());
+        }
+        auditService.record("SALE_CANCELED", "sale", sale.getId(), userId, Map.of(
+                "reason", cleanReason,
+                "totalAmount", sale.getTotalAmount()
+        ));
+        initializeResponseGraph(sale);
+        return sale;
+    }
+
+    public BigDecimal maxDiscountPercentFor(UserRole role) {
+        return discountPolicy.maxPercentFor(role);
     }
 
     @Transactional(readOnly = true)
@@ -115,13 +165,15 @@ public class SalesService {
     public String exportCsv(SaleFilters filters) {
         List<Sale> rows = sales.findAll(matches(filters), Sort.by(Sort.Direction.DESC, "createdAt"));
         rows.forEach(this::initializeResponseGraph);
-        StringBuilder csv = new StringBuilder("id,createdAt,status,operatorUserId,customer,totalAmount,payments,items\n");
+        StringBuilder csv = new StringBuilder("id,createdAt,status,operatorUserId,customer,grossAmount,discountAmount,totalAmount,payments,items\n");
         for (Sale sale : rows) {
             csv.append(sale.getId()).append(',')
                     .append(sale.getCreatedAt()).append(',')
                     .append(sale.getStatus()).append(',')
                     .append(sale.getOperatorUserId()).append(',')
                     .append(csv(sale.getCustomer() == null ? "" : sale.getCustomer().getName())).append(',')
+                    .append(sale.getGrossAmount()).append(',')
+                    .append(sale.getDiscountAmount()).append(',')
                     .append(sale.getTotalAmount()).append(',')
                     .append(csv(paymentSummary(sale))).append(',')
                     .append(csv(itemSummary(sale))).append('\n');
@@ -136,6 +188,9 @@ public class SalesService {
         List<Sale> rows = sales.findAll(matches(filters));
         rows.forEach(this::initializeResponseGraph);
         for (Sale sale : rows) {
+            if (sale.getStatus() != SaleStatus.CONFIRMED) {
+                continue;
+            }
             for (SaleItem item : sale.getItems()) {
                 Product product = item.getProduct();
                 ProductSalesTotal current = totals.get(product.getId());
@@ -159,33 +214,8 @@ public class SalesService {
                 .toList();
     }
 
-    @Transactional
-    public OfflineSaleSyncResult syncOfflineSale(OfflineSaleData data, Long operatorUserId) {
-        List<OfflineSaleConflict> conflicts = validateOfflineSale(data);
-        if (!conflicts.isEmpty()) {
-            auditService.record("OFFLINE_SALE_CONFLICT", "offline_sale", data.localSaleId(), operatorUserId, Map.of(
-                    "conflictCount", conflicts.size()
-            ));
-            return new OfflineSaleSyncResult("CONFLICT", null, conflicts);
-        }
-
-        try {
-            Sale sale = finalizeOnlineSale(new SaleData(
-                    data.customerId(),
-                    data.items().stream().map(item -> new SaleItemData(item.productId(), item.quantity())).toList(),
-                    data.payments()
-            ), operatorUserId);
-            return new OfflineSaleSyncResult("SENT", sale, List.of());
-        } catch (IllegalArgumentException exception) {
-            return new OfflineSaleSyncResult("CONFLICT", null, List.of(new OfflineSaleConflict(
-                    "STOCK_OR_PAYMENT",
-                    exception.getMessage()
-            )));
-        }
-    }
-
     @Transactional(readOnly = true)
-    public List<OfflineSaleConflict> validateOfflineSale(OfflineSaleData data) {
+    public List<OfflineSaleConflict> validateOfflineSale(OfflineSaleData data, UserRole operatorRole) {
         List<OfflineSaleConflict> conflicts = new ArrayList<>();
         BigDecimal itemTotal = BigDecimal.ZERO;
         for (OfflineSaleItemData item : data.items()) {
@@ -202,27 +232,42 @@ public class SalesService {
             }
             itemTotal = itemTotal.add(item.unitPrice().multiply(item.quantity()).setScale(2, RoundingMode.HALF_UP));
         }
+        BigDecimal discount = data.discountAmount() == null
+                ? BigDecimal.ZERO
+                : data.discountAmount().setScale(2, RoundingMode.HALF_UP);
+        if (discount.signum() < 0 || (discount.signum() > 0 && discount.compareTo(itemTotal) >= 0)) {
+            conflicts.add(new OfflineSaleConflict("DISCOUNT_INVALID", "Desconto deve ser positivo e menor que o total bruto."));
+        } else if (!discountPolicy.allows(operatorRole, discount, itemTotal)) {
+            conflicts.add(new OfflineSaleConflict("DISCOUNT_NOT_ALLOWED", "Desconto acima do permitido para o perfil do operador."));
+        }
+        BigDecimal netTotal = itemTotal.subtract(discount);
         BigDecimal paidTotal = data.payments().stream()
                 .map(SalePaymentData::amount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add)
                 .setScale(2, RoundingMode.HALF_UP);
-        if (itemTotal.compareTo(paidTotal) != 0) {
+        if (netTotal.compareTo(paidTotal) != 0) {
             conflicts.add(new OfflineSaleConflict("PAYMENT_TOTAL", "Valor pago difere do total da venda offline."));
         }
         return conflicts;
     }
 
     @Transactional
-    public Sale finalizeOfflineSale(OfflineSaleData data, Long operatorUserId) {
+    public Sale finalizeOfflineSale(OfflineSaleData data, Long operatorUserId, UserRole operatorRole) {
         return finalizeOnlineSale(new SaleData(
                 data.customerId(),
                 data.items().stream().map(item -> new SaleItemData(item.productId(), item.quantity())).toList(),
-                data.payments()
-        ), operatorUserId);
+                data.payments(),
+                data.discountAmount(),
+                data.localSaleId()
+        ), operatorUserId, operatorRole);
     }
 
     @Transactional
     public Sale acceptConflictedOfflineSale(OfflineSaleData data, Long operatorUserId) {
+        Optional<Sale> existing = findByClientSaleId(data.localSaleId());
+        if (existing.isPresent()) {
+            return existing.get();
+        }
         if (data.items().isEmpty()) {
             throw new IllegalArgumentException("Venda deve possuir ao menos um item.");
         }
@@ -231,7 +276,7 @@ public class SalesService {
         }
 
         Customer customer = data.customerId() == null ? null : customerService.getActiveCustomer(data.customerId());
-        Sale sale = new Sale(operatorUserId, customer);
+        Sale sale = new Sale(operatorUserId, customer, blankToNull(data.localSaleId()));
         for (OfflineSaleItemData item : data.items()) {
             Product product = products.findById(item.productId())
                     .orElseThrow(() -> new EntityNotFoundException("Produto nao encontrado."));
@@ -240,6 +285,7 @@ public class SalesService {
             }
             sale.addItem(new SaleItem(product, item.quantity(), item.unitPrice()));
         }
+        sale.applyDiscount(data.discountAmount());
         for (SalePaymentData payment : data.payments()) {
             sale.addPayment(new SalePayment(payment.method(), payment.amount()));
         }
@@ -266,11 +312,20 @@ public class SalesService {
 
     private SalesTotals totalsFor(List<Sale> reportSales) {
         BigDecimal totalAmount = BigDecimal.ZERO;
+        BigDecimal discountAmount = BigDecimal.ZERO;
         BigDecimal totalItems = BigDecimal.ZERO;
+        long confirmedCount = 0;
+        long canceledCount = 0;
         Map<PaymentMethod, BigDecimal> byMethod = new EnumMap<>(PaymentMethod.class);
         for (Sale sale : reportSales) {
+            if (sale.getStatus() != SaleStatus.CONFIRMED) {
+                canceledCount++;
+                continue;
+            }
+            confirmedCount++;
             initializeResponseGraph(sale);
             totalAmount = totalAmount.add(sale.getTotalAmount());
+            discountAmount = discountAmount.add(sale.getDiscountAmount());
             for (SaleItem item : sale.getItems()) {
                 totalItems = totalItems.add(item.getQuantity());
             }
@@ -278,7 +333,7 @@ public class SalesService {
                 byMethod.merge(payment.getMethod(), payment.getAmount(), BigDecimal::add);
             }
         }
-        return new SalesTotals(reportSales.size(), totalAmount, totalItems, byMethod);
+        return new SalesTotals(confirmedCount, canceledCount, totalAmount, discountAmount, totalItems, byMethod);
     }
 
     private void initializeResponseGraph(Sale sale) {
@@ -325,11 +380,21 @@ public class SalesService {
                 .orElse("");
     }
 
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
     private String csv(String value) {
         return "\"" + value.replace("\"", "\"\"") + "\"";
     }
 
-    public record SaleData(Long customerId, List<SaleItemData> items, List<SalePaymentData> payments) {
+    public record SaleData(
+            Long customerId,
+            List<SaleItemData> items,
+            List<SalePaymentData> payments,
+            BigDecimal discountAmount,
+            String clientSaleId
+    ) {
     }
 
     public record SaleItemData(Long productId, BigDecimal quantity) {
@@ -357,7 +422,9 @@ public class SalesService {
 
     public record SalesTotals(
             long saleCount,
+            long canceledCount,
             BigDecimal totalAmount,
+            BigDecimal discountAmount,
             BigDecimal totalItems,
             Map<PaymentMethod, BigDecimal> totalsByPaymentMethod
     ) {
@@ -379,7 +446,8 @@ public class SalesService {
             Instant createdAt,
             Long customerId,
             List<OfflineSaleItemData> items,
-            List<SalePaymentData> payments
+            List<SalePaymentData> payments,
+            BigDecimal discountAmount
     ) {
     }
 

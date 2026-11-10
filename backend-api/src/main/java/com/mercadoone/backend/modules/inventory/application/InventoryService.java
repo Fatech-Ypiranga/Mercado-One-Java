@@ -152,6 +152,61 @@ public class InventoryService {
         return movement;
     }
 
+    @Transactional
+    public List<InventoryMovement> registerEntryDocument(EntryDocumentData data, Long createdByUserId) {
+        if (data.items() == null || data.items().isEmpty()) {
+            throw new IllegalArgumentException("Documento de entrada deve possuir ao menos um item.");
+        }
+        long distinctProducts = data.items().stream().map(EntryItemData::productId).distinct().count();
+        if (distinctProducts != data.items().size()) {
+            throw new IllegalArgumentException("Produto repetido no documento de entrada. Some as quantidades em uma unica linha.");
+        }
+        List<InventoryMovement> created = new java.util.ArrayList<>();
+        for (EntryItemData item : data.items()) {
+            created.add(registerEntry(new EntryData(
+                    item.productId(),
+                    item.quantity(),
+                    data.supplierId(),
+                    data.supplierName(),
+                    data.documentNumber(),
+                    data.note()
+            ), createdByUserId));
+        }
+        auditService.record("INVENTORY_ENTRY_DOCUMENT", "inventory_entry_document",
+                data.documentNumber() == null ? "" : data.documentNumber(), createdByUserId, java.util.Map.of(
+                        "itemCount", created.size(),
+                        "movementIds", created.stream().map(InventoryMovement::getId).toList(),
+                        "supplierId", data.supplierId() == null ? "" : data.supplierId()
+                ));
+        return created;
+    }
+
+    @Transactional
+    public InventoryMovement registerSaleReturn(Product product, BigDecimal quantity, Long createdByUserId, String saleReference) {
+        InventoryBalance balance = findOrCreateBalance(product);
+        BigDecimal quantityBefore = balance.getQuantity();
+        BigDecimal quantityAfter = balance.add(quantity);
+
+        InventoryMovement movement = movements.save(new InventoryMovement(new MovementData(
+                product,
+                InventoryMovementType.SALE_CANCELLATION,
+                quantity,
+                quantityBefore,
+                quantityAfter,
+                saleReference,
+                null,
+                null,
+                null,
+                null,
+                createdByUserId
+        )));
+        auditService.record("INVENTORY_SALE_RETURN", "inventory_movement", movement.getId(), createdByUserId, java.util.Map.of(
+                "productId", product.getId(),
+                "quantity", quantity
+        ));
+        return movement;
+    }
+
     private InventoryBalance findOrCreateBalance(Product product) {
         return balances.findLockedByProductId(product.getId())
                 .orElseGet(() -> balances.save(new InventoryBalance(product)));
@@ -226,6 +281,18 @@ public class InventoryService {
             String documentNumber,
             String note
     ) {
+    }
+
+    public record EntryDocumentData(
+            Long supplierId,
+            String supplierName,
+            String documentNumber,
+            String note,
+            List<EntryItemData> items
+    ) {
+    }
+
+    public record EntryItemData(Long productId, BigDecimal quantity) {
     }
 
     public record AdjustmentData(Long productId, BigDecimal newQuantity, String reason, String note) {

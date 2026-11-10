@@ -32,7 +32,7 @@ public class UserManagementService {
     }
 
     @Transactional
-    public AppUser createUser(UserData data) {
+    public AppUser createUser(UserData data, Long actorUserId) {
         requireUniqueLogin(data.login(), null);
         AppUser user = users.save(new AppUser(
                 data.name().trim(),
@@ -41,7 +41,7 @@ public class UserManagementService {
                 data.role(),
                 data.active()
         ));
-        auditService.record("USER_CREATED", "app_user", user.getId(), null, java.util.Map.of(
+        auditService.record("USER_CREATED", "app_user", user.getId(), actorUserId, java.util.Map.of(
                 "login", user.getLogin(),
                 "role", user.getRole()
         ));
@@ -49,19 +49,57 @@ public class UserManagementService {
     }
 
     @Transactional
-    public AppUser updateUser(Long id, UserData data) {
+    public AppUser updateUser(Long id, UserData data, Long actorUserId) {
         AppUser user = findUser(id);
         requireUniqueLogin(data.login(), id);
+        if (id.equals(actorUserId) && (!data.active() || data.role() != user.getRole())) {
+            throw new IllegalArgumentException("Voce nao pode inativar nem trocar o proprio perfil.");
+        }
         user.updateProfile(data.name().trim(), data.login().trim(), data.role(), data.active());
-        if (!isBlank(data.password())) {
+        boolean passwordChanged = !isBlank(data.password());
+        if (passwordChanged) {
             user.updatePassword(passwordEncoder.encode(data.password()));
         }
-        auditService.record("USER_UPDATED", "app_user", user.getId(), null, java.util.Map.of(
+        auditService.record("USER_UPDATED", "app_user", user.getId(), actorUserId, java.util.Map.of(
                 "login", user.getLogin(),
                 "role", user.getRole(),
-                "active", user.isActive()
+                "active", user.isActive(),
+                "passwordChanged", passwordChanged
         ));
         return user;
+    }
+
+    @Transactional
+    public AppUser resetPassword(Long id, String newPassword, Long actorUserId) {
+        requireValidPassword(newPassword);
+        AppUser user = findUser(id);
+        user.updatePassword(passwordEncoder.encode(newPassword));
+        auditService.record("USER_PASSWORD_RESET", "app_user", user.getId(), actorUserId, java.util.Map.of(
+                "login", user.getLogin()
+        ));
+        return user;
+    }
+
+    @Transactional
+    public void changeOwnPassword(Long userId, String currentPassword, String newPassword) {
+        AppUser user = findUser(userId);
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("Senha atual nao confere.");
+        }
+        requireValidPassword(newPassword);
+        if (passwordEncoder.matches(newPassword, user.getPasswordHash())) {
+            throw new IllegalArgumentException("A nova senha deve ser diferente da atual.");
+        }
+        user.updatePassword(passwordEncoder.encode(newPassword));
+        auditService.record("USER_PASSWORD_CHANGED", "app_user", user.getId(), userId, java.util.Map.of(
+                "login", user.getLogin()
+        ));
+    }
+
+    private static void requireValidPassword(String password) {
+        if (password == null || password.length() < 6 || password.length() > 120) {
+            throw new IllegalArgumentException("Senha deve ter entre 6 e 120 caracteres.");
+        }
     }
 
     private AppUser findUser(Long id) {

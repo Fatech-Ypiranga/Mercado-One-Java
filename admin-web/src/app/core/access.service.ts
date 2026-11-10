@@ -67,6 +67,14 @@ export class AccessService {
     return this.http.put<ApiEnvelope<ManagedUser>>(`${this.apiClient.apiBaseUrl}/api/access/users/${id}`, request);
   }
 
+  resetPassword(id: number, password: string): Observable<ApiEnvelope<ManagedUser>> {
+    return this.http.post<ApiEnvelope<ManagedUser>>(`${this.apiClient.apiBaseUrl}/api/access/users/${id}/password`, { password });
+  }
+
+  changeOwnPassword(currentPassword: string, newPassword: string): Observable<ApiEnvelope<null>> {
+    return this.http.post<ApiEnvelope<null>>(`${this.apiClient.apiBaseUrl}/api/auth/password`, { currentPassword, newPassword });
+  }
+
   private params(filters: UserFilters): HttpParams {
     let params = new HttpParams();
     if (filters.search?.trim()) {

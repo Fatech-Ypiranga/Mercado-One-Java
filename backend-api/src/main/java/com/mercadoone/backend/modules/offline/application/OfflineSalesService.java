@@ -2,6 +2,7 @@ package com.mercadoone.backend.modules.offline.application;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.audit.application.AuditService;
 import com.mercadoone.backend.modules.offline.domain.OfflineConflictStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineSaleConflictRecord;
@@ -17,9 +18,11 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class OfflineSalesService {
@@ -40,15 +43,19 @@ public class OfflineSalesService {
     }
 
     @Transactional
-    public OfflineSaleSyncResult syncOfflineSale(OfflineSaleData data, Long operatorUserId) {
-        List<OfflineSaleConflict> saleConflicts = salesService.validateOfflineSale(data);
+    public OfflineSaleSyncResult syncOfflineSale(OfflineSaleData data, Long operatorUserId, UserRole operatorRole) {
+        Optional<Sale> alreadySynced = salesService.findByClientSaleId(data.localSaleId());
+        if (alreadySynced.isPresent()) {
+            return new OfflineSaleSyncResult("SENT", alreadySynced.get(), List.of());
+        }
+        List<OfflineSaleConflict> saleConflicts = salesService.validateOfflineSale(data, operatorRole);
         if (!saleConflicts.isEmpty()) {
             saveConflict(data, operatorUserId, saleConflicts);
             return new OfflineSaleSyncResult("CONFLICT", null, saleConflicts);
         }
 
         try {
-            Sale sale = salesService.finalizeOfflineSale(data, operatorUserId);
+            Sale sale = salesService.finalizeOfflineSale(data, operatorUserId, operatorRole);
             return new OfflineSaleSyncResult("SENT", sale, List.of());
         } catch (IllegalArgumentException exception) {
             List<OfflineSaleConflict> generatedConflicts = List.of(new OfflineSaleConflict(
@@ -58,6 +65,30 @@ public class OfflineSalesService {
             saveConflict(data, operatorUserId, generatedConflicts);
             return new OfflineSaleSyncResult("CONFLICT", null, generatedConflicts);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<LocalSaleRemoteStatus> remoteStatus(List<String> localSaleIds) {
+        return localSaleIds.stream()
+                .map(String::trim)
+                .filter(id -> !id.isEmpty())
+                .distinct()
+                .map(this::remoteStatusOf)
+                .toList();
+    }
+
+    private LocalSaleRemoteStatus remoteStatusOf(String localSaleId) {
+        Optional<Sale> sale = salesService.findByClientSaleId(localSaleId);
+        if (sale.isPresent()) {
+            return new LocalSaleRemoteStatus(localSaleId, "SENT", sale.get().getId(), null);
+        }
+        return conflicts.findFirstByLocalSaleIdOrderByUpdatedAtDesc(localSaleId)
+                .map(conflict -> switch (conflict.getStatus()) {
+                    case PENDING -> new LocalSaleRemoteStatus(localSaleId, "CONFLICT", null, null);
+                    case ACCEPTED -> new LocalSaleRemoteStatus(localSaleId, "SENT", conflict.getRemoteSaleId(), conflict.getResolutionNote());
+                    case REJECTED -> new LocalSaleRemoteStatus(localSaleId, "REJECTED", null, conflict.getResolutionNote());
+                })
+                .orElseGet(() -> new LocalSaleRemoteStatus(localSaleId, "UNKNOWN", null, null));
     }
 
     @Transactional(readOnly = true)
@@ -151,6 +182,9 @@ public class OfflineSalesService {
         return note.trim();
     }
 
+    public record LocalSaleRemoteStatus(String localSaleId, String status, Long remoteSaleId, String note) {
+    }
+
     public enum ConflictResolutionAction {
         ACCEPT,
         REJECT
@@ -161,7 +195,8 @@ public class OfflineSalesService {
             String createdAt,
             Long customerId,
             List<OfflineSaleItemData> items,
-            List<SalePaymentData> payments
+            List<SalePaymentData> payments,
+            BigDecimal discountAmount
     ) {
         static OfflineSalePayload from(OfflineSaleData data) {
             return new OfflineSalePayload(
@@ -169,7 +204,8 @@ public class OfflineSalesService {
                     data.createdAt().toString(),
                     data.customerId(),
                     data.items(),
-                    data.payments()
+                    data.payments(),
+                    data.discountAmount()
             );
         }
 
@@ -179,7 +215,8 @@ public class OfflineSalesService {
                     Instant.parse(createdAt),
                     customerId,
                     items,
-                    payments
+                    payments,
+                    discountAmount
             );
         }
     }

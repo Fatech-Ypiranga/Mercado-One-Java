@@ -57,6 +57,29 @@ public class CustomerController {
         return ApiEnvelope.ok(CustomerResponse.from(customerService.createCustomer(request.toData())));
     }
 
+    /**
+     * Cadastro rapido usado pelo PDV: nome obrigatorio, telefone/documento opcionais, sempre ativo.
+     */
+    @PostMapping("/quick")
+    public ApiEnvelope<CustomerSearchResponse> quickCreate(@Valid @RequestBody QuickCustomerRequest request) {
+        return ApiEnvelope.ok(CustomerSearchResponse.from(customerService.createCustomer(new CustomerData(
+                request.name().trim(),
+                CustomerRequest.blankToNull(request.phone()),
+                null,
+                CustomerRequest.blankToNull(request.document()),
+                request.contactConsent(),
+                true
+        ))));
+    }
+
+    public record QuickCustomerRequest(
+            @NotBlank @Size(max = 160) String name,
+            @Size(max = 40) String phone,
+            @Size(max = 40) String document,
+            boolean contactConsent
+    ) {
+    }
+
     @PutMapping("/{id}")
     public ApiEnvelope<CustomerResponse> update(
             @PathVariable Long id,

@@ -3,6 +3,7 @@ package com.mercadoone.backend.modules.access.api;
 import com.mercadoone.backend.api.common.ApiEnvelope;
 import com.mercadoone.backend.modules.access.application.AuthService;
 import com.mercadoone.backend.modules.access.application.LoginResult;
+import com.mercadoone.backend.modules.access.application.UserManagementService;
 import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
 import com.mercadoone.backend.modules.access.domain.AppUser;
 import com.mercadoone.backend.modules.access.domain.UserRole;
@@ -11,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,15 +35,18 @@ import java.util.List;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserManagementService userManagementService;
     private final boolean cookieSecure;
     private final List<String> adminOrigins;
 
     AuthController(
             AuthService authService,
+            UserManagementService userManagementService,
             @Value("${mercado-one.security.cookie-secure:false}") boolean cookieSecure,
             @Value("${mercado-one.security.cors-allowed-origins}") String allowedOrigins
     ) {
         this.authService = authService;
+        this.userManagementService = userManagementService;
         this.cookieSecure = cookieSecure;
         this.adminOrigins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
@@ -69,6 +74,21 @@ public class AuthController {
         String origin = request.getHeader(HttpHeaders.ORIGIN);
         return origin != null && (adminOrigins.contains(origin)
                 || origin.equals("https://" + request.getHeader(HttpHeaders.HOST)));
+    }
+
+    @PostMapping("/password")
+    public ApiEnvelope<Void> changePassword(
+            @Valid @RequestBody ChangePasswordRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        userManagementService.changeOwnPassword(user.id(), request.currentPassword(), request.newPassword());
+        return ApiEnvelope.ok(null);
+    }
+
+    public record ChangePasswordRequest(
+            @NotBlank String currentPassword,
+            @NotBlank @Size(min = 6, max = 120) String newPassword
+    ) {
     }
 
     @GetMapping("/me")

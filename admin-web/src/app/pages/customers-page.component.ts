@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 
+import { ApiClientService } from '../core/api-client.service';
 import { Customer, CustomerRequest, CustomerService } from '../core/customer.service';
 
 @Component({
@@ -156,6 +157,7 @@ import { Customer, CustomerRequest, CustomerService } from '../core/customer.ser
 export class CustomersPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly customersService = inject(CustomerService);
+  private readonly apiClient = inject(ApiClientService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
@@ -200,9 +202,9 @@ export class CustomersPageComponent {
         this.customers = response.data ?? [];
         this.syncView();
       },
-      error: () => {
+      error: (error) => {
         if (requestId !== this.listRequestId) return;
-        this.listError = 'Não foi possível carregar clientes.';
+        this.listError = this.apiClient.errorMessage(error, 'Não foi possível carregar clientes.');
         this.syncView();
       },
     });
@@ -233,8 +235,8 @@ export class CustomersPageComponent {
         this.showList();
         this.loadCustomers();
       },
-      error: () => {
-        this.errorMessage = 'Revise os dados do cliente.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Revise os dados do cliente.');
         this.syncView();
       },
     });

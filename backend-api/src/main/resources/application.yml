@@ -20,6 +20,8 @@ spring:
     open-in-view: false
 
 mercado-one:
+  sales:
+    operator-max-discount-percent: ${MERCADO_ONE_OPERATOR_MAX_DISCOUNT_PERCENT:0}
   security:
     jwt-secret: ${MERCADO_ONE_JWT_SECRET}
     jwt-expiration-minutes: ${MERCADO_ONE_JWT_EXPIRATION_MINUTES:480}

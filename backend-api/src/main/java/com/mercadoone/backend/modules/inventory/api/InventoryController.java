@@ -6,6 +6,8 @@ import com.mercadoone.backend.modules.catalog.domain.Product;
 import com.mercadoone.backend.modules.inventory.application.InventoryService;
 import com.mercadoone.backend.modules.inventory.application.InventoryService.AdjustmentData;
 import com.mercadoone.backend.modules.inventory.application.InventoryService.EntryData;
+import com.mercadoone.backend.modules.inventory.application.InventoryService.EntryDocumentData;
+import com.mercadoone.backend.modules.inventory.application.InventoryService.EntryItemData;
 import com.mercadoone.backend.modules.inventory.domain.InventoryBalance;
 import com.mercadoone.backend.modules.inventory.domain.InventoryMovement;
 import com.mercadoone.backend.modules.inventory.domain.InventoryMovementType;
@@ -13,6 +15,7 @@ import com.mercadoone.backend.modules.supplier.domain.Supplier;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -69,6 +72,16 @@ public class InventoryController {
         return ApiEnvelope.ok(MovementResponse.from(inventoryService.registerEntry(request.toData(), user.id())));
     }
 
+    @PostMapping("/entry-documents")
+    public ApiEnvelope<List<MovementResponse>> entryDocument(
+            @Valid @RequestBody EntryDocumentRequest request,
+            @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        return ApiEnvelope.ok(inventoryService.registerEntryDocument(request.toData(), user.id()).stream()
+                .map(MovementResponse::from)
+                .toList());
+    }
+
     @PostMapping("/adjustments")
     public ApiEnvelope<MovementResponse> adjustment(
             @Valid @RequestBody AdjustmentRequest request,
@@ -87,6 +100,33 @@ public class InventoryController {
     ) {
         EntryData toData() {
             return new EntryData(productId, quantity, supplierId, blankToNull(supplierName), blankToNull(documentNumber), blankToNull(note));
+        }
+    }
+
+    public record EntryDocumentRequest(
+            Long supplierId,
+            @Size(max = 160) String supplierName,
+            @Size(max = 80) String documentNumber,
+            @Size(max = 500) String note,
+            @NotEmpty @Size(max = 200) List<@Valid EntryDocumentItemRequest> items
+    ) {
+        EntryDocumentData toData() {
+            return new EntryDocumentData(
+                    supplierId,
+                    blankToNull(supplierName),
+                    blankToNull(documentNumber),
+                    blankToNull(note),
+                    items.stream().map(EntryDocumentItemRequest::toData).toList()
+            );
+        }
+    }
+
+    public record EntryDocumentItemRequest(
+            @NotNull Long productId,
+            @NotNull @DecimalMin("0.001") BigDecimal quantity
+    ) {
+        EntryItemData toData() {
+            return new EntryItemData(productId, quantity);
         }
     }
 

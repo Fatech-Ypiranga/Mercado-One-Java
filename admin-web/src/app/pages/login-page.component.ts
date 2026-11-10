@@ -96,7 +96,7 @@ export class LoginPageComponent {
         this.syncView();
       }))
       .subscribe({
-        next: () => void this.router.navigate(['/']),
+        next: () => void this.router.navigate([this.auth.homePath()]),
         error: (error: unknown) => {
           this.errorMessage = this.loginErrorMessage(error);
         },

@@ -92,7 +92,7 @@ class SalesControllerTests {
                         .header("Authorization", "Bearer " + adminToken))
                 .andExpect(status().isOk())
                 .andExpect(result -> org.assertj.core.api.Assertions.assertThat(result.getResponse().getContentAsString())
-                        .contains("id,createdAt,status,operatorUserId,customer,totalAmount,payments,items")
+                        .contains("id,createdAt,status,operatorUserId,customer,grossAmount,discountAmount,totalAmount,payments,items")
                         .contains("Cliente Venda"));
     }
 

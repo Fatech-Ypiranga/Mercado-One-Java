@@ -17,7 +17,7 @@ const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currenc
     <section class="page-header">
       <p>Operação</p>
       <h1>Relatório de vendas</h1>
-      <span>Vendas confirmadas por período, operador de caixa ou cliente.</span>
+      <span>Vendas por período, operador de caixa ou cliente. Totais consideram apenas vendas confirmadas.</span>
     </section>
 
     <section class="filter-rule">
@@ -38,6 +38,7 @@ const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currenc
         <select [formControl]="statusControl">
           <option value="">Todos</option>
           <option value="CONFIRMED">Confirmada</option>
+          <option value="CANCELED">Cancelada</option>
         </select>
       </label>
       <label>
@@ -53,6 +54,9 @@ const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currenc
     @if (errorMessage) {
       <p class="form-error" role="alert">{{ errorMessage }}</p>
     }
+    @if (successMessage) {
+      <p class="form-success" role="status">{{ successMessage }}</p>
+    }
     <section class="ledger-figures" aria-label="Totais do período">
       <div>
         <span>Vendas</span>
@@ -63,8 +67,16 @@ const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currenc
         <strong>{{ report?.totals?.totalAmount ?? 0 | currency:'BRL':'symbol':'1.2-2' }}</strong>
       </div>
       <div>
+        <span>Descontos</span>
+        <strong>{{ report?.totals?.discountAmount ?? 0 | currency:'BRL':'symbol':'1.2-2' }}</strong>
+      </div>
+      <div>
         <span>Itens</span>
         <strong>{{ report?.totals?.totalItems ?? 0 }}</strong>
+      </div>
+      <div>
+        <span>Canceladas</span>
+        <strong>{{ report?.totals?.canceledCount ?? 0 }}</strong>
       </div>
       <div>
         <span>Registros</span>
@@ -99,6 +111,7 @@ const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currenc
                 <th scope="col">Pagamento</th>
                 <th class="numeric" scope="col">Total</th>
                 <th scope="col">Status</th>
+                <th scope="col"><span class="visually-hidden">Ações</span></th>
               </tr>
             </thead>
             <tbody>
@@ -117,13 +130,43 @@ const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currenc
                     <small>{{ itemSummary(sale) }}</small>
                   </td>
                   <td data-label="Pagamento">{{ paymentSummary(sale) }}</td>
-                  <td class="numeric" data-label="Total">{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</td>
+                  <td class="numeric" data-label="Total">
+                    <strong>{{ sale.totalAmount | currency:'BRL':'symbol':'1.2-2' }}</strong>
+                    @if (sale.discountAmount > 0) {
+                      <small>desconto {{ sale.discountAmount | currency:'BRL':'symbol':'1.2-2' }}</small>
+                    }
+                  </td>
                   <td data-label="Status">
                     <span class="status-stamp" [class.inactive]="sale.status !== 'CONFIRMED'">
                       {{ statusLabel(sale.status) }}
                     </span>
+                    @if (sale.status === 'CANCELED') {
+                      <small>{{ sale.canceledAt | date:'short' }} · {{ sale.cancelReason }}</small>
+                    }
+                  </td>
+                  <td data-label="Ações">
+                    @if (sale.status === 'CONFIRMED' && cancelingId !== sale.id) {
+                      <button type="button" class="ghost-button" (click)="startCancel(sale)">Cancelar venda</button>
+                    }
                   </td>
                 </tr>
+                @if (cancelingId === sale.id) {
+                  <tr class="inline-form-row">
+                    <td colspan="7">
+                      <form class="inline-form" (submit)="$event.preventDefault(); confirmCancel(sale)">
+                        <label>
+                          Motivo do cancelamento de #{{ sale.id }} (obrigatório)
+                          <input type="text" maxlength="500" [formControl]="cancelReasonControl" required />
+                        </label>
+                        <p class="state-message">O estoque dos itens volta ao saldo e a venda sai dos totais.</p>
+                        <div class="button-row">
+                          <button type="submit" class="danger-button" [disabled]="canceling">{{ canceling ? 'Cancelando...' : 'Confirmar cancelamento' }}</button>
+                          <button type="button" class="ghost-button" (click)="cancelingId = null" [disabled]="canceling">Voltar</button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>
@@ -179,6 +222,8 @@ const brlFormatter = new Intl.NumberFormat('pt-BR', { style: 'currency', currenc
   `,
   styles: [`
     .data-table h2 { margin: 0 0 16px; }
+    .inline-form { display: grid; gap: 10px; max-width: 40rem; }
+    .inline-form input { width: 100%; }
     .form-error { margin-bottom: 16px; }
     @media (max-width: 719px) {
       .ledger-figures { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -208,6 +253,9 @@ export class SalesPageComponent {
   protected topProductsError = '';
   protected exporting = false;
   protected errorMessage = '';
+  protected successMessage = '';
+  protected cancelingId: number | null = null;
+  protected canceling = false;
   protected currentPage = 0;
   private readonly pageSize = 20;
   private salesSequence = 0;
@@ -219,6 +267,7 @@ export class SalesPageComponent {
   protected readonly operatorIdControl = this.fb.nonNullable.control('');
   protected readonly statusControl = this.fb.nonNullable.control('');
   protected readonly customerIdControl = this.fb.nonNullable.control('');
+  protected readonly cancelReasonControl = this.fb.nonNullable.control('');
 
   constructor() {
     const customerId = this.route.snapshot.queryParamMap.get('customerId');
@@ -285,6 +334,37 @@ export class SalesPageComponent {
       },
       error: (error) => {
         this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível exportar vendas.');
+        this.syncView();
+      },
+    });
+  }
+
+  protected startCancel(sale: Sale): void {
+    this.cancelingId = sale.id;
+    this.cancelReasonControl.setValue('');
+    this.successMessage = '';
+    this.errorMessage = '';
+  }
+
+  protected confirmCancel(sale: Sale): void {
+    const reason = this.cancelReasonControl.value.trim();
+    if (!reason) {
+      this.errorMessage = 'Informe o motivo do cancelamento.';
+      return;
+    }
+    this.canceling = true;
+    this.errorMessage = '';
+    this.salesService.cancelSale(sale.id, reason).pipe(finalize(() => {
+      this.canceling = false;
+      this.syncView();
+    })).subscribe({
+      next: () => {
+        this.cancelingId = null;
+        this.successMessage = `Venda #${sale.id} cancelada. Estoque devolvido.`;
+        this.loadSales();
+      },
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível cancelar a venda.');
         this.syncView();
       },
     });

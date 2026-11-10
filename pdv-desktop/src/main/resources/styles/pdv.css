@@ -38,3 +38,74 @@
   -fx-background-radius: 8;
   -fx-padding: 10 18;
 }
+
+.hint {
+  -fx-font-size: 12px;
+  -fx-text-fill: #7a878b;
+}
+
+.feedback {
+  -fx-font-size: 14px;
+  -fx-text-fill: #202527;
+  -fx-background-color: #ffffff;
+  -fx-border-color: #d9e0e2 transparent transparent transparent;
+}
+
+.panel {
+  -fx-background-color: #ffffff;
+  -fx-background-radius: 10;
+  -fx-border-color: #d9e0e2;
+  -fx-border-radius: 10;
+}
+
+.panel-title {
+  -fx-font-size: 16px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #202527;
+}
+
+.column, .column > .viewport {
+  -fx-background-color: transparent;
+  -fx-background: transparent;
+}
+
+.total {
+  -fx-font-size: 18px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #0d4f3b;
+}
+
+.receipt {
+  -fx-font-family: "Consolas", "Courier New", monospace;
+}
+
+.button.primary {
+  -fx-background-color: #1d7a5a;
+  -fx-text-fill: #ffffff;
+  -fx-font-weight: bold;
+}
+
+.button.danger {
+  -fx-background-color: #fbeaea;
+  -fx-text-fill: #8a1c1c;
+}
+
+.status-online {
+  -fx-background-color: #e7f2ee;
+  -fx-text-fill: #0d4f3b;
+}
+
+.status-offline {
+  -fx-background-color: #eef1f3;
+  -fx-text-fill: #3d4a4e;
+}
+
+.status-pending {
+  -fx-background-color: #fff4dc;
+  -fx-text-fill: #7a5200;
+}
+
+.status-failed {
+  -fx-background-color: #fbeaea;
+  -fx-text-fill: #8a1c1c;
+}

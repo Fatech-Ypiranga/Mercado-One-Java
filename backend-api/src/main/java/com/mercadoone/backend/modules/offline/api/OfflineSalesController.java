@@ -4,6 +4,7 @@ import com.mercadoone.backend.api.common.ApiEnvelope;
 import com.mercadoone.backend.modules.access.application.JwtService.AuthenticatedUser;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService;
 import com.mercadoone.backend.modules.offline.application.OfflineSalesService.ConflictResolutionAction;
+import com.mercadoone.backend.modules.offline.application.OfflineSalesService.LocalSaleRemoteStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineConflictStatus;
 import com.mercadoone.backend.modules.offline.domain.OfflineSaleConflictRecord;
 import com.mercadoone.backend.modules.sales.api.SalesController.SaleResponse;
@@ -47,7 +48,15 @@ public class OfflineSalesController {
             @Valid @RequestBody OfflineSaleSyncRequest request,
             @AuthenticationPrincipal AuthenticatedUser user
     ) {
-        return ApiEnvelope.ok(OfflineSaleSyncResponse.from(offlineSalesService.syncOfflineSale(request.toData(), user.id())));
+        return ApiEnvelope.ok(OfflineSaleSyncResponse.from(offlineSalesService.syncOfflineSale(request.toData(), user.id(), user.role())));
+    }
+
+    @GetMapping("/status")
+    public ApiEnvelope<List<LocalSaleRemoteStatus>> status(@RequestParam List<String> localSaleIds) {
+        if (localSaleIds.size() > 200) {
+            throw new IllegalArgumentException("Consulte no maximo 200 vendas locais por vez.");
+        }
+        return ApiEnvelope.ok(offlineSalesService.remoteStatus(localSaleIds));
     }
 
     @GetMapping("/conflicts")
@@ -78,7 +87,8 @@ public class OfflineSalesController {
             @NotNull Instant createdAt,
             Long customerId,
             @NotEmpty List<@Valid OfflineSaleItemRequest> items,
-            @NotEmpty List<@Valid OfflineSalePaymentRequest> payments
+            @NotEmpty List<@Valid OfflineSalePaymentRequest> payments,
+            @DecimalMin("0.00") BigDecimal discountAmount
     ) {
         OfflineSaleData toData() {
             return new OfflineSaleData(
@@ -86,7 +96,8 @@ public class OfflineSalesController {
                     createdAt,
                     customerId,
                     items.stream().map(OfflineSaleItemRequest::toData).toList(),
-                    payments.stream().map(OfflineSalePaymentRequest::toData).toList()
+                    payments.stream().map(OfflineSalePaymentRequest::toData).toList(),
+                    discountAmount
             );
         }
     }

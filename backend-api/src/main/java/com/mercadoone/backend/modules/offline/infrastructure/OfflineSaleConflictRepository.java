@@ -13,6 +13,8 @@ public interface OfflineSaleConflictRepository extends JpaRepository<OfflineSale
 
     List<OfflineSaleConflictRecord> findAllByOrderByUpdatedAtDesc();
 
+    Optional<OfflineSaleConflictRecord> findFirstByLocalSaleIdOrderByUpdatedAtDesc(String localSaleId);
+
     Optional<OfflineSaleConflictRecord> findFirstByLocalSaleIdAndStatusOrderByUpdatedAtDesc(
             String localSaleId,
             OfflineConflictStatus status

@@ -4,11 +4,18 @@ import java.nio.file.Path;
 
 public record OfflineStorageConfig(Path databasePath) {
 
-    public static OfflineStorageConfig defaultConfig() {
-        String userHome = System.getProperty("user.home");
-        Path databasePath = Path.of(userHome, ".mercado-one", "pdv-offline.sqlite3");
+    /** Variavel de ambiente opcional para apontar o SQLite local para outro arquivo. */
+    public static final String DATABASE_PATH_ENV = "MERCADO_ONE_PDV_DB_PATH";
 
-        return new OfflineStorageConfig(databasePath);
+    public static OfflineStorageConfig defaultConfig() {
+        return fromEnvironment(System.getenv(DATABASE_PATH_ENV), System.getProperty("user.home"));
+    }
+
+    static OfflineStorageConfig fromEnvironment(String overridePath, String userHome) {
+        if (overridePath != null && !overridePath.isBlank()) {
+            return new OfflineStorageConfig(Path.of(overridePath.trim()));
+        }
+        return new OfflineStorageConfig(Path.of(userHome, ".mercado-one", "pdv-offline.sqlite3"));
     }
 
     public String jdbcUrl() {

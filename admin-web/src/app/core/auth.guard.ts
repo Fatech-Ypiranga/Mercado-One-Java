@@ -18,5 +18,5 @@ function requireAuthentication(route?: ActivatedRouteSnapshot): boolean | Return
     return router.createUrlTree(['/login']);
   }
   const roles = route?.data['roles'] as UserRole[] | undefined;
-  return roles === undefined || auth.hasAnyRole(roles) ? true : router.createUrlTree(['/']);
+  return roles === undefined || auth.hasAnyRole(roles) ? true : router.createUrlTree([auth.homePath()]);
 }

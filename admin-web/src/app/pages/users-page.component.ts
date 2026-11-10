@@ -3,6 +3,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { AccessService, ManagedUser, RoleOption } from '../core/access.service';
+import { ApiClientService } from '../core/api-client.service';
 import { UserRole } from '../core/auth.service';
 
 @Component({
@@ -17,6 +18,7 @@ import { UserRole } from '../core/auth.service';
     .result-count { color: var(--color-muted); font-size: .85rem; }
     .list-error { margin-bottom: 1rem; }
     .mobile-only { display: none; }
+    .inline-form { display: grid; gap: 10px; max-width: 32rem; }
     @media (max-width: 719px) {
       .mobile-only { display: inline-flex; }
       .workspace:not(.mobile-form-step) .record-sheet { display: none; }
@@ -96,9 +98,29 @@ import { UserRole } from '../core/auth.service';
                       </span>
                     </td>
                     <td data-label="Ações">
-                      <button type="button" class="ghost-button" (click)="edit(user)" [attr.aria-label]="'Editar usuário ' + user.nome">Editar</button>
+                      <div class="button-row">
+                        <button type="button" class="ghost-button" (click)="edit(user)" [attr.aria-label]="'Editar usuário ' + user.nome">Editar</button>
+                        <button type="button" class="ghost-button" (click)="startReset(user)" [attr.aria-label]="'Redefinir senha de ' + user.nome">Redefinir senha</button>
+                      </div>
                     </td>
                   </tr>
+                  @if (resettingUser?.id === user.id) {
+                    <tr>
+                      <td colspan="4">
+                        <form class="inline-form" (submit)="$event.preventDefault(); confirmReset()" [attr.aria-label]="'Nova senha de ' + user.nome">
+                          <label>
+                            Nova senha para {{ user.login }} (mínimo 6 caracteres)
+                            <input type="password" autocomplete="new-password" [formControl]="resetPasswordControl" />
+                          </label>
+                          @if (resetError) { <p class="form-error" role="alert">{{ resetError }}</p> }
+                          <div class="button-row">
+                            <button type="submit" class="primary-button" [disabled]="resetting">{{ resetting ? 'Salvando...' : 'Definir senha' }}</button>
+                            <button type="button" class="ghost-button" (click)="resettingUser = null" [disabled]="resetting">Voltar</button>
+                          </div>
+                        </form>
+                      </td>
+                    </tr>
+                  }
                 }
               </tbody>
             </table>
@@ -158,6 +180,7 @@ import { UserRole } from '../core/auth.service';
 export class UsersPageComponent {
   private readonly fb = inject(FormBuilder);
   private readonly access = inject(AccessService);
+  private readonly apiClient = inject(ApiClientService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly destroyRef = inject(DestroyRef);
@@ -172,6 +195,10 @@ export class UsersPageComponent {
   protected errorMessage = '';
   protected successMessage = '';
   protected editingUser: ManagedUser | null = null;
+  protected resettingUser: ManagedUser | null = null;
+  protected resetting = false;
+  protected resetError = '';
+  protected readonly resetPasswordControl = this.fb.nonNullable.control('');
 
   protected readonly searchControl = this.fb.nonNullable.control('');
   protected readonly roleControl = this.fb.nonNullable.control<UserRole | ''>('');
@@ -208,9 +235,9 @@ export class UsersPageComponent {
           this.users = response.data ?? [];
           this.syncView();
         },
-        error: () => {
+        error: (error) => {
           if (requestId !== this.listRequestId) return;
-          this.listError = 'Não foi possível carregar usuários.';
+          this.listError = this.apiClient.errorMessage(error, 'Não foi possível carregar usuários.');
           this.syncView();
         },
       });
@@ -253,8 +280,41 @@ export class UsersPageComponent {
         this.showList();
         this.loadUsers();
       },
-      error: () => {
-        this.errorMessage = 'Revise os dados do usuário.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Revise os dados do usuário.');
+        this.syncView();
+      },
+    });
+  }
+
+  protected startReset(user: ManagedUser): void {
+    this.resettingUser = user;
+    this.resetPasswordControl.setValue('');
+    this.resetError = '';
+    this.successMessage = '';
+  }
+
+  protected confirmReset(): void {
+    const user = this.resettingUser;
+    const password = this.resetPasswordControl.value;
+    if (!user) return;
+    if (password.length < 6 || password.length > 120) {
+      this.resetError = 'A senha deve ter entre 6 e 120 caracteres.';
+      return;
+    }
+    this.resetting = true;
+    this.resetError = '';
+    this.access.resetPassword(user.id, password).pipe(finalize(() => {
+      this.resetting = false;
+      this.syncView();
+    })).subscribe({
+      next: () => {
+        this.resettingUser = null;
+        this.successMessage = `Senha de ${user.login} redefinida. Informe a nova senha ao usuário.`;
+        this.syncView();
+      },
+      error: (error) => {
+        this.resetError = this.apiClient.errorMessage(error, 'Não foi possível redefinir a senha.');
         this.syncView();
       },
     });
@@ -300,8 +360,8 @@ export class UsersPageComponent {
         this.roles = response.data ?? [];
         this.syncView();
       },
-      error: () => {
-        this.errorMessage = 'Não foi possível carregar perfis.';
+      error: (error) => {
+        this.errorMessage = this.apiClient.errorMessage(error, 'Não foi possível carregar perfis.');
         this.syncView();
       },
     });
