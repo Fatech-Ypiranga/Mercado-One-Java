@@ -23,7 +23,8 @@ Cada visão é um grafo conectado: uma entidade aparece apenas uma vez nela. Pro
 - Cada Saldo de Estoque pertence a um Produto; um Produto pode não ter saldo criado ainda.
 - Cada Movimentação altera um Produto e guarda a variação e os saldos anterior e posterior. Fornecedor e Usuário autor podem estar ausentes conforme a origem da movimentação.
 - A confirmação de uma Venda origina uma ou mais Movimentações de saída, uma por Item de Venda. Essa relação entre Vendas e Estoque é operacional: a movimentação não guarda uma referência estruturada à Venda.
-- A entrada atual registra um Produto por operação; não há entidade de documento de entrada com múltiplos itens implementada.
+- A nota de entrada com vários produtos gera uma Movimentação por item, com o mesmo fornecedor e número de documento; não há entidade própria de documento de entrada.
+- O cancelamento de uma Venda origina uma Movimentação de devolução por Item de Venda, também sem referência estruturada à Venda.
 
 ## Sincronização e auditoria
 
@@ -33,13 +34,13 @@ Cada visão é um grafo conectado: uma entidade aparece apenas uma vez nela. Pro
 
 - A Venda Local preserva os Itens de Venda e Pagamentos registrados no PDV antes de qualquer tentativa de rede. Ela pode acumular tentativas de sincronização e gerar, no fluxo atual, no máximo um Conflito.
 - Cada Item de Venda local referencia um Produto do catálogo central; o PDV usa uma cópia local desse catálogo quando necessário.
-- Um Conflito pode ser aceito como Venda confirmada ou rejeitado. O vínculo com a Venda existe somente no caso aceito; a resolução não muda o estado local `CONFLICT` no PDV.
+- Um Conflito pode ser aceito como Venda confirmada ou rejeitado. O vínculo com a Venda existe somente no caso aceito. O PDV consulta a resolução e passa a Venda Local para sincronizada ou recusada.
 - Uma Venda Local também pode ser confirmada automaticamente, sem gerar Conflito. Nesse caso, ela se relaciona à Venda registrada no servidor.
 - Um Evento de Auditoria pode ter Usuário autor identificado e documentar uma Venda. O alvo é descrito textualmente, sem chave estrangeira; eventos também podem se referir a outros tipos de alvo, como conflito, venda local, movimentação ou usuário.
 - O catálogo local do PDV é uma cópia de Produto, portanto não introduz uma nova entidade de negócio.
 
 ## Limites da representação
 
-As cardinalidades `1,N` de Item de Venda e Pagamento expressam a regra de finalização da aplicação; o armazenamento, isoladamente, não impõe esse mínimo. Os vínculos `Venda Local — Conflito` e `Venda Local — Venda` cruzam o PDV e o servidor e são associações conceituais, sem integridade referencial entre bancos. A cardinalidade máxima de uma Venda confirmada por Venda Local expressa o fluxo esperado, sem restrição de unicidade entre os bancos. Não há conceito de Mercado multiloja persistido no estado atual.
+As cardinalidades `1,N` de Item de Venda e Pagamento expressam a regra de finalização da aplicação; o armazenamento, isoladamente, não impõe esse mínimo. Os vínculos `Venda Local — Conflito` e `Venda Local — Venda` cruzam o PDV e o servidor e são associações conceituais, sem integridade referencial entre bancos. A cardinalidade máxima de uma Venda confirmada por Venda Local é garantida no servidor pelo índice único de `sales.client_sale_id`, que recebe o identificador local. Não há conceito de Mercado multiloja persistido no estado atual.
 
 Fontes: [glossário de domínio](../CONTEXT.md), [migrações do servidor](../backend-api/src/main/resources/db/migration/), [fila local do PDV](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineSaleQueue.java), [catálogo local](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineCatalogStore.java) e [regras de sincronização](offline-pdv-sync.md).

@@ -16,7 +16,7 @@ Este backlog traduz os requisitos atuais em fatias implementáveis. Itens marcad
 Aceite mínimo:
 
 - Usuário inativo não autentica.
-- Operador de caixa não acessa área administrativa sensível (não há rotas de `OPERADOR_CAIXA` no admin web).
+- Operador de caixa não acessa área administrativa sensível (no admin web vê apenas "Meu caixa" e "Minha conta").
 - Produto ativo fica disponível para consulta e venda.
 - Produto inativo não aparece para nova venda.
 

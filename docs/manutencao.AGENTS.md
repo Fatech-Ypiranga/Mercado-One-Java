@@ -19,10 +19,10 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 - Não exponha entidade JPA diretamente como DTO público.
 - Mantenha `ddl-auto=validate`; schema deve evoluir via Flyway.
 - Ao criar endpoints, testar o contrato principal com MockMvc ou teste equivalente.
-- Se criar ou expandir auditoria, manter `audit` como módulo próprio e registrar o evento dentro da transação da operação auditada. Não há endpoint de consulta de `audit_events`.
-- Redefinição administrativa de senha já existe: `PUT /api/access/users/{id}` com `password` opcional.
-- Entrada de estoque é por produto (`POST /api/inventory/entries`), não um documento multi-item.
-- `POST /api/sales` confirma venda com preço vigente do servidor. O PDV atual não é o consumidor desse endpoint.
+- Se criar ou expandir auditoria, manter `audit` como módulo próprio e registrar o evento dentro da transação da operação auditada. A consulta é `GET /api/audit/events` (só `ADMIN`); não gravar dados pessoais desnecessários no resumo.
+- Redefinição administrativa de senha: `POST /api/access/users/{id}/password` ou `password` opcional em `PUT /api/access/users/{id}`. Troca da própria senha: `POST /api/auth/password`.
+- Entrada de estoque existe por produto (`POST /api/inventory/entries`) e como nota multi-item (`POST /api/inventory/entry-documents`).
+- `POST /api/sales` confirma venda com preço vigente do servidor e é idempotente por `clientSaleId`. É o caminho do PDV quando a API responde.
 
 ## Admin web
 
@@ -41,7 +41,7 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 - SQLite local é apoio offline, não fonte primária de cadastro.
 - Fluxo de venda deve priorizar operação rápida de caixa.
 - Catálogo local e fila offline devem continuar separados do servidor como fonte de verdade.
-- Reenvio automático cobre vendas `PENDING` e `ERROR` no login. `CONFLICT` não é reenviado; a resolução fica no admin web e não altera o status local.
+- Reenvio automático cobre vendas `PENDING` e `ERROR` no login, a cada 2 minutos e no botão de sincronizar. `CONFLICT` não é reenviado; a decisão do admin chega por `GET /api/offline/sales/status` e vira `SENT` ou `REJECTED`.
 - `SyncStatus` é calculado por `CheckoutService.currentStatus()` a partir da fila local e da última resposta da API.
 
 ## Documentação
@@ -49,8 +49,7 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 - README raiz deve ser mapa do projeto.
 - `docs/README.md` deve continuar como índice dos guias.
 - READMEs locais devem explicar responsabilidades e comandos do subprojeto.
-- `docs/backlog-mvp.md` deve mudar no mesmo PR que entrega ou remove funcionalidade.
-- `docs/backlog-mvp.md` deve mudar quando fatias forem entregues ou repriorizadas.
+- `docs/backlog-mvp.md` deve mudar no mesmo PR que entrega, remove ou reprioriza funcionalidade.
 - `docs/diagramas.md` é a fonte normativa dos fluxos.
 - ADRs em `docs/adr/` devem ser curtos e usados apenas para decisões relevantes.
 

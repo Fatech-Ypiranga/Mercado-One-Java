@@ -104,7 +104,8 @@ mvn javafx:run
 - URL default da API na tela: `http://localhost:8080`.
 - Campo de login default: `operador` (placeholder; o seed cria `admin`).
 - SQLite local: `~/.mercado-one/pdv-offline.sqlite3`.
-- Finalizar sempre grava na fila local e chama `POST /api/offline/sales/sync`.
+- Finalizar sempre grava a venda na fila local antes da rede e, com operador conectado, confirma por `POST /api/sales`. Sem API, a venda vai por `POST /api/offline/sales/sync` na próxima sincronização.
+- `MERCADO_ONE_API_URL` define o endereço inicial da API na tela.
 
 ## Troubleshooting
 

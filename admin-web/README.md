@@ -1,6 +1,6 @@
 # Admin Web
 
-Administrativo web do Mercado One em Angular 22. Interface de administrador, gerente e estoquista. `OPERADOR_CAIXA` autentica, mas não tem rota no shell.
+Administrativo web do Mercado One em Angular 22. Interface de administrador, gerente e estoquista. `OPERADOR_CAIXA` acessa apenas "Meu caixa" e "Minha conta".
 
 O que as telas fazem: [Uso do admin web](../docs/uso-admin-web.md). Entregue e pendente: [Backlog MVP](../docs/backlog-mvp.md).
 
@@ -19,7 +19,12 @@ Credencial inicial de desenvolvimento: `admin` / `admin123`.
 /offline      Conflitos offline (ADMIN, GERENTE)
 /clientes     Clientes (ADMIN, GERENTE)
 /fornecedores Fornecedores (ADMIN, GERENTE)
+/auditoria    Auditoria (ADMIN)
+/meu-caixa    Vendas do próprio usuário no dia (ADMIN, GERENTE, OPERADOR_CAIXA)
+/minha-conta  Troca da própria senha (todos os perfis)
 ```
+
+`OPERADOR_CAIXA` entra em `/meu-caixa`; os demais perfis entram em `/`.
 
 Sessão: cookie HttpOnly `mercado_one_admin_session` na API e metadados em `sessionStorage` (`mercado-one-admin-session-state`). O JWT não vai para `localStorage`. `src/environments/environment.ts` aponta para `http://localhost:8080`. O build publicado em outra origem usa `MERCADO_ONE_API_BASE_URL`.
 

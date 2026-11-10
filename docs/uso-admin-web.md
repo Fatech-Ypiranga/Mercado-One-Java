@@ -4,15 +4,16 @@ Este guia descreve o que cada pessoa da loja faz no administrativo. A instalaç�
 
 ## Quem entra
 
-O admin atende três perfis. O menu lateral só mostra o que o perfil pode abrir.
+O menu lateral só mostra o que o perfil pode abrir.
 
 | Perfil | O que vê |
 | --- | --- |
-| Administrador | Início, vendas, conflitos offline, produtos, categorias, estoque, fornecedores, clientes e usuários |
-| Gerente | O mesmo, exceto usuários |
-| Estoquista | Início e estoque |
+| Administrador | Início, meu caixa, vendas, conflitos offline, produtos, categorias, estoque, fornecedores, clientes, usuários, auditoria e minha conta |
+| Gerente | O mesmo, exceto usuários e auditoria |
+| Estoquista | Início, estoque e minha conta |
+| Operador de caixa | Meu caixa e minha conta |
 
-O operador de caixa não tem tela aqui. A venda presencial fica no [PDV](uso-pdv.md).
+A venda presencial fica no [PDV](uso-pdv.md). O operador de caixa entra direto em **Meu caixa**.
 
 No tablet e no celular, use **Menu** para abrir as áreas do administrativo. O menu fecha ao escolher uma área ou pressionar Escape; as mesmas permissões se aplicam em qualquer tamanho de tela. As listas mostram cada registro com uma ação **Editar** visível. No celular, **Novo** ou **Nova** abre o formulário; **Voltar à lista** retorna aos resultados sem alterar os filtros. Se uma gravação falhar, os dados digitados permanecem no formulário para correção e nova tentativa.
 
@@ -44,7 +45,9 @@ Somente o administrador. Tela **Usuários e perfis**.
 4. Na criação, defina uma senha com pelo menos 6 caracteres. Na edição, a senha é opcional: deixe em branco para manter a atual.
 5. Salve. A lista passa a mostrar o usuário.
 
-Um usuário inativo não consegue entrar. O operador de caixa criado aqui usa o PDV, não este admin.
+Para trocar a senha de alguém, use **Redefinir senha** na linha do usuário e informe a nova senha (mínimo 6 caracteres).
+
+Um usuário inativo não consegue entrar. Depois de qualquer alteração no usuário (senha, perfil ou status), as sessões abertas dele deixam de valer e ele precisa entrar de novo. O operador de caixa criado aqui vende no PDV.
 
 ## Categorias e produtos
 
@@ -68,21 +71,23 @@ A lista mostra o saldo atual. O histórico abaixo mostra as movimentações do f
 
 Para registrar uma movimentação:
 
-1. Escolha **Entrada** ou **Ajuste manual**.
-2. Selecione um produto ativo.
-3. Na entrada, informe a quantidade e, se houver, o fornecedor e o documento. A entrada é de um produto por vez.
-4. No ajuste, informe o novo saldo e a justificativa. Sem justificativa o formulário não segue.
+1. Escolha **Entrada de um produto**, **Nota de entrada (vários produtos)** ou **Ajuste manual**.
+2. Na entrada de um produto, selecione um produto ativo, informe a quantidade e, se houver, o fornecedor e o documento.
+3. Na nota de entrada, informe fornecedor e documento uma vez e monte os **Itens da nota** com **Adicionar item**. A nota aceita até 200 produtos.
+4. No ajuste, selecione o produto, informe o novo saldo e a justificativa. Sem justificativa o formulário não segue.
 5. Use **Registrar**.
 
 Os saldos, o formulário **Registrar movimentação** e o **Histórico de movimentações** ficam em seções separadas. A lista e o histórico continuam visíveis durante uma atualização, com indicação de que os dados estão sendo atualizados.
 
-O saldo sobe na entrada confirmada. O ajuste substitui o saldo pelo valor informado e exige o motivo. Cada alteração entra no histórico. Não há, nesta tela, um documento único com vários produtos.
+O saldo sobe na entrada confirmada e volta quando uma venda é cancelada. O ajuste substitui o saldo pelo valor informado e exige o motivo. Cada alteração entra no histórico, que pode ser filtrado por tipo: entradas, ajustes, vendas e cancelamentos de venda.
 
 ## Vendas
 
 Administrador e gerente. Tela **Relatório de vendas**.
 
-Filtre por período, identificador do operador, status e identificador do cliente. Status: **Confirmada** ou **Cancelada**. Administrador e gerente cancelam uma venda confirmada informando o motivo; o estoque é devolvido.
+Filtre por período, identificador do operador, status e identificador do cliente. Status: **Confirmada** ou **Cancelada**. Os totais mostram também descontos e canceladas.
+
+Para cancelar uma venda confirmada, use **Cancelar venda**, informe o motivo e confirme. Sem motivo o cancelamento não segue. O estoque dos itens é devolvido e o cancelamento entra na auditoria.
 
 **Filtrar** atualiza a lista e os totais. **CSV** baixa o relatório do filtro atual. **Anterior** e **Próxima** trocam a página.
 
@@ -103,7 +108,7 @@ Uma venda do caixa pode ficar pendente quando o servidor não aceita o preço, o
 
 Antes de enviar **Aceitar** ou **Rejeitar**, confirme a decisão no painel do conflito. **Cancelar** fecha essa confirmação sem resolver a venda. A tela preserva a lista durante a atualização e impede o envio repetido da mesma decisão.
 
-Aceitar ou rejeitar encerra a pendência neste admin. O caixa não muda sozinho: no PDV a venda continua marcada como conflito. Avise o operador se a loja precisar tratar o comprovante local.
+Aceitar ou rejeitar encerra a pendência neste admin. Na próxima sincronização do PDV (no login, a cada 2 minutos ou em **Sincronizar agora**), a venda muda no caixa para sincronizada ou recusada. Ao aceitar, o estoque é baixado mesmo que fique negativo, porque a mercadoria já saiu da loja.
 
 ## Clientes
 
@@ -118,3 +123,21 @@ O botão **Vendas** abre o relatório filtrado por aquele cliente. Não há uma 
 Administrador e gerente. Tela **Fornecedores**.
 
 Cadastre nome, documento, telefone, e-mail e status. O fornecedor ativo pode ser escolhido na entrada de estoque. O vínculo é opcional: a entrada também aceita ficar sem fornecedor.
+
+## Meu caixa
+
+Operador de caixa, gerente e administrador. Tela **Meu caixa**.
+
+Mostra só as vendas do próprio usuário no dia escolhido: quantidade de vendas, total, descontos, canceladas e totais por forma de pagamento, além da lista **Vendas do dia**. Use **Atualizar** para reler.
+
+## Auditoria
+
+Somente o administrador. Tela **Auditoria**.
+
+Lista os eventos registrados pelo sistema, do mais recente para o mais antigo: vendas, cancelamentos, movimentos e notas de estoque, produtos, usuários e vendas offline. Filtre por ação, tipo de registro, identificador do registro, identificador do usuário e período e use **Filtrar**. **Detalhes** mostra o resumo gravado no evento. **Anterior** e **Próxima** trocam a página.
+
+## Minha conta
+
+Todos os perfis. Tela **Minha conta**.
+
+Para **Alterar senha**, informe a senha atual, a nova senha (mínimo 6 caracteres) e a confirmação. A nova senha vale para o admin e para o PDV. A sessão atual deixa de valer e o próximo acesso pede login de novo.
