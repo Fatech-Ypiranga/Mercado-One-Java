@@ -9,7 +9,7 @@ spring:
       - optional:file:.env[.properties]
       - optional:file:../.env[.properties]
   datasource:
-    url: ${MERCADO_ONE_DATABASE_URL:jdbc:postgresql://localhost:5432/mercado_one}
+    url: ${MERCADO_ONE_DATABASE_URL:jdbc:postgresql://${MERCADO_ONE_DB_HOST:localhost}:${MERCADO_ONE_DB_PORT:5432}/${MERCADO_ONE_DB_NAME:mercado_one}}
     username: ${MERCADO_ONE_DB_USER:mercado_one}
     password: ${MERCADO_ONE_DB_PASSWORD:mercado_one_dev}
   flyway:

@@ -24,6 +24,7 @@
 | Documento | Uso |
 | --- | --- |
 | [desenvolvimento-local.md](desenvolvimento-local.md) | Setup, variáveis, portas e troubleshooting |
+| [deploy-render.md](deploy-render.md) | Publicação da API e do painel no Render |
 | [testes-e-verificacao.md](testes-e-verificacao.md) | Checks e suíte conhecida |
 | [api-contratos.md](api-contratos.md) | Envelope, endpoints, erros e autorização |
 | [dados-e-migracoes.md](dados-e-migracoes.md) | PostgreSQL, Flyway e SQLite do PDV |
