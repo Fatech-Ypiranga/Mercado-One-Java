@@ -5,7 +5,7 @@ services:
     region: ohio
     plan: free
     dockerfilePath: ./backend-api/Dockerfile
-    dockerContext: .
+    dockerContext: ./backend-api
     healthCheckPath: /actuator/health
     envVars:
       - key: MERCADO_ONE_DB_HOST
