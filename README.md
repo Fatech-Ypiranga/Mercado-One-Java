@@ -70,6 +70,10 @@ O campo de login do PDV vem preenchido com `operador`; use um usuário real cada
 
 Detalhes de variáveis, portas e troubleshooting: [Desenvolvimento local](docs/desenvolvimento-local.md).
 
+## Publicação no Render
+
+O arquivo `render.yaml` configura a API, o PostgreSQL e o painel web. Consulte [Publicar no Render](docs/deploy-render.md) para conectar o repositório e concluir a publicação.
+
 ## Verificações
 
 ```bash

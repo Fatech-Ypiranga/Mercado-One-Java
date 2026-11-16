@@ -1,0 +1,64 @@
+services:
+  - type: web
+    name: mercado-one-api
+    runtime: docker
+    region: ohio
+    plan: free
+    dockerfilePath: ./backend-api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: MERCADO_ONE_DB_HOST
+        fromDatabase:
+          name: mercado-one-db
+          property: host
+      - key: MERCADO_ONE_DB_PORT
+        fromDatabase:
+          name: mercado-one-db
+          property: port
+      - key: MERCADO_ONE_DB_NAME
+        fromDatabase:
+          name: mercado-one-db
+          property: database
+      - key: MERCADO_ONE_DB_USER
+        fromDatabase:
+          name: mercado-one-db
+          property: user
+      - key: MERCADO_ONE_DB_PASSWORD
+        fromDatabase:
+          name: mercado-one-db
+          property: password
+      - key: MERCADO_ONE_JWT_SECRET
+        generateValue: true
+      - key: MERCADO_ONE_CORS_ALLOWED_ORIGINS
+        value: https://mercado-one-admin.onrender.com
+      - key: MERCADO_ONE_COOKIE_SECURE
+        value: "true"
+      - key: MERCADO_ONE_SEED_ADMIN_ENABLED
+        value: "true"
+      - key: MERCADO_ONE_SEED_ADMIN_NAME
+        value: Administrador
+      - key: MERCADO_ONE_SEED_ADMIN_LOGIN
+        value: admin
+      - key: MERCADO_ONE_SEED_ADMIN_PASSWORD
+        generateValue: true
+
+  - type: web
+    name: mercado-one-admin
+    runtime: static
+    buildCommand: cd admin-web && npm ci && npm run build:production
+    staticPublishPath: output/admin-web-dist/browser
+    envVars:
+      - key: MERCADO_ONE_API_BASE_URL
+        value: https://mercado-one-api.onrender.com
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+databases:
+  - name: mercado-one-db
+    region: ohio
+    plan: free
+    databaseName: mercado_one
+    user: mercado_one

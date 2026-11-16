@@ -16,6 +16,7 @@ Copie `.env.example` para `.env` na raiz do repositório. A API carrega esse arq
 
 ```env
 MERCADO_ONE_DB_NAME=mercado_one
+MERCADO_ONE_DB_HOST=localhost
 MERCADO_ONE_DB_USER=mercado_one
 MERCADO_ONE_DB_PASSWORD=mercado_one_dev
 MERCADO_ONE_DB_PORT=5432
@@ -30,13 +31,13 @@ MERCADO_ONE_SEED_ADMIN_LOGIN=admin
 MERCADO_ONE_SEED_ADMIN_PASSWORD=admin123
 ```
 
-A API não lê `MERCADO_ONE_DB_NAME` nem `MERCADO_ONE_DB_PORT` diretamente. O JDBC default é:
+A API monta o endereço JDBC a partir de `MERCADO_ONE_DB_HOST`, `MERCADO_ONE_DB_PORT` e `MERCADO_ONE_DB_NAME`. `MERCADO_ONE_DATABASE_URL`, quando definida, substitui esse endereço:
 
 ```text
 MERCADO_ONE_DATABASE_URL=jdbc:postgresql://localhost:5432/mercado_one
 ```
 
-Se mudar nome ou porta do banco no Compose, ajuste também `MERCADO_ONE_DATABASE_URL` no `.env`. Essa chave não está no `.env.example` porque o default da API coincide com os defaults do Compose.
+Os valores default coincidem com o Compose local. `MERCADO_ONE_DATABASE_URL` continua disponível para casos em que o endereço precise de opções JDBC adicionais.
 
 As credenciais default são apenas para desenvolvimento local. O seed só roda quando `MERCADO_ONE_SEED_ADMIN_ENABLED=true`.
 
