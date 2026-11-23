@@ -2,6 +2,8 @@
 
 Este backlog traduz os requisitos atuais em fatias implementáveis. Itens marcados descrevem trabalho já existente no código. Itens abertos descrevem lacunas reais, não ideias novas.
 
+**Situação (23/11/2026): MVP fechado.** Todos os itens abaixo estão entregues e foram verificados contra a API real com PostgreSQL; o resultado está em [Testes e verificação](../desenvolvimento/testes-e-verificacao.md#estado-de-verificação). O que não entra no MVP está em "Fora do MVP", no fim deste documento.
+
 ## P1 - Base Operacional
 
 - [x] Implementar autenticação real no backend.
