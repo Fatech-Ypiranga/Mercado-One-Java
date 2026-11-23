@@ -4,7 +4,7 @@ Este guia descreve o setup esperado para executar o Mercado One localmente.
 
 ## Pré-requisitos
 
-- Java 25.
+- Java 25. O `JAVA_HOME` precisa apontar para o JDK 25: com um JDK mais antigo (por exemplo, o 21), a compilação passa, mas `mvn test` falha com `class file version 69.0` (o Maven usa o `JAVA_HOME`, mesmo que `java -version` mostre 25). No PowerShell: `$env:JAVA_HOME = 'C:\Program Files\Eclipse Adoptium\jdk-25.0.4.101-hotspot'`.
 - Maven disponível no PATH.
 - Node.js compatível com Angular 22.
 - npm funcional.
