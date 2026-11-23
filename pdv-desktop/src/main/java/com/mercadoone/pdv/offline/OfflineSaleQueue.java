@@ -73,6 +73,10 @@ public class OfflineSaleQueue {
             if (!hasColumn(connection, "offline_sales", "discount_amount")) {
                 statement.executeUpdate("alter table offline_sales add column discount_amount text not null default '0'");
             }
+            if (!hasColumn(connection, "offline_sales", "operator_login")) {
+                // Quem vendeu no caixa. Vendas antigas ficam sem valor e valem para quem as enviar.
+                statement.executeUpdate("alter table offline_sales add column operator_login text");
+            }
         } catch (SQLException exception) {
             throw new IllegalStateException("Nao foi possivel inicializar fila offline.", exception);
         }
@@ -180,7 +184,7 @@ public class OfflineSaleQueue {
     public List<LocalSale> pendingSales() {
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement("""
-                     select local_sale_id, created_at, customer_id, status, discount_amount
+                     select local_sale_id, created_at, customer_id, status, discount_amount, operator_login
                      from offline_sales
                      where status in ('PENDING', 'ERROR')
                      order by created_at asc
@@ -196,7 +200,8 @@ public class OfflineSaleQueue {
                             LocalSaleStatus.valueOf(rows.getString("status")),
                             items(connection, localSaleId),
                             payments(connection, localSaleId),
-                            new BigDecimal(rows.getString("discount_amount"))
+                            new BigDecimal(rows.getString("discount_amount")),
+                            rows.getString("operator_login")
                     ));
                 }
             }
@@ -208,8 +213,8 @@ public class OfflineSaleQueue {
 
     private void insertSale(Connection connection, LocalSale sale) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement("""
-                insert into offline_sales(local_sale_id, created_at, customer_id, status, updated_at, discount_amount)
-                values (?, ?, ?, ?, ?, ?)
+                insert into offline_sales(local_sale_id, created_at, customer_id, status, updated_at, discount_amount, operator_login)
+                values (?, ?, ?, ?, ?, ?, ?)
                 """)) {
             statement.setString(1, sale.localSaleId());
             statement.setString(2, sale.createdAt().toString());
@@ -221,6 +226,7 @@ public class OfflineSaleQueue {
             statement.setString(4, sale.status().name());
             statement.setString(5, Instant.now().toString());
             statement.setString(6, sale.discountAmount().toPlainString());
+            statement.setString(7, sale.operatorLogin());
             statement.executeUpdate();
         }
     }
@@ -359,10 +365,25 @@ public class OfflineSaleQueue {
             LocalSaleStatus status,
             List<LocalSaleItem> items,
             List<LocalSalePayment> payments,
-            BigDecimal discountAmount
+            BigDecimal discountAmount,
+            /** Login de quem vendeu no caixa; nulo em vendas antigas. */
+            String operatorLogin
     ) {
         public LocalSale {
             discountAmount = discountAmount == null ? BigDecimal.ZERO : discountAmount;
+            operatorLogin = operatorLogin == null || operatorLogin.isBlank() ? null : operatorLogin.trim();
+        }
+
+        public LocalSale(
+                String localSaleId,
+                Instant createdAt,
+                Long customerId,
+                LocalSaleStatus status,
+                List<LocalSaleItem> items,
+                List<LocalSalePayment> payments,
+                BigDecimal discountAmount
+        ) {
+            this(localSaleId, createdAt, customerId, status, items, payments, discountAmount, null);
         }
 
         public LocalSale(
@@ -373,7 +394,7 @@ public class OfflineSaleQueue {
                 List<LocalSaleItem> items,
                 List<LocalSalePayment> payments
         ) {
-            this(localSaleId, createdAt, customerId, status, items, payments, BigDecimal.ZERO);
+            this(localSaleId, createdAt, customerId, status, items, payments, BigDecimal.ZERO, null);
         }
 
         public BigDecimal grossAmount() {

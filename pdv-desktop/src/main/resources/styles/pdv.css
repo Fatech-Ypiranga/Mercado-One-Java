@@ -258,3 +258,124 @@
   -fx-shape: " ";
   -fx-padding: 0;
 }
+
+/* ---------- Tela de entrada do operador (visual P3a): card de 440px sobre o degradê da marca ---------- */
+.login-page {
+  -fx-background-color: linear-gradient(from 0% 0% to 100% 100%, #0b1a2c 0%, #122c4f 60%, #1e4a7a 100%);
+}
+
+.login-card {
+  -fx-background-color: -mo-surface;
+  -fx-background-radius: 16;
+  -fx-effect: dropshadow(gaussian, rgba(3,11,22,0.45), 48, 0, 0, 22);
+}
+
+.login-title {
+  -fx-font-size: 26px;
+  -fx-font-weight: bold;
+  -fx-text-fill: -mo-ink;
+}
+
+.login-subtitle {
+  -fx-font-size: 15px;
+  -fx-text-fill: -mo-ink-muted;
+}
+
+.login-label {
+  -fx-font-size: 14px;
+  -fx-font-weight: bold;
+  -fx-text-fill: -mo-ink;
+}
+
+.text-field.login-input,
+.password-field.login-input {
+  -fx-pref-height: 48;
+  -fx-min-height: 48;
+  -fx-font-size: 16px;
+  -fx-padding: 0 14 0 14;
+}
+
+.text-field.login-secret,
+.password-field.login-secret {
+  -fx-padding: 0 84 0 14;
+}
+
+.text-field.login-input:hover,
+.password-field.login-input:hover {
+  -fx-border-color: -mo-ink-muted;
+}
+
+.text-field.login-input:focused,
+.password-field.login-input:focused {
+  -fx-border-color: -mo-ocean;
+}
+
+.text-field.login-input-invalid,
+.password-field.login-input-invalid {
+  -fx-border-color: -mo-danger-ink;
+}
+
+.login-eye {
+  -fx-background-color: transparent;
+  -fx-border-color: transparent;
+  -fx-text-fill: -mo-ink-muted;
+  -fx-font-size: 14px;
+  -fx-underline: true;
+  -fx-min-height: 40;
+  -fx-cursor: hand;
+}
+
+.login-eye:hover,
+.login-eye:focused {
+  -fx-background-color: -mo-surface-sub;
+  -fx-text-fill: -mo-ink;
+}
+
+.login-link {
+  -fx-text-fill: -mo-ink-muted;
+  -fx-font-size: 14px;
+  -fx-border-color: transparent;
+  -fx-padding: 0;
+}
+
+.login-link:hover,
+.login-link:focused {
+  -fx-text-fill: -mo-ink;
+}
+
+.login-field-error {
+  -fx-font-size: 14px;
+  -fx-font-weight: bold;
+  -fx-text-fill: -mo-danger-ink;
+}
+
+.login-alert {
+  -fx-background-color: -mo-danger-bg;
+  -fx-border-color: -mo-danger-ink;
+  -fx-border-radius: 10;
+  -fx-background-radius: 10;
+  -fx-padding: 12 14 12 14;
+}
+
+.login-alert-icon,
+.login-alert-text {
+  -fx-text-fill: -mo-danger-ink;
+  -fx-font-size: 14px;
+  -fx-font-weight: bold;
+}
+
+.login-notice,
+.login-note {
+  -fx-background-color: -mo-surface-sub;
+  -fx-background-radius: 10;
+  -fx-padding: 12 14 12 14;
+  -fx-text-fill: -mo-ink-muted;
+  -fx-font-size: 14px;
+}
+
+.button.primary.login-submit {
+  -fx-pref-height: 48;
+  -fx-min-height: 48;
+  -fx-font-size: 16px;
+  -fx-background-radius: 10;
+}

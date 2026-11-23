@@ -121,7 +121,8 @@ public class CheckoutService {
                         .map(line -> new LocalSaleItem(line.productId(), line.quantity(), line.unitPrice()))
                         .toList(),
                 draft.payments(),
-                draft.discountAmount()
+                draft.discountAmount(),
+                session.operatorLogin()
         );
         queue.enqueue(sale);
 
@@ -262,11 +263,16 @@ public class CheckoutService {
                 sale.payments().stream()
                         .map(payment -> new OfflineSalePayment(payment.method(), payment.amount()))
                         .toList(),
-                sale.discountAmount().signum() == 0 ? null : sale.discountAmount()
+                sale.discountAmount().signum() == 0 ? null : sale.discountAmount(),
+                sale.operatorLogin()
         );
     }
 
-    public record Session(String apiBaseUrl, String token) {
+    public record Session(String apiBaseUrl, String token, String operatorLogin) {
+        public Session(String apiBaseUrl, String token) {
+            this(apiBaseUrl, token, null);
+        }
+
         public boolean authenticated() {
             return token != null && !token.isBlank();
         }

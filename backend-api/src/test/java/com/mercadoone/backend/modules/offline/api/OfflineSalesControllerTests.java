@@ -226,6 +226,79 @@ class OfflineSalesControllerTests {
         );
     }
 
+    @Test
+    void offlineSaleIsCreditedToTheOperatorWhoSoldItNotWhoSyncs() throws Exception {
+        String adminToken = loginToken();
+        long productId = createProduct(adminToken, "Offline Operador", "OFF-OP-1", true, "6.00");
+        registerEntry(adminToken, productId, "3.000");
+        long cashierId = createCashier(adminToken, "caixa.offline.1");
+
+        mockMvc.perform(post("/api/offline/sales/sync")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .content(withOperator(syncBody("local-by-cashier", productId, "1.000", "6.00", "6.00"), "Caixa.Offline.1")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("SENT"));
+
+        mockMvc.perform(get("/api/sales").param("operatorUserId", String.valueOf(cashierId))
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.items[0].clientSaleId").value("local-by-cashier"))
+                .andExpect(jsonPath("$.data.items[0].operatorUserId").value(cashierId));
+    }
+
+    @Test
+    void offlineSaleFromUnknownOperatorBecomesConflictForTheAdmin() throws Exception {
+        String adminToken = loginToken();
+        long productId = createProduct(adminToken, "Offline Operador Fantasma", "OFF-OP-2", true, "6.00");
+        registerEntry(adminToken, productId, "3.000");
+
+        mockMvc.perform(post("/api/offline/sales/sync")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .content(withOperator(syncBody("local-ghost", productId, "1.000", "6.00", "6.00"), "ninguem.assim")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("CONFLICT"))
+                .andExpect(jsonPath("$.data.conflicts[0].code").value("OPERATOR_NOT_FOUND"));
+    }
+
+    @Test
+    void discountLimitFollowsTheOperatorWhoSoldNotWhoSyncs() throws Exception {
+        String adminToken = loginToken();
+        long productId = createProduct(adminToken, "Offline Desconto Operador", "OFF-OP-3", true, "10.00");
+        registerEntry(adminToken, productId, "3.000");
+        createCashier(adminToken, "caixa.offline.3");
+        String body = withOperator(syncBody("local-discount", productId, "1.000", "10.00", "9.00"), "caixa.offline.3")
+                .replace("\"payments\"", "\"discountAmount\":1.00,\"payments\"");
+
+        mockMvc.perform(post("/api/offline/sales/sync")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.status").value("CONFLICT"))
+                .andExpect(jsonPath("$.data.conflicts[0].code").value("DISCOUNT_NOT_ALLOWED"));
+    }
+
+    private long createCashier(String adminToken, String login) throws Exception {
+        String response = mockMvc.perform(post("/api/access/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .content("""
+                                {"nome":"Caixa Teste","login":"%s","password":"senha123","perfil":"OPERADOR_CAIXA","active":true}
+                                """.formatted(login)))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        return objectMapper.readTree(response).get("data").get("id").asLong();
+    }
+
+    private static String withOperator(String body, String operatorLogin) {
+        int brace = body.indexOf('{');
+        return body.substring(0, brace + 1) + "\"operatorLogin\":\"" + operatorLogin + "\"," + body.substring(brace + 1);
+    }
+
     private String syncBody(String localSaleId, long productId, String quantity, String unitPrice, String amount) {
         return """
                 {

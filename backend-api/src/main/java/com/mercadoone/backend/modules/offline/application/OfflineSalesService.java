@@ -2,6 +2,8 @@ package com.mercadoone.backend.modules.offline.application;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+import com.mercadoone.backend.modules.access.application.UserManagementService;
+import com.mercadoone.backend.modules.access.domain.AppUser;
 import com.mercadoone.backend.modules.access.domain.UserRole;
 import com.mercadoone.backend.modules.audit.application.AuditService;
 import com.mercadoone.backend.modules.catalog.application.CatalogService;
@@ -36,6 +38,7 @@ public class OfflineSalesService {
     private final InventoryService inventory;
     private final OfflineSaleConflictRepository conflicts;
     private final AuditService auditService;
+    private final UserManagementService users;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     OfflineSalesService(
@@ -43,13 +46,15 @@ public class OfflineSalesService {
             CatalogService catalog,
             InventoryService inventory,
             OfflineSaleConflictRepository conflicts,
-            AuditService auditService
+            AuditService auditService,
+            UserManagementService users
     ) {
         this.salesService = salesService;
         this.catalog = catalog;
         this.inventory = inventory;
         this.conflicts = conflicts;
         this.auditService = auditService;
+        this.users = users;
     }
 
     @Transactional
@@ -58,13 +63,30 @@ public class OfflineSalesService {
         if (alreadySynced.isPresent()) {
             return new OfflineSaleSyncResult("SENT", alreadySynced.get(), List.of());
         }
-        List<OfflineSaleConflict> saleConflicts = validate(data, operatorRole);
+        // A venda e do operador que vendeu no caixa, mesmo que outro login esteja enviando a fila.
+        // Sem operatorLogin (PDV antigo), vale quem esta enviando.
+        boolean declared = data.operatorLogin() != null && !data.operatorLogin().isBlank();
+        Optional<AppUser> seller = declared ? users.findActiveByLogin(data.operatorLogin()) : Optional.empty();
+        Long sellerId = seller.map(AppUser::getId).orElse(operatorUserId);
+        UserRole sellerRole = seller.map(AppUser::getRole).orElse(operatorRole);
+
+        List<OfflineSaleConflict> saleConflicts = new ArrayList<>(validate(data, sellerRole));
+        if (declared && seller.isEmpty()) {
+            saleConflicts.add(new OfflineSaleConflict("OPERATOR_NOT_FOUND",
+                    "Operador " + data.operatorLogin().trim() + " nao existe ou esta inativo."));
+        }
         if (!saleConflicts.isEmpty()) {
-            saveConflict(data, operatorUserId, saleConflicts);
+            saveConflict(data, sellerId, saleConflicts);
             return new OfflineSaleSyncResult("CONFLICT", null, saleConflicts);
         }
         // Regras verificadas acima; uma excecao aqui reverte tudo e o PDV reenvia depois.
-        Sale sale = salesService.confirmSale(toCommand(data), operatorUserId, operatorRole, false);
+        Sale sale = salesService.confirmSale(toCommand(data), sellerId, sellerRole, false);
+        if (!sellerId.equals(operatorUserId)) {
+            auditService.record("OFFLINE_SALE_SYNCED_BY_OTHER", "sale", sale.getId(), operatorUserId, Map.of(
+                    "localSaleId", data.localSaleId(),
+                    "soldByUserId", sellerId
+            ));
+        }
         conflicts.findFirstByLocalSaleIdAndStatusOrderByUpdatedAtDesc(data.localSaleId(), OfflineConflictStatus.PENDING)
                 .ifPresent(pending -> pending.accept(sale.getId(), operatorUserId, "Sincronizada sem conflito em nova tentativa."));
         return new OfflineSaleSyncResult("SENT", sale, List.of());
@@ -240,7 +262,8 @@ public class OfflineSalesService {
             Long customerId,
             List<OfflineSaleItemData> items,
             List<SalePaymentData> payments,
-            BigDecimal discountAmount
+            BigDecimal discountAmount,
+            String operatorLogin
     ) {
     }
 
@@ -267,7 +290,8 @@ public class OfflineSalesService {
             Long customerId,
             List<OfflineSaleItemData> items,
             List<SalePaymentData> payments,
-            BigDecimal discountAmount
+            BigDecimal discountAmount,
+            String operatorLogin
     ) {
         static OfflineSalePayload from(OfflineSaleData data) {
             return new OfflineSalePayload(
@@ -276,12 +300,13 @@ public class OfflineSalesService {
                     data.customerId(),
                     data.items(),
                     data.payments(),
-                    data.discountAmount()
+                    data.discountAmount(),
+                    data.operatorLogin()
             );
         }
 
         OfflineSaleData toData() {
-            return new OfflineSaleData(localSaleId, Instant.parse(createdAt), customerId, items, payments, discountAmount);
+            return new OfflineSaleData(localSaleId, Instant.parse(createdAt), customerId, items, payments, discountAmount, operatorLogin);
         }
     }
 }

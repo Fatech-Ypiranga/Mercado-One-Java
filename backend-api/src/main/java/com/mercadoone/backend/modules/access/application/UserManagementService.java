@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserManagementService {
@@ -24,6 +25,15 @@ public class UserManagementService {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.auditService = auditService;
+    }
+
+    /** Usuario ativo pelo login, ou vazio se nao existir ou estiver inativo. */
+    @Transactional(readOnly = true)
+    public Optional<AppUser> findActiveByLogin(String login) {
+        if (login == null || login.isBlank()) {
+            return Optional.empty();
+        }
+        return users.findByLoginIgnoreCase(login.trim()).filter(AppUser::isActive);
     }
 
     @Transactional(readOnly = true)

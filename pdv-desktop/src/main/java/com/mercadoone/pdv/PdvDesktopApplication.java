@@ -5,6 +5,7 @@ import com.mercadoone.pdv.offline.OfflineSaleQueue;
 import com.mercadoone.pdv.offline.OfflineSaleQueue.LocalSalePayment;
 import com.mercadoone.pdv.offline.OfflineSaleQueue.LocalSaleSummary;
 import com.mercadoone.pdv.offline.OfflineStorageConfig;
+import com.mercadoone.pdv.offline.OperatorCredentialStore;
 import com.mercadoone.pdv.sales.BarcodeScan;
 import com.mercadoone.pdv.sales.CartLines;
 import com.mercadoone.pdv.sales.CheckoutService;
@@ -13,6 +14,9 @@ import com.mercadoone.pdv.sales.CheckoutService.Draft;
 import com.mercadoone.pdv.sales.CheckoutService.DraftLine;
 import com.mercadoone.pdv.sales.CheckoutService.Session;
 import com.mercadoone.pdv.sales.OnlineSaleClient;
+import com.mercadoone.pdv.sales.OperatorAccess;
+import com.mercadoone.pdv.sales.OperatorAccess.AccessDeniedException;
+import com.mercadoone.pdv.sales.OperatorAccess.Entry;
 import com.mercadoone.pdv.sales.ProductSearchService;
 import com.mercadoone.pdv.sales.OnlineSaleClient.CatalogProduct;
 import com.mercadoone.pdv.sales.OnlineSaleClient.CustomerOption;
@@ -54,6 +58,7 @@ import java.math.RoundingMode;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -64,16 +69,30 @@ public class PdvDesktopApplication extends Application {
 
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
     private static final String DARK_THEME_KEY = "temaEscuro";
+    private static final String LAST_OPERATOR_KEY = "ultimoOperador";
 
     private final OfflineStorageConfig storageConfig = OfflineStorageConfig.defaultConfig();
     private final OfflineSaleQueue offlineSaleQueue = new OfflineSaleQueue(storageConfig);
     private final OfflineCatalogStore offlineCatalogStore = new OfflineCatalogStore(storageConfig);
     private final OnlineSaleClient onlineSaleClient = new OnlineSaleClient();
+    private final OperatorCredentialStore credentialStore = new OperatorCredentialStore(storageConfig);
+    private final OperatorAccess operatorAccess = new OperatorAccess(onlineSaleClient, credentialStore);
     private final CheckoutService checkoutService = new CheckoutService(offlineSaleQueue, onlineSaleClient);
     private final ProductSearchService productSearch = new ProductSearchService(offlineCatalogStore, onlineSaleClient, checkoutService);
     private final List<DraftLine> cart = new ArrayList<>();
     private final List<LocalSalePayment> payments = new ArrayList<>();
     private volatile String bearerToken = "";
+    /** Quem está no caixa. Vazio na tela de entrada. A venda offline é gravada com este login. */
+    private volatile String operatorLogin = "";
+    private volatile String operatorName = "";
+    /** Senha digitada na entrada, só em memória, para pegar o token quando a API voltar após entrada offline. */
+    private char[] sessionPassword;
+    /** Falso na tela de entrada: o leitor de código de barras não pode desviar o que se digita no login. */
+    private boolean inSession;
+    private BorderPane rootPane;
+    private HBox header;
+    private Node saleBody;
+    private LoginView loginView;
 
     private final Image logoColor = new Image(getClass().getResource("/brand/mercadoone-simbolo-192.png").toExternalForm());
     private final Image logoNegative = new Image(getClass().getResource("/brand/mercadoone-simbolo-negativa-192.png").toExternalForm());
@@ -81,7 +100,7 @@ public class PdvDesktopApplication extends Application {
     private final TextField apiUrl = new TextField(defaultApiUrl());
     private final Label statusBadge = new Label();
     private final Label operatorLabel = new Label("Sem operador");
-    private final Label feedback = new Label("Entre com um operador. Sem API, a venda segue para a fila offline.");
+    private final Label feedback = new Label("Leia o código de barras ou busque o produto.");
     private final ListView<String> cartView = new ListView<>();
     private final ListView<String> paymentsView = new ListView<>();
     private final ListView<String> queueView = new ListView<>();
@@ -108,14 +127,17 @@ public class PdvDesktopApplication extends Application {
     public void start(Stage stage) {
         offlineSaleQueue.initialize();
         offlineCatalogStore.initialize();
+        credentialStore.initialize();
         loadBrandFonts();
         stage.setTitle("mercadoOne PDV");
         stage.getIcons().add(new Image(getClass().getResource("/brand/icone-512.png").toExternalForm()));
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
         Scene scene = new Scene(root, 1280, 780);
-        root.setTop(createHeader(root));
-        root.setCenter(createBody());
+        rootPane = root;
+        header = createHeader(root);
+        saleBody = createBody();
+        loginView = new LoginView(darkTheme() ? logoNegative : logoColor, apiUrl, lastOperator(), this::attemptLogin);
         // Tokens da marca (gerados de docs/marca/tokens.json), depois o visual do PDV.
         scene.getStylesheets().add(stylesheet("brand-tokens.css"));
         scene.getStylesheets().add(stylesheet("pdv.css"));
@@ -125,7 +147,7 @@ public class PdvDesktopApplication extends Application {
         stage.setMinWidth(1100);
         stage.setMinHeight(680);
         stage.show();
-        Platform.runLater(this::focusProductSearch);
+        showLogin();
         refreshCart();
         refreshStatus();
         startBackgroundSync();
@@ -155,6 +177,9 @@ public class PdvDesktopApplication extends Application {
         root.setStyle(dark ? darkTokens() : "");
         // Logo sem fundo: versão negativa (branca) no modo escuro.
         headerLogo.setImage(dark ? logoNegative : logoColor);
+        if (loginView != null) {
+            loginView.setLogo(dark ? logoNegative : logoColor);
+        }
     }
 
     private String darkTokens() {
@@ -196,7 +221,9 @@ public class PdvDesktopApplication extends Application {
             themeButton.setText(dark ? "Modo claro" : "Modo escuro");
             Preferences.userNodeForPackage(PdvDesktopApplication.class).putBoolean(DARK_THEME_KEY, dark);
         });
-        HBox header = new HBox(16, brandRow, statusBadge, operatorLabel, spacer, storage, themeButton);
+        Button logoutButton = new Button("Sair");
+        logoutButton.setOnAction(event -> logout());
+        HBox header = new HBox(16, brandRow, statusBadge, operatorLabel, spacer, storage, themeButton, logoutButton);
         header.setPadding(new Insets(14, 22, 14, 22));
         header.setAlignment(Pos.CENTER_LEFT);
         header.getStyleClass().add("header");
@@ -204,7 +231,7 @@ public class PdvDesktopApplication extends Application {
     }
 
     private Node createBody() {
-        VBox left = column(sessionPanel(), productPanel(), customerPanel());
+        VBox left = column(productPanel(), customerPanel());
         VBox center = column(cartPanel(), paymentPanel());
         VBox right = column(receiptPanel(), queuePanel());
         HBox body = new HBox(18, scroll(left), scroll(center), scroll(right));
@@ -218,36 +245,132 @@ public class PdvDesktopApplication extends Application {
         return wrapper;
     }
 
-    private VBox sessionPanel() {
-        TextField login = new TextField("operador");
-        PasswordField password = new PasswordField();
-        Button loginButton = primary("Entrar");
-        // Enter só entra nos campos de login e senha. Como botão padrão da tela inteira, um Enter solto
-        // (por exemplo o do leitor de código de barras) poderia acionar o login sem querer.
-        login.setOnAction(event -> loginButton.fire());
-        password.setOnAction(event -> loginButton.fire());
-        loginButton.setOnAction(event -> runAsync(loginButton, "Autenticando operador...",
-                () -> onlineSaleClient.login(apiUrl.getText(), login.getText(), password.getText()),
-                token -> {
-                    bearerToken = token;
-                    password.clear();
-                    operatorLabel.setText("Operador: " + login.getText().trim());
-                    checkoutService.markApiReachable(true);
-                    feedback.setText("Operador autenticado. Atualizando catalogo e fila offline...");
-                    refreshLocalCatalog();
-                    loadDiscountPolicy();
-                    synchronize();
-                    focusProductSearch();
+    private static String lastOperator() {
+        return Preferences.userNodeForPackage(PdvDesktopApplication.class).get(LAST_OPERATOR_KEY, "");
+    }
+
+    /** Tela de entrada: sem cabeçalho nem venda. Só sai daqui com um operador aceito, online ou offline. */
+    private void showLogin() {
+        inSession = false;
+        rootPane.setTop(null);
+        rootPane.setCenter(loginView);
+        loginView.focusFirstField();
+    }
+
+    private void showSale() {
+        inSession = true;
+        rootPane.setTop(header);
+        rootPane.setCenter(saleBody);
+        Platform.runLater(this::focusProductSearch);
+    }
+
+    private void attemptLogin(String login, char[] password) {
+        loginView.setBusy(true);
+        CompletableFuture.supplyAsync(() -> operatorAccess.enter(apiUrl.getText(), login, password))
+                .whenComplete((entry, error) -> Platform.runLater(() -> {
+                    loginView.setBusy(false);
+                    if (error == null) {
+                        enter(entry, password);
+                    } else {
+                        Arrays.fill(password, '\0');
+                        Throwable cause = error.getCause() == null ? error : error.getCause();
+                        loginView.showError(cause instanceof AccessDeniedException
+                                ? cause.getMessage()
+                                : "Não foi possível entrar agora. Tente de novo.");
+                    }
                 }));
-        Button logout = new Button("Sair");
-        logout.setOnAction(event -> {
-            bearerToken = "";
-            operatorLabel.setText("Sem operador");
-            feedback.setText("Sessao encerrada. Vendas seguem para a fila offline ate o proximo login.");
+    }
+
+    private void enter(Entry entry, char[] password) {
+        bearerToken = entry.token();
+        operatorLogin = entry.login();
+        operatorName = entry.name();
+        sessionPassword = password;
+        Preferences.userNodeForPackage(PdvDesktopApplication.class).put(LAST_OPERATOR_KEY, entry.login());
+        operatorLabel.setText("Operador: " + entry.name() + (entry.online() ? "" : " (sem conexão)"));
+        loginView.reset();
+        showSale();
+        if (entry.online()) {
+            checkoutService.markApiReachable(true);
+            feedback.setText("Operador autenticado. Atualizando catalogo e fila offline...");
+            refreshLocalCatalog();
+            loadDiscountPolicy();
+            synchronize();
+        } else {
+            checkoutService.markApiReachable(false);
+            feedback.setText("Entrou sem conexão. As vendas ficam na fila e seguem sozinhas quando o sistema voltar.");
             refreshStatus();
-        });
-        return panel("Sessao", labeled("API", apiUrl), labeled("Login", login), labeled("Senha", password),
-                new HBox(8, loginButton, logout));
+        }
+        refreshCart();
+    }
+
+    private void logout() {
+        if (!cart.isEmpty()) {
+            javafx.scene.control.Alert confirm = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION,
+                    "Há itens no carrinho. Sair descarta a venda em andamento.",
+                    javafx.scene.control.ButtonType.OK, javafx.scene.control.ButtonType.CANCEL);
+            confirm.setHeaderText("Sair do caixa?");
+            if (confirm.showAndWait().filter(javafx.scene.control.ButtonType.OK::equals).isEmpty()) {
+                return;
+            }
+        }
+        bearerToken = "";
+        operatorLogin = "";
+        operatorName = "";
+        if (sessionPassword != null) {
+            Arrays.fill(sessionPassword, '\0');
+            sessionPassword = null;
+        }
+        operatorLabel.setText("Sem operador");
+        cart.clear();
+        payments.clear();
+        discount.setText("0.00");
+        customers.setValue(null);
+        receipt.clear();
+        refreshCart();
+        refreshStatus();
+        showLogin();
+        loginView.setNotice("Sessão encerrada. As vendas feitas ficam na fila e seguem no próximo login.");
+    }
+
+    private Session session() {
+        return new Session(apiUrl.getText(), bearerToken, operatorLogin);
+    }
+
+    /**
+     * Garante o token antes de falar com a API. Se o operador entrou sem conexão, tenta obter o token agora
+     * com a senha da entrada (só em memória). Sem token, avisa e deixa as vendas na fila.
+     */
+    private void withConnection(boolean quiet, Runnable whenReady) {
+        if (isAuthenticated()) {
+            whenReady.run();
+            return;
+        }
+        char[] secret = sessionPassword;
+        if (!inSession || secret == null || operatorLogin.isBlank()) {
+            if (!quiet) {
+                feedback.setText("Entre com um operador para sincronizar a fila offline.");
+            }
+            refreshStatus();
+            return;
+        }
+        String login = operatorLogin;
+        CompletableFuture.supplyAsync(() -> operatorAccess.reconnect(apiUrl.getText(), login, secret))
+                .thenAccept(token -> Platform.runLater(() -> {
+                    if (token.isPresent() && inSession && login.equals(operatorLogin)) {
+                        bearerToken = token.get();
+                        operatorLabel.setText("Operador: " + operatorName);
+                        checkoutService.markApiReachable(true);
+                        loadDiscountPolicy();
+                        refreshLocalCatalog();
+                        whenReady.run();
+                    } else {
+                        if (!quiet) {
+                            feedback.setText("Sem conexão com o sistema. As vendas seguem na fila.");
+                        }
+                        refreshStatus();
+                    }
+                }));
     }
 
     private VBox productPanel() {
@@ -353,7 +476,7 @@ public class PdvDesktopApplication extends Application {
      * o campo de busca de produto. Campos de texto (login, cliente, desconto...) não são afetados.
      */
     private void redirectScannerInput(Scene scene, KeyEvent event) {
-        if (productSearchField == null) {
+        if (!inSession || productSearchField == null) {
             return;
         }
         Node owner = scene.getFocusOwner();
@@ -556,7 +679,7 @@ public class PdvDesktopApplication extends Application {
             feedback.setText(validation);
             return;
         }
-        Session session = new Session(apiUrl.getText(), bearerToken);
+        Session session = session();
         runAsync(button, "Registrando venda...", () -> checkoutService.checkout(session, draft), result -> {
             showResult(draft, result);
             refreshQueue();
@@ -602,7 +725,9 @@ public class PdvDesktopApplication extends Application {
                 ReceiptFormatter.money(draft.netAmount()),
                 ReceiptFormatter.money(remaining.max(BigDecimal.ZERO))));
         DiscountLimit limit = checkoutService.discountLimit();
-        discountHint.setText(limit.unlimited()
+        discountHint.setText(!isAuthenticated()
+                ? "Sem conexão: o desconto só vale depois que o sistema voltar."
+                : limit.unlimited()
                 ? "Perfil sem limite de desconto."
                 : limit.maxPercent().signum() == 0
                 ? "Perfil sem permissao de desconto."
@@ -649,12 +774,11 @@ public class PdvDesktopApplication extends Application {
     }
 
     private void synchronize() {
-        Session session = new Session(apiUrl.getText(), bearerToken);
-        if (!session.authenticated()) {
-            feedback.setText("Entre com um operador para sincronizar a fila offline.");
-            refreshStatus();
-            return;
-        }
+        withConnection(false, this::synchronizeNow);
+    }
+
+    private void synchronizeNow() {
+        Session session = session();
         CompletableFuture.supplyAsync(() -> checkoutService.synchronize(session))
                 .whenComplete((summary, error) -> Platform.runLater(() -> {
                     feedback.setText(error == null ? summary.describe() : "Sincronizacao falhou: " + errorMessage(error));
@@ -664,26 +788,27 @@ public class PdvDesktopApplication extends Application {
 
     private void startBackgroundSync() {
         javafx.animation.Timeline timeline = new javafx.animation.Timeline(new javafx.animation.KeyFrame(Duration.minutes(2), event -> {
-            if (isAuthenticated()) {
-                Session session = new Session(apiUrl.getText(), bearerToken);
+            if (!inSession) {
+                return;
+            }
+            withConnection(true, () -> {
+                Session session = session();
                 CompletableFuture.runAsync(() -> checkoutService.synchronize(session))
                         .whenComplete((ignored, error) -> Platform.runLater(this::refreshStatus));
-            } else {
-                refreshStatus();
-            }
+            });
         }));
         timeline.setCycleCount(javafx.animation.Animation.INDEFINITE);
         timeline.play();
     }
 
     private void loadDiscountPolicy() {
-        Session session = new Session(apiUrl.getText(), bearerToken);
+        Session session = session();
         CompletableFuture.supplyAsync(() -> checkoutService.refreshDiscountLimit(session))
                 .whenComplete((limit, error) -> Platform.runLater(this::refreshCart));
     }
 
     private List<CatalogProduct> searchProducts(String term) {
-        List<CatalogProduct> products = productSearch.search(new Session(apiUrl.getText(), bearerToken), term);
+        List<CatalogProduct> products = productSearch.search(session(), term);
         Platform.runLater(this::refreshStatus);
         return products;
     }
@@ -693,7 +818,7 @@ public class PdvDesktopApplication extends Application {
             feedback.setText("Entre com um operador para atualizar o catalogo local.");
             return;
         }
-        Session session = new Session(apiUrl.getText(), bearerToken);
+        Session session = session();
         CompletableFuture.supplyAsync(() -> productSearch.refreshLocalCatalog(session))
                 .whenComplete((count, error) -> Platform.runLater(() -> feedback.setText(error == null
                         ? "Catalogo local atualizado com " + count + " produto(s)."
