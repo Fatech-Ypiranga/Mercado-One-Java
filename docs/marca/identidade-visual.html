@@ -17,7 +17,7 @@
   color-scheme: light;
   --midnight: #122C4F;
   --ocean: #5B8BB2;
-  --avocado: #4A7A00;
+  --avocado: #2E7D5B;
   --pearl: #F7F5EE;
   --bg: #F7F5EE;
   --surface: #FFFFFF;
@@ -28,12 +28,12 @@
   --ink-muted: #3D5470;
   --ink-hint: #52697F;
   --line: rgba(18,44,79,0.12);
-  --action: #4A7A00;
-  --action-hover: #3F6A00;
+  --action: #2E7D5B;
+  --action-hover: #276B4E;
   --chart-bar: #C9D9E7;
   --chart-peak: #122C4F;
-  --success-bg: #E8F3D0;
-  --success-ink: #2E5000;
+  --success-bg: #DDF1E8;
+  --success-ink: #1B5E3F;
   --warning-bg: #FFF1CC;
   --warning-ink: #8A5A00;
   --danger-bg: #FDE7E4;
@@ -70,8 +70,6 @@
   --ink-muted: #A9BDD1;
   --ink-hint: #7F9AB5;
   --line: rgba(168,200,224,0.14);
-  --action: #2E7D5B;
-  --action-hover: #276B4E;
   --chart-bar: #28496B;
   --chart-peak: #6FA8DC;
   --success-bg: #12332A;
@@ -98,8 +96,8 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--font-san
 .top nav a{color:var(--ink-muted);text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap;padding:6px 0}
 .top nav a:hover{color:var(--ink)}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:none}
-.logo .tile{background:#fff;border-radius:8px;display:flex;padding:2px}
-.logo img{width:32px;height:32px;display:block}
+.logo img{display:block;height:32px;width:auto}
+.logo .ln{display:none}[data-theme=dark] .logo .lc{display:none}[data-theme=dark] .logo .ln{display:block}
 .wm{font-weight:800;font-size:24px;letter-spacing:-.02em}.wm b{color:var(--ocean)}
 .tbtn{flex:none;min-height:40px;padding:0 14px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:600 14px var(--font-sans);cursor:pointer}
 .tbtn:hover{border-color:var(--ocean)}
@@ -190,7 +188,7 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
 
 <div class="wrap">
 <header class="top"><div class="in">
- <a class="logo" href="#inicio"><span class="tile"><img src="mercadoone-simbolo.jpg" alt=""></span><span class="wm">mercado<b>One</b></span></a>
+ <a class="logo" href="#inicio"><img class="lc" src="logo/svg/mercadoone-simbolo.svg" alt="" width="40" height="32"><img class="ln" src="logo/svg/mercadoone-simbolo-negativa.svg" alt="" width="40" height="32"><span class="wm">mercado<b>One</b></span></a>
  <nav aria-label="Seções"><a href="#logo">Logo</a><a href="#cores">Cores</a><a href="#tipografia">Tipografia</a><a href="#componentes">Componentes</a><a href="#particulas">Partículas</a><a href="#voz">Voz</a><a href="#evitar">Evitar</a><a href="#codigo">Tokens</a></nav>
  <button class="tbtn" id="tb">Modo escuro</button>
 </div></header>
@@ -204,23 +202,23 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
 
 <section id="logo" class="alt"><div class="in">
  <h2>Logo</h2>
- <p>O símbolo é o M com três barras crescentes. O logotipo escreve <strong>mercado</strong> em midnight e <strong>One</strong> em ocean, numa palavra só. Use sempre o arquivo; nunca redesenhe o símbolo.</p>
+ <p>O símbolo é o M com três barras crescentes. O logotipo escreve <strong>mercado</strong> em azul-escuro e <strong>One</strong> em azul, numa palavra só. Use sempre os arquivos de <code>docs/marca/logo</code>; nunca redesenhe o símbolo.</p>
  <div class="grid g2 mt">
-  <div><div class="lg" style="background:#fff"><img src="mercadoone-horizontal.jpg" alt="Logo horizontal mercadoOne" style="width:100%;max-width:420px;height:auto;aspect-ratio:1536/1024;object-fit:contain;margin:-40px 0"></div><div class="cap">Horizontal: topo do site, login, documentos</div></div>
-  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="Símbolo mercadoOne" width="120" height="120"></div><div class="cap">Símbolo: favicon, ícone do app, barra de título do PDV</div></div>
-  <div><div class="lg" style="background:#122C4F"><span style="background:#fff;border-radius:10px;padding:4px;display:flex"><img src="mercadoone-simbolo.jpg" alt="" width="52" height="52"></span><span class="wm" style="color:#fff">mercado<b style="color:#A8C8E0">One</b></span></div><div class="cap">Negativa provisória: até existir o SVG transparente, o símbolo vai num quadrado branco</div></div>
-  <div><div class="lg" style="background:var(--surface);gap:22px"><img src="mercadoone-simbolo.jpg" alt="" width="64" height="64"><img src="mercadoone-simbolo.jpg" alt="" width="32" height="32"><img src="mercadoone-simbolo.jpg" alt="" width="16" height="16"></div><div class="cap">Tamanhos: 64, 32 e 16px (mínimo na tela). Impresso: mínimo 8mm</div></div>
+  <div><div class="lg" style="background:#fff"><img src="logo/svg/mercadoone-horizontal.svg" alt="Logo horizontal mercadoOne" style="width:100%;max-width:400px;height:auto"></div><div class="cap">Horizontal, em cor: topo do site, login, documentos (<code>mercadoone-horizontal.svg</code>)</div></div>
+  <div><div class="lg" style="background:#122C4F"><img src="logo/svg/mercadoone-horizontal-negativa.svg" alt="Logo horizontal negativa" style="width:100%;max-width:400px;height:auto"></div><div class="cap">Negativa, para fundo escuro e modo escuro (<code>mercadoone-horizontal-negativa.svg</code>)</div></div>
+  <div><div class="lg" style="background:#fff;color:#000"><img src="logo/svg/mercadoone-horizontal-uma-cor.svg" alt="Logo horizontal em uma cor" style="width:100%;max-width:400px;height:auto"></div><div class="cap">Uma cor: comprovante, impressora térmica e carimbo. Preto por padrão; o arquivo usa <code>currentColor</code>, então aceita qualquer cor (<code>mercadoone-horizontal-uma-cor.svg</code>)</div></div>
+  <div><div class="lg" style="background:var(--surface);gap:26px"><img src="logo/svg/mercadoone-simbolo.svg" alt="Símbolo" width="96" height="77"><img src="logo/svg/mercadoone-simbolo.svg" alt="" width="48" height="38"><img src="logo/svg/mercadoone-simbolo.svg" alt="" width="24" height="19"><img src="logo/svg/favicon.svg" alt="" width="16" height="16"></div><div class="cap">Só o símbolo: ícone do app e barra de título do PDV. Variações: <code>-negativa</code> e <code>-uma-cor</code>. O <code>favicon.svg</code> é quadrado, com margem.</div></div>
  </div>
  <div class="rules mt">
-  <div class="do"><h3>Regras</h3><ul><li>Área de proteção: a altura da barra maior do símbolo, em volta de todo o logo.</li><li>Horizontal com no mínimo 120px de largura.</li><li>Uma cor (midnight) para comprovante, impressora térmica e carimbo.</li></ul></div>
-  <div class="no"><h3>Pendente para produção</h3><ul><li>Os arquivos atuais são JPG com fundo branco.</li><li>Desenhar o logo em SVG nas quatro versões: horizontal, símbolo, negativa e uma cor.</li><li>Gerar favicon e ícone do instalador do PDV a partir do SVG.</li></ul></div>
+  <div class="do"><h3>Regras</h3><ul><li>Área de proteção: a altura da barra maior do símbolo, em volta de todo o logo.</li><li>Horizontal com no mínimo 120px de largura; símbolo com no mínimo 16px na tela e 8mm impresso.</li><li>Fundo escuro: sempre a versão negativa. Os arquivos são transparentes, sem quadrado branco.</li></ul></div>
+  <div class="no"><h3>Pendente</h3><ul><li>Os SVGs foram vetorizados automaticamente a partir do JPG original: o formato está fiel, mas os sombreados do símbolo são aproximados. Um designer deve refinar a partir do arquivo-fonte.</li><li>Ícone <code>.ico</code> para o instalador do PDV, se for gerar um instalador.</li></ul></div>
  </div>
  <h3 class="mt">Não fazer</h3>
  <div class="dont">
-  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="" width="70" height="70" style="filter:hue-rotate(110deg)"></div><div class="cap">Mudar as cores</div></div>
-  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="" width="110" height="60"></div><div class="cap">Esticar ou achatar</div></div>
-  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="" width="70" height="70" style="filter:drop-shadow(0 0 12px #5B8BB2)"></div><div class="cap">Brilho ou sombra</div></div>
-  <div><div class="lg" style="background:#fff"><span class="wm" style="font-family:Georgia,serif;font-weight:400;color:#122C4F">Mercado One</span></div><div class="cap">Outra fonte ou nome separado</div></div>
+  <div><div class="lg" style="background:#fff"><img src="logo/svg/mercadoone-simbolo.svg" alt="" width="80" height="64" style="filter:hue-rotate(110deg)"></div><div class="cap">Mudar as cores</div></div>
+  <div><div class="lg" style="background:#fff"><img src="logo/svg/mercadoone-simbolo.svg" alt="" width="120" height="56" preserveAspectRatio="none"></div><div class="cap">Esticar ou achatar</div></div>
+  <div><div class="lg" style="background:#fff"><img src="logo/svg/mercadoone-simbolo.svg" alt="" width="80" height="64" style="filter:drop-shadow(0 0 12px #5B8BB2)"></div><div class="cap">Brilho ou sombra</div></div>
+  <div><div class="lg" style="background:#122C4F"><img src="logo/svg/mercadoone-simbolo.svg" alt="" width="80" height="64"></div><div class="cap">Versão em cor sobre fundo escuro</div></div>
  </div>
 </div></section>
 
@@ -231,10 +229,10 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
   <div class="sw"><div class="c" style="background:#F7F5EE;color:#122C4F">Pearl</div><div class="d"><b class="mono">#F7F5EE</b>Fundo (bg) · ~60%</div></div>
   <div class="sw"><div class="c" style="background:#122C4F;color:#fff">Midnight</div><div class="d"><b class="mono">#122C4F</b>Texto, títulos, faixas · ~25%</div></div>
   <div class="sw"><div class="c" style="background:#5B8BB2;color:#fff">Ocean</div><div class="d"><b class="mono">#5B8BB2</b>Ícones, item ativo, foco · ~10%</div></div>
-  <div class="sw"><div class="c" style="background:#4A7A00;color:#fff">Avocado</div><div class="d"><b class="mono">#4A7A00</b>Botão principal, sucesso · ~5%</div></div>
+  <div class="sw"><div class="c" style="background:#2E7D5B;color:#fff">Avocado</div><div class="d"><b class="mono">#2E7D5B</b>Botão principal, sucesso · ~5%</div></div>
  </div>
- <div class="ratio" aria-label="Proporção de uso"><div style="flex:60;background:#F7F5EE"></div><div style="flex:25;background:#122C4F"></div><div style="flex:10;background:#5B8BB2"></div><div style="flex:5;background:#4A7A00"></div></div>
- <p class="mt"><strong>No modo escuro</strong> a família é fria: ocean <code>#6FA8DC</code> e verde-esmeralda (<code>#4FB286</code> para texto e selo, <code>#2E7D5B</code> no botão). Não existe verde-limão nem oliva no escuro.</p>
+ <div class="ratio" aria-label="Proporção de uso"><div style="flex:60;background:#F7F5EE"></div><div style="flex:25;background:#122C4F"></div><div style="flex:10;background:#5B8BB2"></div><div style="flex:5;background:#2E7D5B"></div></div>
+ <p class="mt"><strong>O verde é esmeralda nos dois modos</strong>, da mesma família fria do azul: <code>#2E7D5B</code> no botão principal (5,0:1 com texto branco) e no claro; no escuro, <code>#4FB286</code> para texto e selo. Não existe verde-limão nem oliva.</p>
  <h3 class="mt">Tokens de interface</h3>
  <p>Os valores mudam com o modo. Use o botão no topo para ver o escuro.</p>
  <div class="chips" id="chips"></div>
@@ -295,7 +293,7 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
    <li>Pintar uma frase ou título em várias cores.</li>
    <li>Vermelho como decoração: ele só aparece quando há problema.</li>
    <li>Verde como decoração: em menu, borda, ícone, gráfico ou título.</li>
-   <li>Mais de um verde na mesma área, ou verde-limão e oliva no modo escuro.</li>
+   <li>Mais de um verde na mesma área, ou verde-limão e oliva.</li>
    <li>Status só por cor: o selo sempre tem texto.</li>
    <li>Ocean como texto abaixo de 24px no modo claro.</li>
    <li>Card creme sobre fundo creme; menu azul-marinho pesado com item verde.</li>
@@ -322,7 +320,7 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
   color-scheme: light;
   --midnight: #122C4F;
   --ocean: #5B8BB2;
-  --avocado: #4A7A00;
+  --avocado: #2E7D5B;
   --pearl: #F7F5EE;
   --bg: #F7F5EE;
   --surface: #FFFFFF;
@@ -333,12 +331,12 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
   --ink-muted: #3D5470;
   --ink-hint: #52697F;
   --line: rgba(18,44,79,0.12);
-  --action: #4A7A00;
-  --action-hover: #3F6A00;
+  --action: #2E7D5B;
+  --action-hover: #276B4E;
   --chart-bar: #C9D9E7;
   --chart-peak: #122C4F;
-  --success-bg: #E8F3D0;
-  --success-ink: #2E5000;
+  --success-bg: #DDF1E8;
+  --success-ink: #1B5E3F;
   --warning-bg: #FFF1CC;
   --warning-ink: #8A5A00;
   --danger-bg: #FDE7E4;
@@ -375,8 +373,6 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
   --ink-muted: #A9BDD1;
   --ink-hint: #7F9AB5;
   --line: rgba(168,200,224,0.14);
-  --action: #2E7D5B;
-  --action-hover: #276B4E;
   --chart-bar: #28496B;
   --chart-peak: #6FA8DC;
   --success-bg: #12332A;
@@ -389,14 +385,14 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
   --particle-line: rgba(111,168,220,0.12);
 }</pre>
 <!-- CSS-SRC:FIM -->
- <p class="mt"><strong>PDV (JavaFX):</strong> cole no CSS da aplicação. O JavaFX não aceita <code>var()</code>, então usa variáveis <code>-mo-*</code> no <code>.root</code>; o modo escuro é a classe <code>dark</code> no nó raiz.</p>
+ <p class="mt"><strong>PDV (JavaFX):</strong> cole no CSS da aplicação. O JavaFX não aceita <code>var()</code>, então usa variáveis <code>-mo-*</code> no <code>.root</code>; o modo escuro é o arquivo <code>brand-tokens-dark.css</code>, cujas variáveis o app aplica como estilo direto do nó raiz (<code>root.setStyle</code>).</p>
  <button class="btn bs copy" data-c="fx">Copiar JavaFX</button>
 <!-- FX-SRC:INICIO -->
 <pre id="fx">/* Gerado de docs/marca/tokens.json (v2). Não edite à mão. */
 .root {
   -mo-midnight: #122C4F;
   -mo-ocean: #5B8BB2;
-  -mo-avocado: #4A7A00;
+  -mo-avocado: #2E7D5B;
   -mo-pearl: #F7F5EE;
   -mo-bg: #F7F5EE;
   -mo-surface: #FFFFFF;
@@ -407,49 +403,24 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
   -mo-ink-muted: #3D5470;
   -mo-ink-hint: #52697F;
   -mo-line: rgba(18,44,79,0.12);
-  -mo-action: #4A7A00;
-  -mo-action-hover: #3F6A00;
+  -mo-action: #2E7D5B;
+  -mo-action-hover: #276B4E;
   -mo-chart-bar: #C9D9E7;
   -mo-chart-peak: #122C4F;
-  -mo-success-bg: #E8F3D0;
-  -mo-success-ink: #2E5000;
+  -mo-success-bg: #DDF1E8;
+  -mo-success-ink: #1B5E3F;
   -mo-warning-bg: #FFF1CC;
   -mo-warning-ink: #8A5A00;
   -mo-danger-bg: #FDE7E4;
   -mo-danger-ink: #B42318;
   -mo-particle: rgba(18,44,79,0.25);
   -mo-particle-line: rgba(18,44,79,0.06);
-  -fx-font-family: "Outfit";
+  /* Fonte: a Outfit só funciona se o app carregar o arquivo TTF (Font.loadFont); o CSS do app define a família. */
   -fx-base: -mo-bg;
   -fx-background: -mo-bg;
   -fx-text-base-color: -mo-ink;
   -fx-accent: -mo-ocean;
   -fx-focus-color: -mo-ocean;
-}
-.root.dark {
-  -mo-ocean: #6FA8DC;
-  -mo-avocado: #4FB286;
-  -mo-bg: #0B1A2C;
-  -mo-surface: #12263E;
-  -mo-surface-sub: #17304D;
-  -mo-sidebar: #08172A;
-  -mo-selected: #16314F;
-  -mo-ink: #EEF3F8;
-  -mo-ink-muted: #A9BDD1;
-  -mo-ink-hint: #7F9AB5;
-  -mo-line: rgba(168,200,224,0.14);
-  -mo-action: #2E7D5B;
-  -mo-action-hover: #276B4E;
-  -mo-chart-bar: #28496B;
-  -mo-chart-peak: #6FA8DC;
-  -mo-success-bg: #12332A;
-  -mo-success-ink: #4FB286;
-  -mo-warning-bg: #362A10;
-  -mo-warning-ink: #D9A93A;
-  -mo-danger-bg: #2E1214;
-  -mo-danger-ink: #E5534B;
-  -mo-particle: rgba(111,168,220,0.7);
-  -mo-particle-line: rgba(111,168,220,0.12);
 }
 .button.primary { -fx-background-color: -mo-action; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-min-height: 44; }
 .button.primary:hover { -fx-background-color: -mo-action-hover; }
@@ -461,7 +432,33 @@ footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-s
 .pill-warn { -fx-background-color: -mo-warning-bg; -fx-text-fill: -mo-warning-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
 .pill-danger { -fx-background-color: -mo-danger-bg; -fx-text-fill: -mo-danger-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
 .chart-bar { -fx-bar-fill: -mo-chart-bar; }
-.chart-peak { -fx-bar-fill: -mo-chart-peak; }</pre>
+.chart-peak { -fx-bar-fill: -mo-chart-peak; }
+
+/* ── brand-tokens-dark.css ── */
+/* Gerado de docs/marca/tokens.json (v2). Não edite à mão. Modo escuro: aplique estas variáveis no nó raiz (setStyle). */
+.root {
+  -mo-ocean: #6FA8DC;
+  -mo-avocado: #4FB286;
+  -mo-bg: #0B1A2C;
+  -mo-surface: #12263E;
+  -mo-surface-sub: #17304D;
+  -mo-sidebar: #08172A;
+  -mo-selected: #16314F;
+  -mo-ink: #EEF3F8;
+  -mo-ink-muted: #A9BDD1;
+  -mo-ink-hint: #7F9AB5;
+  -mo-line: rgba(168,200,224,0.14);
+  -mo-chart-bar: #28496B;
+  -mo-chart-peak: #6FA8DC;
+  -mo-success-bg: #12332A;
+  -mo-success-ink: #4FB286;
+  -mo-warning-bg: #362A10;
+  -mo-warning-ink: #D9A93A;
+  -mo-danger-bg: #2E1214;
+  -mo-danger-ink: #E5534B;
+  -mo-particle: rgba(111,168,220,0.7);
+  -mo-particle-line: rgba(111,168,220,0.12);
+}</pre>
 <!-- FX-SRC:FIM -->
 </div></section>
 </div>

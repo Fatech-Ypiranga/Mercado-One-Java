@@ -68,8 +68,10 @@ docs/
 
 | Documento | Uso |
 | --- | --- |
+| [marca/README.md](marca/README.md) | Estrutura da pasta, como mudar cor ou logo e qual logo usar |
 | [marca/identidade-visual.html](marca/identidade-visual.html) | Logo, cores, tipografia, componentes e tokens para Angular e JavaFX (abra no navegador) |
-| [marca/tokens.json](marca/tokens.json) | Fonte única dos tokens; `node docs/marca/gerar-tokens.mjs` regenera o HTML |
+| [marca/logo/](marca/logo/svg/mercadoone-horizontal.svg) | Logos em SVG e PNG, e os JPGs originais |
+| [marca/tokens.json](marca/tokens.json) | Fonte única dos tokens; `node docs/marca/gerar-tokens.mjs` regenera o HTML, o CSS dos apps e copia os logos |
 
 ## Agentes
 
