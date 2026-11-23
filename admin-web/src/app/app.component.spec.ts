@@ -38,7 +38,7 @@ describe('AppComponent', () => {
     const fixture = TestBed.createComponent(AdminShellComponent);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.textContent).toContain('Mercado One');
+    expect(fixture.nativeElement.textContent).toContain('mercadoOne');
     expect(fixture.nativeElement.textContent).toContain('Produtos');
   });
 

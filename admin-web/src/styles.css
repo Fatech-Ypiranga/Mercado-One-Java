@@ -1,43 +1,50 @@
-@import "@fontsource/ibm-plex-sans/latin-400.css";
-@import "@fontsource/ibm-plex-sans/latin-500.css";
-@import "@fontsource/ibm-plex-sans/latin-600.css";
-@import "@fontsource/ibm-plex-mono/latin-400.css";
-@import "@fontsource/ibm-plex-mono/latin-500.css";
+@import "@fontsource/outfit/latin-400.css";
+@import "@fontsource/outfit/latin-500.css";
+@import "@fontsource/outfit/latin-600.css";
+@import "@fontsource/outfit/latin-700.css";
+@import "@fontsource/outfit/latin-800.css";
+@import "@fontsource/jetbrains-mono/latin-400.css";
+/* Tokens da marca, gerados de docs/marca/tokens.json (node docs/marca/gerar-tokens.mjs). */
+@import "./brand-tokens.css";
 
 * {
   box-sizing: border-box;
 }
 
+/*
+  As variáveis abaixo são os nomes que os componentes já usam.
+  Cada uma aponta para um token da marca: não ponha cor fixa aqui.
+  Regra da marca: estrutura em azul, ação em verde, alerta só quando há problema.
+*/
 :root {
-  --font-display: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-sans: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-mono: "IBM Plex Mono", "Consolas", monospace;
-  --color-background: #f4f6f5;
-  --color-surface: #fff;
-  --color-surface-raised: #fff;
-  --color-foreground: #172522;
-  --color-muted: #52635e;
-  --color-border: #dce4e0;
-  --color-border-strong: #adbfba;
-  --color-accent: #176448;
-  --color-accent-dark: #104d38;
-  --color-accent-muted: #e4f3eb;
+  --font-display: var(--font-sans);
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface);
+  --color-surface-sub: var(--surface-sub);
+  --color-foreground: var(--ink);
+  --color-muted: var(--ink-muted);
+  --color-hint: var(--ink-hint);
+  --color-border: var(--line);
+  --color-border-strong: color-mix(in srgb, var(--ink) 28%, transparent);
+  --color-accent: var(--action);
+  --color-accent-dark: var(--action-hover);
+  --color-accent-muted: var(--success-bg);
   --color-on-accent: #fff;
-  --color-danger: #9e332f;
-  --color-danger-muted: #fff0ed;
-  --color-warning: #805612;
-  --color-warning-muted: #fff4da;
-  --color-success: #176448;
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
+  --color-brand: var(--ocean);
+  --color-selected: var(--selected);
+  --color-danger: var(--danger-ink);
+  --color-danger-muted: var(--danger-bg);
+  --color-warning: var(--warning-ink);
+  --color-warning-muted: var(--warning-bg);
+  --color-success: var(--success-ink);
+  --color-success-muted: var(--success-bg);
   --space-5: 24px;
   --space-6: 40px;
   --space-7: 64px;
-  --radius-input: 8px;
-  --radius-panel: 8px;
-  --shadow-panel: 0 1px 3px rgb(15 52 38 / 5%);
+  --radius-input: var(--radius-sm);
+  --radius-panel: var(--radius-md);
+  --shadow-panel: none;
   --duration: 160ms;
 }
 
@@ -89,7 +96,7 @@ button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 3px solid #a6d6c1;
+  outline: 3px solid var(--ocean);
   outline-offset: 2px;
 }
 
@@ -131,9 +138,12 @@ textarea:hover {
   border-color: var(--color-foreground);
 }
 
-.mono,
-.numeric {
+/* Mono só para códigos (SKU, código de barras, versão). Números usam a fonte normal com algarismos tabulares. */
+.mono {
   font-family: var(--font-mono);
+}
+
+.numeric {
   font-variant-numeric: tabular-nums;
 }
 
@@ -162,7 +172,7 @@ textarea:hover {
   height: 100dvh;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  background: #fff;
+  background: var(--sidebar);
   border-right: 1px solid var(--color-border);
   padding: 24px 16px 18px;
   z-index: 2;
@@ -182,19 +192,31 @@ textarea:hover {
   padding: 0 8px;
 }
 
+/* Logo em SVG sem fundo: a versão negativa (branca) aparece no modo escuro. */
 .brand-mark {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  background: var(--color-accent);
-  color: var(--color-on-accent);
-  border: 0;
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  width: 44px;
+  height: 35px;
+  display: block;
+  flex: none;
+  object-fit: contain;
+}
+
+.brand-mark-dark,
+[data-theme='dark'] .brand-mark-light {
+  display: none;
+}
+
+[data-theme='dark'] .brand-mark-dark {
+  display: block;
+}
+
+.wordmark {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.wordmark span {
+  color: var(--ocean);
 }
 
 .brand strong,
@@ -219,11 +241,9 @@ textarea:hover {
 .nav-department {
   margin: var(--space-4) 0 var(--space-1);
   padding: 0 10px;
-  color: var(--color-muted);
-  font-size: 0.68rem;
+  color: var(--color-hint);
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
 }
 
 .nav-department:first-child {
@@ -250,9 +270,7 @@ main {
 .user-panel small {
   color: var(--color-muted);
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 0.68rem;
+  font-size: 0.8125rem;
 }
 
 .page-header {
@@ -263,12 +281,10 @@ main {
 
 .page-header p,
 .eyebrow {
-  color: var(--color-accent);
-  font-size: 0.72rem;
+  color: var(--color-hint);
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
   margin: 0 0 8px;
-  text-transform: uppercase;
 }
 
 .page-header h1,
@@ -384,7 +400,7 @@ main {
 }
 
 .secondary-button:hover:not(:disabled) {
-  background: #1d1914;
+  background: var(--color-surface-sub);
 }
 
 .ghost-button {
@@ -462,11 +478,9 @@ td {
 }
 
 th {
-  color: var(--color-muted);
-  font-size: 0.72rem;
+  color: var(--color-hint);
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   border-bottom-color: var(--color-border-strong);
 }
 
@@ -487,12 +501,12 @@ td small {
 th.numeric,
 td.numeric {
   text-align: right;
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 tbody tr.selected td {
-  background: var(--color-accent-muted);
+  background: var(--color-selected);
 }
 
 tbody tr.interactive {
@@ -500,11 +514,11 @@ tbody tr.interactive {
 }
 
 tbody tr.interactive:hover td {
-  background: #efe6d2;
+  background: var(--color-surface-sub);
 }
 
 tbody tr.interactive.selected:hover td {
-  background: var(--color-accent-muted);
+  background: var(--color-selected);
 }
 
 .pre-line {
@@ -523,11 +537,9 @@ tbody tr.interactive.selected:hover td {
 }
 
 .detail-list dt {
-  color: var(--color-muted);
-  font-size: 0.72rem;
+  color: var(--color-hint);
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .detail-list dd {
@@ -536,31 +548,45 @@ tbody tr.interactive.selected:hover td {
   margin: 0;
 }
 
+/* Selo de status: sempre com texto, bolinha na cor do texto. */
 .status-stamp,
 .status-pill {
-  background: var(--color-accent-muted);
-  border: 1px solid var(--color-accent);
-  border-radius: var(--radius-input);
-  color: var(--color-accent-dark);
+  align-items: center;
+  background: var(--color-success-muted);
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: var(--color-success);
   display: inline-flex;
-  font-size: 0.7rem;
+  font-size: 0.8125rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
-  padding: 3px 8px;
-  text-transform: uppercase;
+  gap: 6px;
+  padding: 3px 10px;
+  white-space: nowrap;
 }
 
+.status-stamp::before,
+.status-pill::before {
+  background: currentColor;
+  border-radius: 50%;
+  content: '';
+  height: 6px;
+  width: 6px;
+}
+
+/* Inativo é um estado neutro, não um problema: cinza. Vermelho só para rejeição. */
 .status-stamp.inactive,
-.status-stamp.rejected,
 .status-pill.inactive {
+  background: var(--color-surface-sub);
+  color: var(--color-muted);
+}
+
+.status-stamp.rejected {
   background: var(--color-danger-muted);
-  border-color: var(--color-danger);
   color: var(--color-danger);
 }
 
 .status-stamp.pending {
   background: var(--color-warning-muted);
-  border-color: var(--color-warning);
   color: var(--color-warning);
 }
 
@@ -590,9 +616,9 @@ tbody tr.interactive.selected:hover td {
 }
 
 .form-success {
-  background: var(--color-accent-muted);
-  color: var(--color-accent-dark);
-  border-left: 3px solid var(--color-accent);
+  background: var(--color-success-muted);
+  color: var(--color-success);
+  border-left: 3px solid var(--color-success);
 }
 
 .login-layout {
@@ -686,7 +712,7 @@ tbody tr.interactive.selected:hover td {
 
 .department-index a:hover strong,
 .exception-item:hover strong {
-  color: var(--color-accent-dark);
+  color: var(--color-foreground);
 }
 
 .department-index a small {
@@ -717,17 +743,16 @@ tbody tr.interactive.selected:hover td {
 
 .ledger-figures span {
   color: var(--color-muted);
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 .ledger-figures strong {
-  font-family: var(--font-mono);
-  font-size: 1.28rem;
+  font-size: 1.75rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 500;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .payment-breakdown {
@@ -736,7 +761,6 @@ tbody tr.interactive.selected:hover td {
   margin: 0;
   padding: 0;
   list-style: none;
-  font-family: var(--font-mono);
   font-size: 0.92rem;
   font-variant-numeric: tabular-nums;
 }
@@ -767,7 +791,8 @@ tbody tr.interactive.selected:hover td {
 }
 
 .conflict-list button.selected {
-  background: var(--color-accent-muted);
+  background: var(--color-selected);
+  box-shadow: inset 3px 0 0 var(--ocean);
 }
 
 .conflict-list button strong,
@@ -791,35 +816,35 @@ tbody tr.interactive.selected:hover td {
 }
 
 /* Painel operacional: padrões compartilhados. */
-input:focus, select:focus, textarea:focus { border-color: var(--color-accent); }
+input:focus, select:focus, textarea:focus { border-color: var(--ocean); }
 
 .sidebar-heading { display: flex; align-items: center; justify-content: space-between; min-width: 0; }
 .brand strong, .brand-row strong { font-size: .96rem; letter-spacing: 0; }
 .sidebar-nav { display: grid; align-content: start; gap: 2px; overflow-y: auto; min-height: 0; }
-.sidebar-nav .nav-department { margin-top: 20px; letter-spacing: .1em; }
+.sidebar-nav .nav-department { margin-top: 20px; }
 .sidebar-nav a {
   display: flex;
   align-items: center;
   min-height: 42px;
   border-radius: 8px;
   padding: 0 12px;
-  color: var(--color-foreground);
-  font-size: .9rem;
+  color: var(--color-muted);
+  font-size: .95rem;
   font-weight: 500;
   text-decoration: none;
 }
-.sidebar-nav a:hover, .sidebar-nav a.active { background: var(--color-accent-muted); color: var(--color-accent-dark); }
-.sidebar-nav a.active { font-weight: 700; }
+.sidebar-nav a:hover { background: var(--color-surface-sub); color: var(--color-foreground); }
+.sidebar-nav a.active { background: var(--color-selected); color: var(--color-foreground); font-weight: 600; box-shadow: inset 3px 0 0 var(--ocean); }
 .menu-toggle { display: none; }
 .user-panel { border-top-color: var(--color-border); padding: 16px 8px 0; }
 .user-panel .ghost-button { margin-top: 10px; width: 100%; }
 .app-shell > main { width: 100%; max-width: 1600px; padding: 36px 48px 64px; margin-inline: auto; }
 
 .page-header { border-bottom: 0; margin-bottom: 24px; padding-bottom: 0; }
-.page-header h1, .login-panel h1, .login-intro .display { font-family: var(--font-sans); font-weight: 600; letter-spacing: 0; }
-.page-header h1 { font-size: 2.4rem; }
+.page-header h1, .login-panel h1, .login-intro .display { font-family: var(--font-sans); font-weight: 800; letter-spacing: -0.02em; }
+.page-header h1 { font-size: 2rem; }
 .page-header span { max-width: 60rem; }
-.page-header p, .eyebrow { color: var(--color-accent); letter-spacing: .1em; }
+.page-header p, .eyebrow { color: var(--color-hint); }
 .filter-rule, .toolbar {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -836,32 +861,44 @@ input:focus, select:focus, textarea:focus { border-color: var(--color-accent); }
   padding: 22px;
 }
 .record-sheet, .form-panel { gap: 16px; }
-.record-sheet h2, .form-panel h2, .ledger-block h2, .briefing-block h2 { font-family: var(--font-sans); font-weight: 600; letter-spacing: 0; }
+.record-sheet h2, .form-panel h2, .ledger-block h2, .briefing-block h2 { font-family: var(--font-sans); font-size: 1.2rem; font-weight: 700; letter-spacing: 0; }
 .table-wrap { border-radius: 8px; }
 table { min-width: 640px; }
-th { background: #f7faf8; letter-spacing: .05em; }
+
+/*
+  Lista + formulário lado a lado (a partir de 1100px): a coluna da lista fica estreita,
+  então a tabela ocupa só a largura disponível e o texto quebra, em vez de esconder a
+  última coluna atrás de rolagem lateral. Abaixo de 1100px a lista ocupa a tela toda.
+*/
+@media (min-width: 1100px) {
+  .workspace, .content-grid, .content-grid.wide { gap: var(--space-5); }
+  .workspace table, .content-grid table { min-width: 0; }
+  .workspace th, .workspace td, .content-grid th, .content-grid td { padding: 10px 8px; }
+  .workspace td.numeric, .content-grid td.numeric { white-space: nowrap; }
+}
+th { background: var(--color-surface-sub); }
 th, td { padding: 12px; }
-tbody tr.interactive:hover td { background: #f2f8f4; }
+tbody tr.interactive:hover td { background: var(--color-surface-sub); }
 .primary-button, .secondary-button, .ghost-button { border-radius: 8px; }
-.secondary-button { background: #e8eeeb; color: var(--color-foreground); }
-.secondary-button:hover:not(:disabled) { background: #dbe7e1; }
+.secondary-button { background: var(--color-surface-sub); color: var(--color-foreground); border-color: var(--color-border); }
+.secondary-button:hover:not(:disabled) { border-color: var(--ocean); }
 .ghost-button { border-color: var(--color-border-strong); }
-.status-stamp, .status-pill { border-radius: 999px; letter-spacing: .02em; }
+.ghost-button:hover:not(:disabled) { border-color: var(--ocean); }
 .field-error, .form-error, .form-success { border-radius: 8px; }
 .state-message { line-height: 1.55; }
 
-.login-layout { grid-template-columns: minmax(0, 1fr) minmax(370px, 500px); background: #e8f1eb; }
+.login-layout { grid-template-columns: minmax(0, 1fr) minmax(370px, 500px); background: var(--color-background); }
 .login-intro {
   align-content: center;
   gap: 20px;
   padding: 80px;
   border: 0;
-  background: linear-gradient(145deg, #e8f2ec, #f7faf8);
+  background: var(--color-background);
 }
 .login-intro .brand-row { margin: 0 0 64px; }
 .login-intro .display { font-size: 4.5rem; line-height: 1.04; max-width: 750px; }
 .login-intro p:last-child { font-size: 1.06rem; max-width: 540px; }
-.login-panel { align-content: center; max-width: none; padding: 48px; background: #fff; }
+.login-panel { align-content: center; max-width: none; padding: 48px; background: var(--color-surface); border-left: 1px solid var(--color-border); }
 .login-panel form { gap: 16px; }
 .login-panel h1 { font-size: 2rem; }
 .login-subtitle { margin: 8px 0 0; color: var(--color-muted); }
@@ -875,7 +912,7 @@ tbody tr.interactive:hover td { background: #f2f8f4; }
 .dashboard-refresh { display: flex; justify-content: flex-end; margin: -8px 0 16px; }
 .dashboard-section-heading { margin: 32px 0 0; font-size: 1.1rem; letter-spacing: 0; }
 .dashboard-page .exception-item { padding: 12px; border-radius: 8px; }
-.dashboard-page .exception-item:hover { background: #f4f9f6; }
+.dashboard-page .exception-item:hover { background: var(--color-surface-sub); }
 .dashboard-page .department-index { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 24px; }
 .dashboard-page .department-index a {
   display: flex;
@@ -883,12 +920,12 @@ tbody tr.interactive:hover td { background: #f2f8f4; }
   justify-content: space-between;
   min-height: 96px;
   padding: 16px;
-  background: #fff;
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-panel);
   box-shadow: var(--shadow-panel);
 }
-.dashboard-page .department-index a:hover { border-color: var(--color-accent); background: #f8fcfa; }
+.dashboard-page .department-index a:hover { border-color: var(--ocean); background: var(--color-surface); }
 .dashboard-page .department-index a strong { display: block; }
 .dashboard-page .department-index a small { line-height: 1.4; }
 

@@ -5,6 +5,7 @@ import { filter } from 'rxjs';
 
 import { AuthService } from './core/auth.service';
 import { UserRole } from './core/auth.service';
+import { ThemeService } from './core/theme.service';
 
 interface NavigationItem {
   label: string;
@@ -25,6 +26,7 @@ interface NavigationGroup {
 })
 export class AdminShellComponent {
   protected readonly auth = inject(AuthService);
+  protected readonly theme = inject(ThemeService);
   private readonly router = inject(Router);
   @ViewChild('menuButton') private menuButton?: ElementRef<HTMLButtonElement>;
   @ViewChild('navigation') private navigation?: ElementRef<HTMLElement>;
