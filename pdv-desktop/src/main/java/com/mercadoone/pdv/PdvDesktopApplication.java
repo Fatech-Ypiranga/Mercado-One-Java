@@ -5,6 +5,8 @@ import com.mercadoone.pdv.offline.OfflineSaleQueue;
 import com.mercadoone.pdv.offline.OfflineSaleQueue.LocalSalePayment;
 import com.mercadoone.pdv.offline.OfflineSaleQueue.LocalSaleSummary;
 import com.mercadoone.pdv.offline.OfflineStorageConfig;
+import com.mercadoone.pdv.sales.BarcodeScan;
+import com.mercadoone.pdv.sales.CartLines;
 import com.mercadoone.pdv.sales.CheckoutService;
 import com.mercadoone.pdv.sales.CheckoutService.CheckoutResult;
 import com.mercadoone.pdv.sales.CheckoutService.Draft;
@@ -33,7 +35,9 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.image.Image;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.FlowPane;
@@ -51,6 +55,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
@@ -87,6 +92,8 @@ public class PdvDesktopApplication extends Application {
     private final ComboBox<PaymentMethod> method = new ComboBox<>();
     private final ComboBox<CustomerOption> customers = new ComboBox<>();
     private final TextArea receipt = new TextArea();
+    /** Campo "Buscar" do painel de produto: é para onde vai tudo o que o leitor de código de barras digita. */
+    private TextField productSearchField;
 
     public static void main(String[] args) {
         launch(args);
@@ -113,10 +120,12 @@ public class PdvDesktopApplication extends Application {
         scene.getStylesheets().add(stylesheet("brand-tokens.css"));
         scene.getStylesheets().add(stylesheet("pdv.css"));
         applyTheme(root, darkTheme());
+        scene.addEventFilter(KeyEvent.KEY_TYPED, event -> redirectScannerInput(scene, event));
         stage.setScene(scene);
         stage.setMinWidth(1100);
         stage.setMinHeight(680);
         stage.show();
+        Platform.runLater(this::focusProductSearch);
         refreshCart();
         refreshStatus();
         startBackgroundSync();
@@ -213,7 +222,10 @@ public class PdvDesktopApplication extends Application {
         TextField login = new TextField("operador");
         PasswordField password = new PasswordField();
         Button loginButton = primary("Entrar");
-        loginButton.setDefaultButton(true);
+        // Enter só entra nos campos de login e senha. Como botão padrão da tela inteira, um Enter solto
+        // (por exemplo o do leitor de código de barras) poderia acionar o login sem querer.
+        login.setOnAction(event -> loginButton.fire());
+        password.setOnAction(event -> loginButton.fire());
         loginButton.setOnAction(event -> runAsync(loginButton, "Autenticando operador...",
                 () -> onlineSaleClient.login(apiUrl.getText(), login.getText(), password.getText()),
                 token -> {
@@ -225,6 +237,7 @@ public class PdvDesktopApplication extends Application {
                     refreshLocalCatalog();
                     loadDiscountPolicy();
                     synchronize();
+                    focusProductSearch();
                 }));
         Button logout = new Button("Sair");
         logout.setOnAction(event -> {
@@ -246,18 +259,49 @@ public class PdvDesktopApplication extends Application {
         Button searchButton = new Button("Buscar");
         Button add = primary("Adicionar item");
 
-        Runnable doSearch = () -> runAsync(searchButton, "Buscando produtos...",
-                () -> searchProducts(search.getText()),
-                result -> {
-                    products.getItems().setAll(result);
-                    if (result.size() == 1) {
-                        products.setValue(result.getFirst());
-                        add.requestFocus();
-                    } else if (!result.isEmpty()) {
-                        products.show();
-                    }
-                    feedback.setText(result.isEmpty() ? "Nenhum produto ativo encontrado." : result.size() + " produto(s) encontrado(s).");
-                });
+        productSearchField = search;
+
+        // Leitor de código de barras: ele "digita" o código e aperta Enter. Se o código bate com um único
+        // produto, o item entra sozinho no carrinho e o campo fica livre para a próxima leitura.
+        Runnable doSearch = () -> {
+            String term = search.getText() == null ? "" : search.getText().trim();
+            boolean scanned = BarcodeScan.looksLikeBarcode(term);
+            if (scanned) {
+                // Limpa já: se a próxima leitura chegar antes da resposta, os códigos não se misturam.
+                search.clear();
+            }
+            BigDecimal wantedQuantity = parseDecimal(quantity.getText());
+            runAsync(searchButton, "Buscando produtos...",
+                    () -> searchProducts(term),
+                    result -> {
+                        Optional<CatalogProduct> exact = BarcodeScan.exactMatch(term, result);
+                        if (exact.isPresent()) {
+                            BigDecimal amount = wantedQuantity == null || wantedQuantity.signum() <= 0 ? BigDecimal.ONE : wantedQuantity;
+                            if (!scanned) {
+                                search.clear(); // SKU digitado à mão; leitura de código já limpou o campo no Enter
+                            }
+                            addToCart(exact.get(), amount);
+                            quantity.setText("1");
+                            products.getItems().clear();
+                            return;
+                        }
+                        if (result.isEmpty() && scanned) {
+                            feedback.setText("Codigo " + term + " nao encontrado. Confira o cadastro ou leia de novo.");
+                            search.setText(term);
+                            search.selectAll();
+                            search.requestFocus();
+                            return;
+                        }
+                        products.getItems().setAll(result);
+                        if (result.size() == 1) {
+                            products.setValue(result.getFirst());
+                            add.requestFocus();
+                        } else if (!result.isEmpty()) {
+                            products.show();
+                        }
+                        feedback.setText(result.isEmpty() ? "Nenhum produto ativo encontrado." : result.size() + " produto(s) encontrado(s).");
+                    });
+        };
         searchButton.setOnAction(event -> doSearch.run());
         search.setOnAction(event -> doSearch.run());
 
@@ -272,18 +316,62 @@ public class PdvDesktopApplication extends Application {
                 feedback.setText("Informe uma quantidade maior que zero.");
                 return;
             }
-            cart.add(new DraftLine(product.id(), product.name(), parsed.setScale(3, RoundingMode.HALF_UP), product.salePrice()));
-            quantity.setText("1");
             search.clear();
-            search.requestFocus();
-            refreshCart();
-            feedback.setText(product.name() + " adicionado.");
+            addToCart(product, parsed);
+            quantity.setText("1");
         });
 
         Button syncCatalog = new Button("Atualizar catalogo local");
         syncCatalog.setOnAction(event -> refreshLocalCatalog());
         return panel("Produto", labeled("Buscar", new HBox(8, search, searchButton)), labeled("Resultado", products),
                 labeled("Quantidade", quantity), add, syncCatalog);
+    }
+
+    /**
+     * Põe o produto no carrinho (somando se ele já estiver lá) e devolve o foco à busca.
+     *
+     * <p>Não limpa o campo de busca de propósito: quando a resposta de uma leitura chega, o leitor já pode
+     * estar digitando o código da próxima, e limpar aqui apagaria os primeiros dígitos dela. A limpeza é
+     * feita por quem chamou, no momento certo.
+     */
+    private void addToCart(CatalogProduct product, BigDecimal amount) {
+        CartLines.add(cart, new DraftLine(product.id(), product.name(), amount.setScale(3, RoundingMode.HALF_UP), product.salePrice()));
+        refreshCart();
+        feedback.setText(product.name() + " adicionado.");
+        focusProductSearch();
+    }
+
+    private void focusProductSearch() {
+        if (productSearchField != null) {
+            productSearchField.requestFocus();
+        }
+    }
+
+    /**
+     * O leitor digita no campo que estiver com o foco. Se o foco estiver em outro lugar que não aceita
+     * texto (botão, lista, carrinho), os caracteres lidos iriam se perder; aqui eles são desviados para
+     * o campo de busca de produto. Campos de texto (login, cliente, desconto...) não são afetados.
+     */
+    private void redirectScannerInput(Scene scene, KeyEvent event) {
+        if (productSearchField == null) {
+            return;
+        }
+        Node owner = scene.getFocusOwner();
+        if (owner == productSearchField || owner instanceof TextInputControl
+                || (owner instanceof ComboBox<?> combo && combo.isEditable())) {
+            return;
+        }
+        String typed = event.getCharacter();
+        if (typed == null || typed.length() != 1 || !isScannableCharacter(typed.charAt(0))) {
+            return;
+        }
+        productSearchField.requestFocus();
+        productSearchField.appendText(typed);
+        event.consume();
+    }
+
+    private static boolean isScannableCharacter(char c) {
+        return Character.isLetterOrDigit(c) || c == '-' || c == '.' || c == '/' || c == '_';
     }
 
     private VBox customerPanel() {
@@ -490,6 +578,7 @@ public class PdvDesktopApplication extends Application {
         discount.setText("0.00");
         customers.setValue(null);
         refreshCart();
+        focusProductSearch();
     }
 
     private void refreshCart() {
