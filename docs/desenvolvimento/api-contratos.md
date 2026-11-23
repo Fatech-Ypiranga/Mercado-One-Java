@@ -269,10 +269,11 @@ Exemplo de payload:
 
 - Protegido para `ADMIN`, `GERENTE` e `OPERADOR_CAIXA`.
 - Usado pelo PDV para reenviar vendas `PENDING` e `ERROR` da fila local.
-- Recebe venda local do PDV com `localSaleId`, `createdAt`, cliente opcional, itens com `unitPrice` local, pagamentos e `discountAmount` opcional.
+- Recebe venda local do PDV com `localSaleId`, `createdAt`, cliente opcional, itens com `unitPrice` local, pagamentos, `discountAmount` opcional e `operatorLogin` opcional (máx. 80).
+- `operatorLogin` é o operador que vendeu no caixa. Se informado e ativo, a venda é creditada a ele e o limite de desconto segue o perfil dele; quem enviou fica registrado na auditoria (`OFFLINE_SALE_SYNCED_BY_OTHER`) quando é outra pessoa. Se informado e inexistente ou inativo, a venda vira conflito `OPERATOR_NOT_FOUND`. Se omitido (PDV antigo), vale quem enviou.
 - Idempotente: se já existe venda com `clientSaleId` igual ao `localSaleId`, devolve `SENT` sem gravar de novo.
 - Retorna `status="SENT"` com venda confirmada ou `status="CONFLICT"` com lista de conflitos.
-- Códigos de conflito observados no código: `PRODUCT_NOT_FOUND`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `PAYMENT_TOTAL`, `STOCK_INSUFFICIENT`, `DISCOUNT_INVALID`, `DISCOUNT_NOT_ALLOWED`.
+- Códigos de conflito observados no código: `PRODUCT_NOT_FOUND`, `PRODUCT_INACTIVE`, `PRICE_CHANGED`, `PAYMENT_TOTAL`, `STOCK_INSUFFICIENT`, `DISCOUNT_INVALID`, `DISCOUNT_NOT_ALLOWED`, `OPERATOR_NOT_FOUND`.
 - Quando há conflito, registra uma pendência administrativa consultável. O PDV descobre a decisão do admin por `GET /api/offline/sales/status`.
 
 `GET /api/offline/sales/status`

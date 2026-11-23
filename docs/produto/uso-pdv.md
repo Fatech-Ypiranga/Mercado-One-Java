@@ -4,9 +4,9 @@ Este guia descreve a venda presencial no caixa. A instalação fica em [Desenvol
 
 ## Quem usa
 
-O operador de caixa usa uma conta cadastrada no admin, em geral com perfil de operador de caixa. O campo **Login** abre preenchido com `operador`; troque pelo login do usuário real. No ambiente de desenvolvimento, a senha do usuário inicial está em [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md).
+O operador de caixa usa uma conta cadastrada no admin, em geral com perfil de operador de caixa. O PDV abre na **tela de entrada**, com o último login usado neste computador; troque pelo login do usuário real. No ambiente de desenvolvimento, a senha do usuário inicial está em [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md).
 
-A tela também pede a **API**. O valor inicial é `http://localhost:8080`, ou o endereço da variável `MERCADO_ONE_API_URL`. Só altere se o administrador indicar outro endereço.
+O endereço da **API** fica em **Endereço do servidor**, no rodapé da tela de entrada. O valor inicial é `http://localhost:8080`, ou o endereço da variável `MERCADO_ONE_API_URL`. Só altere se o administrador indicar outro endereço.
 
 ## A tela
 
@@ -18,7 +18,7 @@ A tela também pede a **API**. O valor inicial é `http://localhost:8080`, ou o 
 
 ## Registrar uma venda
 
-1. Confira o endereço da API, informe login e senha e use **Entrar**. A mensagem passa a `Operador autenticado. Atualizando catalogo e fila offline...`, a senha some do campo e o PDV atualiza o catálogo local e envia o que estiver na fila.
+1. Na tela de entrada, informe login e senha e use **Entrar** (ou Enter no campo da senha). A tela de venda só abre depois disso. Com a API no ar, a mensagem passa a `Operador autenticado. Atualizando catalogo e fila offline...`, e o PDV atualiza o catálogo local e envia o que estiver na fila. Sem a API, veja [Entrada sem internet](#entrada-sem-internet).
 2. Leia o código de barras com o leitor (veja [Leitor de código de barras](#leitor-de-código-de-barras)): o item entra sozinho no carrinho. Sem leitor, busque o produto por código de barras, SKU ou nome e use **Buscar**.
 3. Na busca manual, selecione o produto, informe a quantidade e use **Adicionar item**. A quantidade precisa ser maior que zero.
 4. No carrinho, **Remover item selecionado** tira um item e **Alterar quantidade** troca a quantidade do item selecionado. **Cancelar venda em andamento** esvazia a venda ainda não finalizada; nada é registrado.
@@ -97,7 +97,25 @@ Se a API não responder, a busca de produtos usa a cópia local dos produtos ati
 
 Busca e cadastro de cliente dependem da API. Sem rede, venda sem cliente.
 
-**Sair** encerra a sessão; as vendas seguintes vão para a fila até o próximo login.
+**Sair** (no cabeçalho) volta para a tela de entrada. Se houver itens no carrinho, o PDV pergunta antes, porque a venda em andamento é descartada: o próximo operador não herda o carrinho de quem saiu. As vendas já finalizadas ficam na fila e seguem no próximo login.
+
+## Entrada sem internet
+
+O caixa não pode parar quando a internet cai. Por isso a entrada funciona em dois modos:
+
+| Situação | O que acontece |
+| --- | --- |
+| API no ar | O servidor confere login e senha. Se estiverem certos, o operador entra e o PDV guarda neste computador uma credencial local (veja abaixo). |
+| API fora do ar, operador **já entrou online neste computador** | A senha é conferida contra a credencial local. O operador entra com o aviso `Entrou sem conexão...` e `(sem conexão)` ao lado do nome. As vendas vão para a fila. |
+| API fora do ar, operador **nunca entrou online neste computador** | Recusado: `Sem conexão com o sistema. Sem internet só entra quem já entrou neste caixa com internet.` |
+| API no ar e **senha errada** | Recusado, sem plano B. Senha errada é senha errada, com ou sem internet. |
+
+- **A credencial local não guarda a senha.** Guarda um hash com sal (PBKDF2-HMAC-SHA256, 210 mil iterações) em `~/.mercado-one/pdv-offline.sqlite3`. Ela é renovada a cada entrada online, então uma senha trocada no admin passa a valer offline na próxima vez que o operador entrar com internet.
+- Quem entrou offline mantém a senha digitada só na memória da sessão. A cada 2 minutos, e em **Sincronizar agora**, o PDV tenta obter o acesso à API com ela. Quando consegue, envia a fila sozinho. **Sair** apaga a senha da memória.
+- **Cada venda guarda quem vendeu.** O PDV grava o login do operador na venda local e o envia à API. A API credita a venda a esse operador, mesmo que outra pessoa entre depois e sincronize a fila. O limite de desconto também segue o perfil de quem vendeu.
+- Se o login gravado na venda não existir ou estiver inativo no servidor, a venda vira conflito `OPERATOR_NOT_FOUND` e o gerente decide na tela **Offline** do admin.
+- Sem internet não há desconto: o limite do perfil vem da API. A dica no campo mostra `Sem conexão: o desconto só vale depois que o sistema voltar.`
+- Esqueci a senha: o sistema não envia e-mail. O administrador redefine em **Usuários, Redefinir senha** e a pessoa troca a senha em **Minha conta**. A nova senha vale offline depois da próxima entrada com internet.
 
 ## O que o caixa não faz
 
