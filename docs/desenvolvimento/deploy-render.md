@@ -12,6 +12,10 @@ O Blueprint da raiz (`render.yaml`) cria a API Spring Boot, um PostgreSQL e o pa
 
 Se o Render atribuir um domínio diferente dos nomes `mercado-one-api` ou `mercado-one-admin`, ajuste `MERCADO_ONE_API_BASE_URL` no serviço estático e `MERCADO_ONE_CORS_ALLOWED_ORIGINS` no serviço da API para os domínios exibidos no Dashboard; salve e faça novo deploy dos serviços afetados.
 
+## Canais de suporte do painel (opcional)
+
+A tela **Fale com o suporte** do painel mostra os canais definidos no build. No serviço estático `mercado-one-admin`, adicione as variáveis de ambiente `MERCADO_ONE_SUPPORT_WHATSAPP` (só dígitos, com 55 e DDD), `MERCADO_ONE_SUPPORT_EMAIL` e `MERCADO_ONE_SUPPORT_HOURS` e refaça o deploy. Sem elas, a tela avisa que os canais ainda não foram configurados. Detalhes em [Desenvolvimento local](desenvolvimento-local.md#build-de-produção).
+
 ## Para apresentar
 
 - Abra `https://mercado-one-admin.onrender.com` e entre com `admin` e a senha configurada no passo anterior.

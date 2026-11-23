@@ -60,6 +60,7 @@ Identidade visual: depois de editar `docs/marca/tokens.json`, rode `node docs/ma
 - Admin web: testes de raiz/shell, `AuthService` (cookie/`sessionStorage`, sem JWT em `localStorage`), `AccessService`, `InventoryService`, `CustomerService`, `SalesService`, `CatalogService`, `SupplierService`, `OfflineService`, interceptor com `withCredentials`, validação/erro do login, timeout de requisição sem resposta, dashboard, vendas e formulários/páginas de usuários, estoque, categorias, produtos, clientes, fornecedores e conflitos offline.
 - PDV desktop: teste de `OfflineStorageConfig`, fila offline SQLite, catálogo local SQLite e cliente HTTP (login, consultas e corpo de `POST /api/sales` / sync).
 - PDV desktop (`BarcodeScanTests`, `CartLinesTests`): regra do leitor de código de barras (código exato de barras ou SKU, ambiguidade, termo parcial e busca por nome nunca adicionam sozinhos) e soma de quantidades do mesmo produto no carrinho.
+- Admin web (telas de acesso): login com validação por campo, alerta genérico de credenciais, mostrar/ocultar senha e foco no título; esqueci a senha sem formulário falso de e-mail; suporte só com canais configurados e sem contato inventado; formato do WhatsApp. No e2e, a navegação entre as três telas, o redirecionamento de áreas protegidas para o login e o erro de senha. O e2e pegou um defeito de ordem de rotas que fazia `/` mostrar só a moldura de acesso.
 - Admin web (`ScanFieldDirective`, unitário e e2e): o Enter do leitor no campo "Código de barras" do cadastro de produto não envia o formulário e passa o foco para o SKU; o e2e falha sem a diretiva.
 - PDV desktop (`CheckoutServiceTests`): confirmação online com `clientSaleId`, fila quando a API cai e reenvio, erro 5xx sem travar a fila, recusa de negócio como `REJECTED`, sessão expirada, venda sem sessão, validação de pagamentos múltiplos e desconto, reflexo da resolução de conflito e comprovante com desconto e aviso não fiscal.
 
@@ -72,7 +73,7 @@ O CI (`.github/workflows/ci.yml`) roda `mvn -B test` no backend e no PDV e `npm 
 | Camada | Resultado |
 | --- | --- |
 | Backend (`mvn test`) | 59 testes, 0 falhas, nenhum ignorado. Inclui `PostgresMigrationTests` (Testcontainers), com as migrations V1–V8 em PostgreSQL real |
-| Admin web (`npm test`) | 75 specs. `npm run build` ok. `npm run test:e2e`: 12 cenários em Chromium desktop e celular |
+| Admin web (`npm test`) | 88 specs. `npm run build` ok. `npm run test:e2e`: 18 cenários em Chromium desktop e celular |
 | PDV (`mvn test`) | 29 testes, 0 falhas |
 | Roteiro integrado ([infra/verificacao](../../infra/verificacao/README.md)) | 71 verificações contra a API real com PostgreSQL: permissões por perfil, cadastros, estoque, venda online, cancelamento, offline com conflito, relatórios, auditoria e senha |
 | Admin web real × API real | As 10 telas carregam dados reais pelo navegador, com login por cookie, sem resposta de erro e sem erro no console |

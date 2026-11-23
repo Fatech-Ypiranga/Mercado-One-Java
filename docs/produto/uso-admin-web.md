@@ -19,11 +19,24 @@ No tablet e no celular, use **Menu** para abrir as áreas do administrativo. O m
 
 ## Entrar e sair
 
-1. Abra a tela **Entrar no admin**.
-2. Informe o login e a senha que o administrador da loja passou.
-3. Se o login ou a senha estiverem errados, a tela avisa `Login ou senha inválidos.`
-4. Se a API não responder, a tela avisa que não foi possível conectar.
+1. Abra a tela de acesso, **Bem-vindo de volta**.
+2. Informe o login e a senha que o administrador da loja passou. O olho no campo de senha mostra ou esconde o que você digitou.
+3. Se o login ou a senha estiverem errados, a tela avisa `Login ou senha incorretos. Confira os dados e tente de novo.` Ela não diz qual dos dois está errado, de propósito.
+4. Se o sistema não responder, a tela avisa `Não foi possível conectar ao sistema. Verifique a internet e tente de novo.`
 5. Depois do acesso, o painel inferior mostra o nome, o perfil e o botão **Sair**.
+
+### Esqueci a senha
+
+O sistema **não envia link de redefinição por e-mail**. Quem redefine a senha é o administrador do mercado:
+
+1. Peça ao administrador para abrir **Usuários**, escolher o seu cadastro e usar **Redefinir senha**.
+2. Entre com a senha nova e, em **Minha conta**, troque por uma só sua.
+
+Se quem perdeu o acesso é o próprio administrador, use **Fale com o suporte**. A tela `/esqueci-senha` mostra esses passos.
+
+### Fale com o suporte
+
+A tela `/suporte` mostra os canais de atendimento configurados para o ambiente: WhatsApp, e-mail e horário. O que não estiver configurado não aparece; se nenhum estiver, a tela avisa que os canais ainda não foram configurados. Quem publica o painel define os canais, veja [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md#build-de-produção).
 
 No ambiente de desenvolvimento, o campo de login já vem preenchido com `admin`. A senha desse ambiente está em [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md), não neste guia.
 
