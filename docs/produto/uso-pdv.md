@@ -19,8 +19,8 @@ A tela também pede a **API**. O valor inicial é `http://localhost:8080`, ou o 
 ## Registrar uma venda
 
 1. Confira o endereço da API, informe login e senha e use **Entrar**. A mensagem passa a `Operador autenticado. Atualizando catalogo e fila offline...`, a senha some do campo e o PDV atualiza o catálogo local e envia o que estiver na fila.
-2. Busque o produto por código de barras, SKU ou nome e use **Buscar**.
-3. Selecione o produto, informe a quantidade e use **Adicionar item**. A quantidade precisa ser maior que zero.
+2. Leia o código de barras com o leitor (veja [Leitor de código de barras](#leitor-de-código-de-barras)): o item entra sozinho no carrinho. Sem leitor, busque o produto por código de barras, SKU ou nome e use **Buscar**.
+3. Na busca manual, selecione o produto, informe a quantidade e use **Adicionar item**. A quantidade precisa ser maior que zero.
 4. No carrinho, **Remover item selecionado** tira um item e **Alterar quantidade** troca a quantidade do item selecionado. **Cancelar venda em andamento** esvazia a venda ainda não finalizada; nada é registrado.
 5. Se o cliente for identificado, busque por nome, telefone ou documento e selecione. Para venda sem cliente, use **Consumidor nao identificado**. Cliente novo pode ser cadastrado na hora em **Cadastro rapido** (nome, telefone e se aceita contato), com a API disponível.
 6. Se o perfil permitir, informe o **Desconto (R$)**. A dica abaixo do campo mostra o limite do perfil. O padrão do operador de caixa é sem desconto.
@@ -30,6 +30,38 @@ A tela também pede a **API**. O valor inicial é `http://localhost:8080`, ou o 
 A soma dos pagamentos tem de ser igual ao total. Se faltar ou sobrar, a tela avisa e não finaliza.
 
 O comprovante aparece em texto e não é nota fiscal.
+
+## Leitor de código de barras
+
+O PDV funciona com leitor de código de barras USB em **modo teclado**, que é o modo de fábrica da maioria dos modelos (inclusive o Tomate 1D USB comprado para o projeto, mas faça o teste abaixo). O leitor "digita" o código e termina com Enter, sem driver e sem configuração no PDV.
+
+**Como funciona**
+
+- Leu um código que bate exatamente com **um** produto (código de barras ou SKU): o item entra sozinho no carrinho, com a mensagem `<produto> adicionado.`, e o campo **Buscar** fica livre e com o foco para a próxima leitura.
+- Leu o mesmo produto de novo: a quantidade da linha aumenta (três leituras dão uma linha de quantidade 3), em vez de criar linhas repetidas.
+- Para vender várias unidades de uma vez, digite a quantidade no campo **Quantidade** antes de ler. Ela volta a 1 depois de cada item.
+- Código que não existe no cadastro: o PDV avisa `Codigo <numero> nao encontrado.`, não altera o carrinho e deixa o número selecionado.
+- Busca por **nome** não adiciona sozinha: lista os produtos e o operador escolhe.
+- Funciona também **sem internet**, pelo catálogo local. Por isso, mantenha o catálogo atualizado (**Atualizar catalogo local**) depois de cadastrar produtos novos.
+- Se o foco estiver em outro lugar da tela (carrinho, botão), a leitura é desviada para o campo **Buscar**. Campos de texto, como login, cliente e desconto, não são afetados: o que o leitor digitar neles fica neles.
+- O Enter solto não aciona mais o botão **Entrar**: o login só é acionado pelo Enter dentro dos campos de login e senha.
+
+**Teste de bancada (10 segundos, antes de usar no caixa)**
+
+1. Ligue o leitor **direto numa porta USB do computador**, não num hub sem alimentação própria (o Tomate consome até 400 mA).
+2. Abra o **Bloco de Notas** e leia qualquer código de barras.
+3. Os números devem aparecer e o cursor deve pular para a linha de baixo. Se aconteceu, está no modo certo.
+
+**Se algo não sair como esperado**
+
+| O que acontece | O que fazer |
+| --- | --- |
+| Nada aparece no Bloco de Notas | Troque a porta USB e o cabo. Confira se a luz vermelha acende ao apertar o gatilho. Se acender mas nada for digitado, o leitor pode estar em modo serial (porta COM): leia o código de configuração "modo teclado / USB HID" do manual do fabricante |
+| Os números aparecem, mas o cursor não pula de linha | O leitor está sem o sufixo Enter. Leia o código de configuração "adicionar Enter/CR no final" do manual. Sem ele, o PDV não busca sozinho: use **Buscar** |
+| Aparecem letras trocadas ou símbolos no lugar de números | Layout de teclado do Windows diferente do esperado. Códigos só de dígitos (EAN-13) não sofrem com isso; confira o idioma do teclado nas configurações do Windows |
+| O mesmo produto é lido duas vezes | Desligue o modo de leitura contínua ou reduza a repetição do leitor, conforme o manual |
+| `Codigo ... nao encontrado` com o produto cadastrado | Confira o código de barras no cadastro (admin web, tela **Produtos**) e atualize o catálogo local. O produto precisa estar **ativo** |
+| QR Code não lê | Esperado: o Tomate 1D lê só código de barras linear. QR Code exigiria um leitor 2D |
 
 ## O que a finalização faz
 

@@ -52,6 +52,7 @@ Aceite mínimo do que está entregue:
 - [x] PDV confirma online por `POST /api/sales` (idempotente por `clientSaleId`) e usa a fila quando a API não responde.
 - [x] Desconto limitado por perfil (`GET /api/sales/discount-policy`).
 - [x] Mais de um pagamento na mesma venda.
+- [x] Leitor de código de barras USB em modo teclado: o item entra sozinho no carrinho, leituras repetidas somam na mesma linha, funciona sem internet e o Enter do leitor não envia o cadastro de produto no admin. Conferência com o aparelho físico (Tomate 1D USB) pendente: veja o teste de bancada em [Uso do PDV](uso-pdv.md#leitor-de-código-de-barras).
 
 Aceite mínimo do que está entregue:
 
@@ -123,3 +124,4 @@ Aceite mínimo:
 - Financeiro completo, contabilidade e RH.
 - Multi-loja, multi-depósito, lote, validade e inventário cíclico formal.
 - Fidelidade, cashback, campanhas automatizadas, e-commerce e aplicativo mobile nativo.
+- Leitor em modo serial (porta COM), leitor sem fio e leitura de QR Code (exige leitor 2D).
