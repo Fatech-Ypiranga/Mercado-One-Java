@@ -47,17 +47,26 @@ public class OnlineSaleClient {
     }
 
     public String login(String apiBaseUrl, String login, String password) {
+        return authenticate(apiBaseUrl, login, password).token();
+    }
+
+    /** Login completo: token de acesso e nome do operador, como cadastrado no admin. */
+    public OperatorLogin authenticate(String apiBaseUrl, String login, String password) {
         ApiResponse response = sendJson(
                 apiBaseUrl,
                 "/api/auth/login",
                 null,
                 toJson(Map.of("login", login == null ? "" : login, "password", password == null ? "" : password))
         );
-        String token = data(response.body()).path("accessToken").asText("");
+        JsonNode data = data(response.body());
+        String token = data.path("accessToken").asText("");
         if (token.isBlank()) {
             throw new IllegalStateException("Login concluido sem token de acesso.");
         }
-        return token;
+        return new OperatorLogin(token, data.path("user").path("nome").asText(""));
+    }
+
+    public record OperatorLogin(String token, String name) {
     }
 
     public List<CatalogProduct> searchProducts(String apiBaseUrl, String bearerToken, String search) {
@@ -345,7 +354,9 @@ public class OnlineSaleClient {
             Long customerId,
             List<OfflineSaleItem> items,
             List<OfflineSalePayment> payments,
-            BigDecimal discountAmount
+            BigDecimal discountAmount,
+            /** Quem vendeu no caixa. A API credita a venda a este operador, mesmo que outro login esteja enviando. */
+            String operatorLogin
     ) {
     }
 

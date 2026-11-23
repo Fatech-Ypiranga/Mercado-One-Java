@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -148,6 +149,34 @@ class CheckoutServiceTests {
         assertEquals(Outcome.QUEUED_OFFLINE, result.outcome());
         assertTrue(calls.isEmpty());
         assertEquals(SyncStatus.SYNC_PENDING, service.currentStatus());
+    }
+
+    @Test
+    void offlineSaleKeepsWhoSoldItAndSendsItWhenAnotherSessionSynchronizes() {
+        responder = request -> {
+            throw new OnlineSaleClient.ApiUnavailableException("fora", null);
+        };
+        Session maria = new Session("http://api", "", "maria");
+        service.checkout(maria, draft("0", payment(PaymentMethod.CASH, "20.00")));
+        assertEquals("maria", queue.pendingSales().getFirst().operatorLogin());
+
+        responder = request -> ok("{\"status\":\"SENT\",\"sale\":{\"id\":7},\"conflicts\":[]}");
+        service.synchronize(new Session("http://api", "token-do-joao", "joao"));
+
+        assertTrue(bodies.getLast().contains("\"operatorLogin\":\"maria\""), bodies.getLast());
+    }
+
+    @Test
+    void saleWithoutOperatorLoginSendsNoOperator() {
+        responder = request -> {
+            throw new OnlineSaleClient.ApiUnavailableException("fora", null);
+        };
+        service.checkout(SESSION, draft("0", payment(PaymentMethod.CASH, "20.00")));
+
+        responder = request -> ok("{\"status\":\"SENT\",\"sale\":{\"id\":8},\"conflicts\":[]}");
+        service.synchronize(SESSION);
+
+        assertFalse(bodies.getLast().contains("operatorLogin"), bodies.getLast());
     }
 
     @Test
