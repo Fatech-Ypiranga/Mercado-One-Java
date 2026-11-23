@@ -44,13 +44,17 @@ public class UserManagementService {
     @Transactional
     public AppUser createUser(UserData data, Long actorUserId) {
         requireUniqueLogin(data.login(), null);
-        AppUser user = users.save(new AppUser(
+        String email = normalizeEmail(data.email());
+        requireUniqueEmail(email, null);
+        AppUser user = new AppUser(
                 data.name().trim(),
                 data.login().trim(),
                 passwordEncoder.encode(data.password()),
                 data.role(),
                 data.active()
-        ));
+        );
+        user.updateEmail(email);
+        user = users.save(user);
         auditService.record("USER_CREATED", "app_user", user.getId(), actorUserId, java.util.Map.of(
                 "login", user.getLogin(),
                 "role", user.getRole()
@@ -62,10 +66,13 @@ public class UserManagementService {
     public AppUser updateUser(Long id, UserData data, Long actorUserId) {
         AppUser user = findUser(id);
         requireUniqueLogin(data.login(), id);
+        String email = normalizeEmail(data.email());
+        requireUniqueEmail(email, id);
         if (id.equals(actorUserId) && (!data.active() || data.role() != user.getRole())) {
             throw new IllegalArgumentException("Voce nao pode inativar nem trocar o proprio perfil.");
         }
         user.updateProfile(data.name().trim(), data.login().trim(), data.role(), data.active());
+        user.updateEmail(email);
         boolean passwordChanged = !isBlank(data.password());
         if (passwordChanged) {
             user.updatePassword(passwordEncoder.encode(data.password()));
@@ -117,6 +124,44 @@ public class UserManagementService {
                 .orElseThrow(() -> new EntityNotFoundException("Usuario nao encontrado."));
     }
 
+    /** Usuario ativo pelo login ou pelo e-mail, para a redefinicao de senha. */
+    @Transactional(readOnly = true)
+    public Optional<AppUser> findActiveByLoginOrEmail(String identifier) {
+        if (identifier == null || identifier.isBlank()) {
+            return Optional.empty();
+        }
+        String typed = identifier.trim();
+        return users.findByLoginIgnoreCase(typed)
+                .or(() -> users.findByEmailIgnoreCase(typed))
+                .filter(AppUser::isActive);
+    }
+
+    /** Define a senha de quem pediu a redefinicao por e-mail. O ator da auditoria e o proprio usuario. */
+    @Transactional
+    public void resetPasswordByOwner(Long userId, String newPassword) {
+        requireValidPassword(newPassword);
+        AppUser user = findUser(userId);
+        user.updatePassword(passwordEncoder.encode(newPassword));
+        auditService.record("USER_PASSWORD_RESET_BY_EMAIL", "app_user", user.getId(), userId, java.util.Map.of(
+                "login", user.getLogin()
+        ));
+    }
+
+    private static String normalizeEmail(String email) {
+        return isBlank(email) ? null : email.trim().toLowerCase();
+    }
+
+    private void requireUniqueEmail(String email, Long currentUserId) {
+        if (email == null) {
+            return;
+        }
+        users.findByEmailIgnoreCase(email)
+                .filter(existing -> !existing.getId().equals(currentUserId))
+                .ifPresent(existing -> {
+                    throw new IllegalArgumentException("E-mail ja esta em uso por outro usuario.");
+                });
+    }
+
     private void requireUniqueLogin(String login, Long currentUserId) {
         users.findByLoginIgnoreCase(login.trim())
                 .filter(existing -> !existing.getId().equals(currentUserId))
@@ -149,6 +194,6 @@ public class UserManagementService {
         return value == null || value.isBlank();
     }
 
-    public record UserData(String name, String login, String password, UserRole role, boolean active) {
+    public record UserData(String name, String login, String password, UserRole role, boolean active, String email) {
     }
 }

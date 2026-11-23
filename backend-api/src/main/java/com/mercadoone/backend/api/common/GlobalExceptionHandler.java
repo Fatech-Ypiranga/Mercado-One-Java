@@ -59,6 +59,19 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(com.mercadoone.backend.modules.access.application.ResetLinkInvalidException.class)
+    public ResponseEntity<ApiEnvelope<Void>> handleResetLinkInvalid(
+            com.mercadoone.backend.modules.access.application.ResetLinkInvalidException exception) {
+        return ResponseEntity.badRequest().body(ApiEnvelope.failed(ApiError.of("RESET_LINK_INVALID", exception.getMessage())));
+    }
+
+    @ExceptionHandler(com.mercadoone.backend.modules.access.application.ResetUnavailableException.class)
+    public ResponseEntity<ApiEnvelope<Void>> handleResetUnavailable(
+            com.mercadoone.backend.modules.access.application.ResetUnavailableException exception) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(ApiEnvelope.failed(
+                ApiError.of("RESET_UNAVAILABLE", exception.getMessage())));
+    }
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ApiEnvelope<Void>> handleNotFound(EntityNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiEnvelope.failed(
