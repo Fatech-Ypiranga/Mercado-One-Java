@@ -109,8 +109,9 @@ final class LoginView extends StackPane {
         HBox senhaRow = new HBox(senhaLabel, spacer(), forgot);
         senhaRow.setAlignment(Pos.BASELINE_LEFT);
 
-        Label forgotText = new Label("O sistema não envia e-mail de redefinição. Peça ao administrador do mercado "
-                + "para redefinir a sua senha em Usuários, Redefinir senha. Depois, troque-a em Minha conta.");
+        Label forgotText = new Label("Se o seu e-mail está cadastrado, abra o painel administrativo, escolha Esqueci a senha e "
+                + "siga o link que chegar por e-mail. Se não, peça ao administrador do mercado para redefinir a sua senha "
+                + "em Usuários, Redefinir senha. A senha nova vale aqui depois da próxima entrada com internet.");
         forgotText.setWrapText(true);
         forgotText.getStyleClass().add("login-note");
         forgotNote.getChildren().add(forgotText);

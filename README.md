@@ -67,7 +67,7 @@ cd pdv-desktop
 mvn javafx:run
 ```
 
-O campo de login do PDV vem preenchido com `operador`; use um usuário real cadastrado (o seed cria `admin`). A URL padrão da API no PDV é `http://localhost:8080`.
+O PDV abre numa tela de entrada, com o último login usado no computador; use um usuário real cadastrado (o seed cria `admin`). Sem internet, só entra quem já entrou online naquele caixa nos últimos 30 dias. A URL padrão da API no PDV é `http://localhost:8080`.
 
 Detalhes de variáveis, portas e troubleshooting: [Desenvolvimento local](docs/desenvolvimento/desenvolvimento-local.md).
 

@@ -58,6 +58,32 @@ class OperatorCredentialStoreTests {
     }
 
     @Test
+    void theCredentialStopsWorkingAfterItsValidityAndAnOnlineLoginRenewsIt() {
+        java.util.concurrent.atomic.AtomicReference<java.time.Instant> now =
+                new java.util.concurrent.atomic.AtomicReference<>(java.time.Instant.parse("2026-11-01T12:00:00Z"));
+        java.time.Clock clock = new java.time.Clock() {
+            @Override public java.time.ZoneId getZone() { return java.time.ZoneOffset.UTC; }
+            @Override public java.time.Clock withZone(java.time.ZoneId zone) { return this; }
+            @Override public java.time.Instant instant() { return now.get(); }
+        };
+        OperatorCredentialStore aging = new OperatorCredentialStore(config, 1_000, java.time.Duration.ofDays(30), clock);
+        aging.remember("maria", "Maria Souza", "senha-forte-1".toCharArray());
+
+        now.set(java.time.Instant.parse("2026-11-30T12:00:00Z"));
+        assertEquals(Optional.of("Maria Souza"), aging.verify("maria", "senha-forte-1".toCharArray()));
+        assertFalse(aging.isExpired("maria"));
+
+        now.set(java.time.Instant.parse("2026-12-02T12:00:00Z"));
+        assertTrue(aging.verify("maria", "senha-forte-1".toCharArray()).isEmpty());
+        assertTrue(aging.isExpired("maria"));
+        assertFalse(aging.isExpired("joao"));
+
+        aging.remember("maria", "Maria Souza", "senha-forte-1".toCharArray());
+        assertEquals(Optional.of("Maria Souza"), aging.verify("maria", "senha-forte-1".toCharArray()));
+        assertFalse(aging.isExpired("maria"));
+    }
+
+    @Test
     void thePasswordIsNeverWrittenToTheDatabaseFile() throws Exception {
         store.remember("maria", "Maria Souza", "senha-muito-unica-123".toCharArray());
 

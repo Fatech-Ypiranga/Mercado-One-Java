@@ -95,6 +95,24 @@ class OperatorAccessTests {
     }
 
     @Test
+    void anExpiredLocalCredentialExplainsWhyOfflineEntryIsRefused() throws Exception {
+        java.nio.file.Path dir = tempDir.resolve("antigo");
+        OfflineStorageConfig config = new OfflineStorageConfig(dir.resolve("pdv.sqlite3"));
+        java.time.Clock longAgo = java.time.Clock.fixed(java.time.Instant.parse("2026-01-01T00:00:00Z"), java.time.ZoneOffset.UTC);
+        OperatorCredentialStore old = new OperatorCredentialStore(config, 1_000, java.time.Duration.ofDays(30), longAgo);
+        old.initialize();
+        old.remember("maria", "Maria Souza", "senha-1".toCharArray());
+        OperatorAccess stale = new OperatorAccess(new OnlineSaleClient(request -> responder.apply(request)),
+                new OperatorCredentialStore(config, 1_000));
+        apiDown();
+
+        AccessDeniedException denied = assertThrows(AccessDeniedException.class,
+                () -> stale.enter("http://api", "maria", "senha-1".toCharArray()));
+
+        assertEquals(OperatorAccess.EXPIRED_CREDENTIAL, denied.getMessage());
+    }
+
+    @Test
     void whenTheServerRefusesThePasswordThereIsNoOfflineFallback() {
         responder = request -> loginOk();
         access.enter("http://api", "maria", "senha-antiga".toCharArray());

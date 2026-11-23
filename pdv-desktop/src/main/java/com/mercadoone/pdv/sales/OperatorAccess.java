@@ -39,6 +39,9 @@ public class OperatorAccess {
     static final String NO_CONNECTION_NO_ACCESS =
             "Sem conexão com o sistema. Sem internet só entra quem já entrou neste caixa com internet.";
 
+    static final String EXPIRED_CREDENTIAL =
+            "Faz muito tempo que você não entra neste caixa com internet. Conecte o caixa à internet para entrar.";
+
     private final OnlineSaleClient client;
     private final OperatorCredentialStore credentials;
 
@@ -64,6 +67,9 @@ public class OperatorAccess {
             Optional<String> name = credentials.verify(typedLogin, password);
             if (name.isPresent()) {
                 return new Entry(Mode.OFFLINE, typedLogin, name.get(), "");
+            }
+            if (credentials.isExpired(typedLogin)) {
+                throw new AccessDeniedException(EXPIRED_CREDENTIAL);
             }
             throw new AccessDeniedException(credentials.knows(typedLogin) ? WRONG_CREDENTIALS : NO_CONNECTION_NO_ACCESS);
         }
