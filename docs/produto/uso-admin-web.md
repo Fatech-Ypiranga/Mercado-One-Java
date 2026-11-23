@@ -55,7 +55,7 @@ Administrador e gerente.
 
 A tela **Categorias** organiza os agrupamentos dos produtos. Busque pelo nome, filtre ativos ou inativos e grave a ficha ao lado da lista.
 
-A tela **Produtos** reúne os dados do item vendável: nome, categoria, unidade, preço de venda, SKU, código de barras, status e dados fiscais preparatórios. Não há emissão de nota nesta tela.
+A tela **Produtos** reúne os dados do item vendável: nome, categoria, unidade, preço de venda, SKU, código de barras, status e dados fiscais preparatórios. Não há emissão de nota nesta tela. Com um leitor de código de barras USB, clique no campo **Código de barras** e leia o produto: o código é preenchido e o foco passa para **SKU**, sem salvar o cadastro. O Enter do leitor nunca envia o formulário.
 
 1. Filtre por nome, SKU, código, categoria ou status.
 2. Cadastre ou edite na ficha ao lado.
