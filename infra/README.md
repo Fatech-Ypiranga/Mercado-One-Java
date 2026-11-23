@@ -6,7 +6,7 @@ Infraestrutura de desenvolvimento local do Mercado One e registro do piloto na A
 
 O arquivo `docker-compose.yml` sobe um PostgreSQL 18 para a API durante o desenvolvimento. O piloto na Azure está descrito abaixo; seus recursos não são provisionados por este Compose.
 
-Imagem, banco, usuário, porta, volume e healthcheck estão em [Dados e migrações](../docs/dados-e-migracoes.md). O container se chama `mercado-one-postgres`.
+Imagem, banco, usuário, porta, volume e healthcheck estão em [Dados e migrações](../docs/dados/dados-e-migracoes.md). O container se chama `mercado-one-postgres`.
 
 O Compose interpola variáveis a partir do diretório `infra/` ou do ambiente do shell. O `.env` da raiz é lido pela API Spring, não automaticamente por este Compose.
 
@@ -32,7 +32,7 @@ O Compose interpola variáveis a partir do project directory (`infra/`) ou do am
 
 ## Variáveis
 
-As variáveis ficam exemplificadas em `../.env.example` e descritas em [Dados e migrações](../docs/dados-e-migracoes.md).
+As variáveis ficam exemplificadas em `../.env.example` e descritas em [Dados e migrações](../docs/dados/dados-e-migracoes.md).
 
 A API precisa de `MERCADO_ONE_DATABASE_URL` alinhada ao host, à porta e ao nome reais. JWT e seed de admin ficam no `.env` da raiz e não neste Compose.
 

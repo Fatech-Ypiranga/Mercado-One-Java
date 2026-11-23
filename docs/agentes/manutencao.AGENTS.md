@@ -26,7 +26,7 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 
 ## Admin web
 
-- As rotas do shell já existem; ao criar outra, alinhar guard, item de navegação e `docs/uso-admin-web.md`.
+- As rotas do shell já existem; ao criar outra, alinhar guard, item de navegação e `docs/produto/uso-admin-web.md`.
 - Usar `ApiClientService` ou services dedicados para contratos HTTP.
 - Tipos TypeScript devem refletir o envelope da API.
 - Telas administrativas devem tratar loading, vazio, erro e sucesso.
@@ -49,9 +49,9 @@ Este documento é voltado para agentes que vão editar e manter o Mercado One.
 - README raiz deve ser mapa do projeto.
 - `docs/README.md` deve continuar como índice dos guias.
 - READMEs locais devem explicar responsabilidades e comandos do subprojeto.
-- `docs/backlog-mvp.md` deve mudar no mesmo PR que entrega, remove ou reprioriza funcionalidade.
-- `docs/diagramas.md` é a fonte normativa dos fluxos.
-- ADRs em `docs/adr/` devem ser curtos e usados apenas para decisões relevantes.
+- `docs/produto/backlog-mvp.md` deve mudar no mesmo PR que entrega, remove ou reprioriza funcionalidade.
+- `docs/arquitetura/diagramas.md` é a fonte normativa dos fluxos.
+- ADRs em `docs/arquitetura/adr/` devem ser curtos e usados apenas para decisões relevantes.
 
 ## Antes de finalizar mudanças
 

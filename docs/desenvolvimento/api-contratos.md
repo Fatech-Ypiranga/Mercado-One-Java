@@ -379,7 +379,7 @@ Exemplo de payload:
 - Demais `/api/customers/**`: `ADMIN`, `GERENTE`.
 - `/api/auth/me`, `POST /api/auth/password`, `POST /api/auth/logout` e `/api/access/roles`: qualquer usuário autenticado.
 
-Escrita autenticada por cookie (métodos diferentes de `GET`, `HEAD`, `OPTIONS` e `TRACE`) exige `Origin` ou `Referer` de origem confiável; detalhes em [Segurança](seguranca.md).
+Escrita autenticada por cookie (métodos diferentes de `GET`, `HEAD`, `OPTIONS` e `TRACE`) exige `Origin` ou `Referer` de origem confiável; detalhes em [Segurança](../arquitetura/seguranca.md).
 
 Não existem neste repositório: `DELETE`/`PATCH` de negócio e emissão fiscal.
 

@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mercadoOne — Identidade visual</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   Os tokens abaixo são GERADOS de docs/marca/tokens.json.
+   Para mudar uma cor: edite o tokens.json e rode
+   node docs/marca/gerar-tokens.mjs
+   ═══════════════════════════════════════════════════════════════ */
+/* TOKENS:INICIO */
+/* Gerado de docs/marca/tokens.json (v2). Não edite à mão. */
+:root {
+  color-scheme: light;
+  --midnight: #122C4F;
+  --ocean: #5B8BB2;
+  --avocado: #4A7A00;
+  --pearl: #F7F5EE;
+  --bg: #F7F5EE;
+  --surface: #FFFFFF;
+  --surface-sub: #F0EDE0;
+  --sidebar: #FFFFFF;
+  --selected: #E8EFF6;
+  --ink: #122C4F;
+  --ink-muted: #3D5470;
+  --ink-hint: #52697F;
+  --line: rgba(18,44,79,0.12);
+  --action: #4A7A00;
+  --action-hover: #3F6A00;
+  --chart-bar: #C9D9E7;
+  --chart-peak: #122C4F;
+  --success-bg: #E8F3D0;
+  --success-ink: #2E5000;
+  --warning-bg: #FFF1CC;
+  --warning-ink: #8A5A00;
+  --danger-bg: #FDE7E4;
+  --danger-ink: #B42318;
+  --particle: rgba(18,44,79,0.25);
+  --particle-line: rgba(18,44,79,0.06);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-24: 96px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 2px 12px rgba(18,44,79,0.08);
+  --shadow-lg: 0 20px 60px rgba(18,44,79,0.16);
+  --font-sans: Outfit, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ocean: #6FA8DC;
+  --avocado: #4FB286;
+  --bg: #0B1A2C;
+  --surface: #12263E;
+  --surface-sub: #17304D;
+  --sidebar: #08172A;
+  --selected: #16314F;
+  --ink: #EEF3F8;
+  --ink-muted: #A9BDD1;
+  --ink-hint: #7F9AB5;
+  --line: rgba(168,200,224,0.14);
+  --action: #2E7D5B;
+  --action-hover: #276B4E;
+  --chart-bar: #28496B;
+  --chart-peak: #6FA8DC;
+  --success-bg: #12332A;
+  --success-ink: #4FB286;
+  --warning-bg: #362A10;
+  --warning-ink: #D9A93A;
+  --danger-bg: #2E1214;
+  --danger-ink: #E5534B;
+  --particle: rgba(111,168,220,0.7);
+  --particle-line: rgba(111,168,220,0.12);
+}
+/* TOKENS:FIM */
+
+/* ── página do manual ── */
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:120px}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--font-sans);overflow-x:clip;transition:background .3s,color .3s}
+#pc{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1}
+.top{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top .in{display:flex;align-items:center;gap:20px;padding:12px max(4vw,16px);max-width:1200px;margin:0 auto;flex-wrap:wrap}
+.top nav{display:flex;gap:18px;overflow-x:auto;flex:1}
+.top nav a{color:var(--ink-muted);text-decoration:none;font-size:14px;font-weight:500;white-space:nowrap;padding:6px 0}
+.top nav a:hover{color:var(--ink)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--ink);flex:none}
+.logo .tile{background:#fff;border-radius:8px;display:flex;padding:2px}
+.logo img{width:32px;height:32px;display:block}
+.wm{font-weight:800;font-size:24px;letter-spacing:-.02em}.wm b{color:var(--ocean)}
+.tbtn{flex:none;min-height:40px;padding:0 14px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:600 14px var(--font-sans);cursor:pointer}
+.tbtn:hover{border-color:var(--ocean)}
+:focus-visible{outline:3px solid var(--ocean);outline-offset:2px}
+section{padding:var(--space-24) max(4vw,16px);border-bottom:1px solid var(--line)}
+section .in{max-width:1200px;margin:0 auto}
+.alt{background:color-mix(in srgb,var(--surface-sub) 72%,transparent)}
+h1{font-size:clamp(40px,6vw,56px);line-height:1.04;letter-spacing:-.03em;margin:0 0 16px;font-weight:900}
+h2{font-size:clamp(28px,3.5vw,40px);line-height:1.1;letter-spacing:-.02em;margin:0 0 12px;font-weight:800}
+h3{font-size:19px;margin:0 0 6px;font-weight:700}
+p{margin:0 0 12px;max-width:68ch;color:var(--ink-muted)}
+.lead{font-size:18px}
+strong{color:var(--ink)}
+code,.mono{font-family:var(--font-mono);font-size:13px}
+.grid{display:grid;gap:var(--space-4)}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-md);padding:var(--space-6)}
+.mt{margin-top:var(--space-8)}
+.principle{font-size:clamp(24px,3vw,34px);font-weight:800;line-height:1.2;letter-spacing:-.02em;color:var(--ink);max-width:28ch;margin:24px 0}
+.lg{border-radius:var(--radius-md);border:1px solid var(--line);min-height:180px;display:flex;align-items:center;justify-content:center;gap:14px;padding:24px;overflow:hidden}
+.lg img{display:block}
+.lg .wm{font-size:30px}
+.cap{font-size:13px;color:var(--ink-hint);margin-top:8px}
+.dont{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4);margin-top:var(--space-6)}
+.dont .lg{min-height:120px;position:relative}
+.dont .lg::after{content:'✕';position:absolute;top:8px;right:12px;color:var(--ink-hint);font-weight:800}
+.sw{border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--line);background:var(--surface)}
+.sw .c{height:120px;display:flex;align-items:flex-end;padding:14px;font-weight:700}
+.sw .d{padding:14px;font-size:14px;color:var(--ink-muted)}
+.sw .d b{display:block;color:var(--ink);font-size:16px}
+.ratio{display:flex;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--line);margin-top:var(--space-6)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin-top:var(--space-6)}
+.chip{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-sm);padding:8px}
+.chip i{width:36px;height:36px;border-radius:8px;border:1px solid var(--line);flex:none}
+.chip span{font-size:13px;line-height:1.3}.chip span b{display:block;font-family:var(--font-mono);font-weight:500;color:var(--ink)}
+.rules{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--space-6)}
+.rules ul{margin:0;padding-left:18px;color:var(--ink-muted)}.rules li{margin-bottom:8px}
+.do{border-top:4px solid var(--ocean);padding-top:14px}.no{border-top:4px solid var(--ink-hint);padding-top:14px}
+.trow{display:grid;grid-template-columns:160px minmax(0,1fr);gap:20px;align-items:baseline;padding:16px 0;border-top:1px solid var(--line)}
+.trow small{color:var(--ink-hint);font-size:13px;display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 22px;border-radius:var(--radius-sm);font:700 15px var(--font-sans);border:0;cursor:pointer}
+.bp{background:var(--action);color:#fff}.bp:hover{background:var(--action-hover)}
+.bs{background:transparent;color:var(--ink);border:1.5px solid var(--line)}.bs:hover{border-color:var(--ocean)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:3px 10px;border-radius:var(--radius-pill);white-space:nowrap}
+.pill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.ok{background:var(--success-bg);color:var(--success-ink)}.wn{background:var(--warning-bg);color:var(--warning-ink)}.dg{background:var(--danger-bg);color:var(--danger-ink)}
+.kpi small{color:var(--ink-muted);font-size:14px;display:block}
+.kpi strong{font-size:28px;font-weight:800;letter-spacing:-.02em;display:block;margin:4px 0;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--ink-muted)}
+.field label{display:block;font-size:14px;font-weight:600;margin-bottom:6px}
+.field input{width:100%;min-height:44px;font:16px var(--font-sans);padding:10px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.field input:focus{outline:none;border-color:var(--ocean)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line)}
+th{font-size:13px;color:var(--ink-hint);font-weight:600}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.menu{background:var(--sidebar);border:1px solid var(--line);border-radius:var(--radius-md);padding:10px}
+.menu div{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:var(--radius-sm);color:var(--ink-muted);font-size:15px}
+.menu div.on{background:var(--selected);color:var(--ink);font-weight:600;box-shadow:inset 3px 0 0 var(--ocean)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.menu .on .ic{color:var(--ocean)}
+.bars{display:flex;align-items:flex-end;gap:8px;height:150px}
+.bars div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bars i{display:block;width:100%;max-width:48px;background:var(--chart-bar);border-radius:6px 6px 0 0}
+.bars i.pk{background:var(--chart-peak)}
+.bars span{font-size:13px;color:var(--ink-hint)}.bars b{font-size:13px}
+.spec{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-4);margin-top:var(--space-6)}
+.spec div{font-size:14px;color:var(--ink-muted)}.spec b{display:block;font-size:22px;color:var(--ink)}
+.say{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--radius-md);overflow:hidden;margin-top:var(--space-6)}
+.say div{background:var(--surface);padding:14px 16px;font-size:15px}
+.say .h{font-size:13px;font-weight:600;color:var(--ink-hint);background:var(--surface-sub)}
+.say .x{color:var(--ink-hint);text-decoration:line-through}
+pre{background:#0B1A2C;color:#D8E4EF;border-radius:var(--radius-md);padding:20px;overflow:auto;font:13px/1.6 var(--font-mono);margin:0;max-height:420px}
+.copy{float:right;margin:-4px 0 10px}
+footer{padding:40px max(4vw,16px);text-align:center;color:var(--ink-hint);font-size:14px;position:relative;z-index:1}
+@media(max-width:900px){.g3,.g4,.dont,.spec{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.rules,.say{grid-template-columns:1fr}.top nav{order:3;flex-basis:100%}.span2{grid-column:auto!important}}
+@media(max-width:560px){.g3,.g4,.dont,.spec{grid-template-columns:1fr}.trow{grid-template-columns:1fr;gap:4px}}
+</style>
+</head>
+<body>
+<canvas id="pc" aria-hidden="true"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="m3 11 9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11.5L22 7H6"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 3h8l10 10-8 8L3 11z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+<header class="top"><div class="in">
+ <a class="logo" href="#inicio"><span class="tile"><img src="mercadoone-simbolo.jpg" alt=""></span><span class="wm">mercado<b>One</b></span></a>
+ <nav aria-label="Seções"><a href="#logo">Logo</a><a href="#cores">Cores</a><a href="#tipografia">Tipografia</a><a href="#componentes">Componentes</a><a href="#particulas">Partículas</a><a href="#voz">Voz</a><a href="#evitar">Evitar</a><a href="#codigo">Tokens</a></nav>
+ <button class="tbtn" id="tb">Modo escuro</button>
+</div></header>
+
+<section id="inicio"><div class="in">
+ <h1>Identidade visual</h1>
+ <p class="lead">Como a marca mercadoOne aparece no site, no administrativo web e no PDV. Todas as cores e medidas desta página vêm de um único arquivo, <code>docs/marca/tokens.json</code>.</p>
+ <p class="principle">Estrutura em azul, ação em verde, alerta só quando há problema.</p>
+ <p>O midnight e o ocean constroem a tela. O verde aparece só onde a pessoa age ou algo deu certo. Vermelho e âmbar existem só para avisar. Se uma tela tem mais de três cores chamando atenção ao mesmo tempo, ela está errada.</p>
+</div></section>
+
+<section id="logo" class="alt"><div class="in">
+ <h2>Logo</h2>
+ <p>O símbolo é o M com três barras crescentes. O logotipo escreve <strong>mercado</strong> em midnight e <strong>One</strong> em ocean, numa palavra só. Use sempre o arquivo; nunca redesenhe o símbolo.</p>
+ <div class="grid g2 mt">
+  <div><div class="lg" style="background:#fff"><img src="mercadoone-horizontal.jpg" alt="Logo horizontal mercadoOne" style="width:100%;max-width:420px;height:auto;aspect-ratio:1536/1024;object-fit:contain;margin:-40px 0"></div><div class="cap">Horizontal: topo do site, login, documentos</div></div>
+  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="Símbolo mercadoOne" width="120" height="120"></div><div class="cap">Símbolo: favicon, ícone do app, barra de título do PDV</div></div>
+  <div><div class="lg" style="background:#122C4F"><span style="background:#fff;border-radius:10px;padding:4px;display:flex"><img src="mercadoone-simbolo.jpg" alt="" width="52" height="52"></span><span class="wm" style="color:#fff">mercado<b style="color:#A8C8E0">One</b></span></div><div class="cap">Negativa provisória: até existir o SVG transparente, o símbolo vai num quadrado branco</div></div>
+  <div><div class="lg" style="background:var(--surface);gap:22px"><img src="mercadoone-simbolo.jpg" alt="" width="64" height="64"><img src="mercadoone-simbolo.jpg" alt="" width="32" height="32"><img src="mercadoone-simbolo.jpg" alt="" width="16" height="16"></div><div class="cap">Tamanhos: 64, 32 e 16px (mínimo na tela). Impresso: mínimo 8mm</div></div>
+ </div>
+ <div class="rules mt">
+  <div class="do"><h3>Regras</h3><ul><li>Área de proteção: a altura da barra maior do símbolo, em volta de todo o logo.</li><li>Horizontal com no mínimo 120px de largura.</li><li>Uma cor (midnight) para comprovante, impressora térmica e carimbo.</li></ul></div>
+  <div class="no"><h3>Pendente para produção</h3><ul><li>Os arquivos atuais são JPG com fundo branco.</li><li>Desenhar o logo em SVG nas quatro versões: horizontal, símbolo, negativa e uma cor.</li><li>Gerar favicon e ícone do instalador do PDV a partir do SVG.</li></ul></div>
+ </div>
+ <h3 class="mt">Não fazer</h3>
+ <div class="dont">
+  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="" width="70" height="70" style="filter:hue-rotate(110deg)"></div><div class="cap">Mudar as cores</div></div>
+  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="" width="110" height="60"></div><div class="cap">Esticar ou achatar</div></div>
+  <div><div class="lg" style="background:#fff"><img src="mercadoone-simbolo.jpg" alt="" width="70" height="70" style="filter:drop-shadow(0 0 12px #5B8BB2)"></div><div class="cap">Brilho ou sombra</div></div>
+  <div><div class="lg" style="background:#fff"><span class="wm" style="font-family:Georgia,serif;font-weight:400;color:#122C4F">Mercado One</span></div><div class="cap">Outra fonte ou nome separado</div></div>
+ </div>
+</div></section>
+
+<section id="cores"><div class="in">
+ <h2>Cores</h2>
+ <p>Quatro cores de marca, nesta proporção na maioria das telas. O pearl é o próprio fundo (<code>bg</code>) no modo claro.</p>
+ <div class="grid g4 mt">
+  <div class="sw"><div class="c" style="background:#F7F5EE;color:#122C4F">Pearl</div><div class="d"><b class="mono">#F7F5EE</b>Fundo (bg) · ~60%</div></div>
+  <div class="sw"><div class="c" style="background:#122C4F;color:#fff">Midnight</div><div class="d"><b class="mono">#122C4F</b>Texto, títulos, faixas · ~25%</div></div>
+  <div class="sw"><div class="c" style="background:#5B8BB2;color:#fff">Ocean</div><div class="d"><b class="mono">#5B8BB2</b>Ícones, item ativo, foco · ~10%</div></div>
+  <div class="sw"><div class="c" style="background:#4A7A00;color:#fff">Avocado</div><div class="d"><b class="mono">#4A7A00</b>Botão principal, sucesso · ~5%</div></div>
+ </div>
+ <div class="ratio" aria-label="Proporção de uso"><div style="flex:60;background:#F7F5EE"></div><div style="flex:25;background:#122C4F"></div><div style="flex:10;background:#5B8BB2"></div><div style="flex:5;background:#4A7A00"></div></div>
+ <p class="mt"><strong>No modo escuro</strong> a família é fria: ocean <code>#6FA8DC</code> e verde-esmeralda (<code>#4FB286</code> para texto e selo, <code>#2E7D5B</code> no botão). Não existe verde-limão nem oliva no escuro.</p>
+ <h3 class="mt">Tokens de interface</h3>
+ <p>Os valores mudam com o modo. Use o botão no topo para ver o escuro.</p>
+ <div class="chips" id="chips"></div>
+</div></section>
+
+<section id="tipografia" class="alt"><div class="in">
+ <h2>Tipografia</h2>
+ <p><strong>Outfit</strong> para tudo. <strong>JetBrains Mono</strong> só para códigos: SKU, código de barras, caminho de arquivo e versão.</p>
+ <div class="mt" id="types"></div>
+ <p class="mt">Valores em reais sempre com números tabulares e sem quebra: <strong style="font-variant-numeric:tabular-nums;white-space:nowrap">R$ 4.218,30</strong>. Títulos em frase normal, sem caixa alta. Nada abaixo de 13px.</p>
+</div></section>
+
+<section id="componentes"><div class="in">
+ <h2>Componentes</h2>
+ <p>Referência para o admin web e o PDV. Ícones: Lucide, traço 1,8px, 20px no sistema e 26px no site, nunca emoji.</p>
+ <div class="grid g3 mt">
+  <div class="card"><h3>Botões</h3><p>Principal em <code>action</code>; secundário com borda <code>line</code> e foco em ocean. Altura mínima 44px.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn bp">Finalizar venda</button><button class="btn bs">Cancelar</button></div></div>
+  <div class="card"><h3>Selos de status</h3><p><code>radius-pill</code>, 13px 600, bolinha de 6px. Sempre com texto, nunca só cor.</p><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="pill ok">OK</span><span class="pill ok">Online</span><span class="pill wn">Baixo</span><span class="pill wn">Offline pronto</span><span class="pill dg">Crítico</span><span class="pill dg">Zerado</span></div></div>
+  <div class="card"><h3>Campo</h3><p>44px, texto 16px, foco com borda ocean.</p><div class="field"><label for="f1">Buscar produto</label><input id="f1" placeholder="Código, SKU ou nome"></div></div>
+  <div class="card kpi"><small>Vendas hoje</small><strong>R$ 4.218,30</strong><span>132 vendas</span></div>
+  <div class="card kpi"><small>Estoque baixo</small><strong>4</strong><span class="pill dg">1 zerado</span></div>
+  <div class="card"><h3>Menu lateral</h3><div class="menu"><div class="on"><svg class="ic"><use href="#i-home"/></svg>Início</div><div><svg class="ic"><use href="#i-cart"/></svg>Vendas</div><div><svg class="ic"><use href="#i-tag"/></svg>Produtos</div><div><svg class="ic"><use href="#i-box"/></svg>Estoque</div></div></div>
+  <div class="card span2" style="grid-column:span 2"><h3>Gráfico</h3><p>Barras em chart-bar; só o pico em chart-peak, com o valor em cima.</p><div class="bars" id="bars"></div></div>
+  <div class="card"><h3>Tabela</h3><table><thead><tr><th>Produto</th><th class="r">Preço</th><th>Situação</th></tr></thead><tbody><tr><td>Arroz 5kg</td><td class="r">R$ 27,90</td><td><span class="pill ok">OK</span></td></tr><tr><td>Óleo 900ml</td><td class="r">R$ 7,29</td><td><span class="pill dg">Crítico</span></td></tr><tr><td>Leite 1L</td><td class="r">R$ 5,19</td><td><span class="pill wn">Baixo</span></td></tr></tbody></table></div>
+ </div>
+ <p class="cap">Produtos e valores são exemplos.</p>
+</div></section>
+
+<section id="particulas" class="alt"><div class="in">
+ <h2>Animação de partículas</h2>
+ <p>Pontos que se movem devagar e se ligam por linhas quando ficam próximos. É o fundo desta página. Use no site e atrás das janelas de demonstração, <strong>nunca dentro das telas do admin e do PDV</strong>.</p>
+ <div class="spec">
+  <div><b>até 120</b>pontos, 1 a cada 8.000px²</div>
+  <div><b>0,5–3px</b>raio dos pontos</div>
+  <div><b>0,35px</b>velocidade máxima por quadro</div>
+  <div><b>120px</b>distância para ligar dois pontos</div>
+ </div>
+ <p class="mt">Cores: <code>particle</code> e <code>particle-line</code>. Midnight no claro; ocean <code>#6FA8DC</code> no escuro. As faixas com fundo próprio ficam levemente transparentes para a animação continuar visível.</p>
+</div></section>
+
+<section id="voz"><div class="in">
+ <h2>Voz e textos</h2>
+ <p>Fala como o dono do mercado fala: direto, concreto, sem jargão. Números e depoimentos só quando forem reais e autorizados por escrito. O que ainda não existe aparece como "em desenvolvimento".</p>
+ <div class="say">
+  <div class="h">Evitar</div><div class="h">Escrever</div>
+  <div class="x">Solução resiliente offline-first</div><div>A internet caiu. O caixa continua.</div>
+  <div class="x">Controle total do seu mercado em tempo real</div><div>Caixa, estoque e vendas do seu mercado no mesmo sistema.</div>
+  <div class="x">+340 mercados · 4,9★</div><div>Projeto em fase piloto.</div>
+  <div class="x">Erro de validação no meio de pagamento</div><div>Fiado exige cliente identificado.</div>
+ </div>
+</div></section>
+
+<section id="evitar" class="alt"><div class="in">
+ <h2>O que evitar</h2>
+ <p>A mesma lista vale para o site, o admin, o PDV e qualquer peça de divulgação.</p>
+ <div class="rules mt">
+  <div class="no"><h3>Cor</h3><ul>
+   <li>Pintar uma frase ou título em várias cores.</li>
+   <li>Vermelho como decoração: ele só aparece quando há problema.</li>
+   <li>Verde como decoração: em menu, borda, ícone, gráfico ou título.</li>
+   <li>Mais de um verde na mesma área, ou verde-limão e oliva no modo escuro.</li>
+   <li>Status só por cor: o selo sempre tem texto.</li>
+   <li>Ocean como texto abaixo de 24px no modo claro.</li>
+   <li>Card creme sobre fundo creme; menu azul-marinho pesado com item verde.</li>
+  </ul></div>
+  <div class="no"><h3>Forma e conteúdo</h3><ul>
+   <li>Texto com degradê.</li>
+   <li>Selos flutuantes e pílula com ponto piscando.</li>
+   <li>Emojis no lugar de ícones.</li>
+   <li>Avatares de letra, depoimentos ou números inventados.</li>
+   <li>Redesenhar o símbolo em vez de usar o arquivo do logo.</li>
+   <li>Texto abaixo de 13px.</li>
+  </ul></div>
+ </div>
+</div></section>
+
+<section id="codigo"><div class="in">
+ <h2>Tokens para código</h2>
+ <p>Os dois blocos são gerados de <code>docs/marca/tokens.json</code> por <code>node docs/marca/gerar-tokens.mjs</code>. Não edite os blocos à mão.</p>
+ <p class="mt"><strong>Admin web (Angular):</strong> cole no <code>styles.css</code> global e use <code>var(--token)</code>. O modo escuro é o atributo <code>data-theme="dark"</code> no <code>&lt;html&gt;</code>.</p>
+ <button class="btn bs copy" data-c="css">Copiar CSS</button>
+<!-- CSS-SRC:INICIO -->
+<pre id="css">/* Gerado de docs/marca/tokens.json (v2). Não edite à mão. */
+:root {
+  color-scheme: light;
+  --midnight: #122C4F;
+  --ocean: #5B8BB2;
+  --avocado: #4A7A00;
+  --pearl: #F7F5EE;
+  --bg: #F7F5EE;
+  --surface: #FFFFFF;
+  --surface-sub: #F0EDE0;
+  --sidebar: #FFFFFF;
+  --selected: #E8EFF6;
+  --ink: #122C4F;
+  --ink-muted: #3D5470;
+  --ink-hint: #52697F;
+  --line: rgba(18,44,79,0.12);
+  --action: #4A7A00;
+  --action-hover: #3F6A00;
+  --chart-bar: #C9D9E7;
+  --chart-peak: #122C4F;
+  --success-bg: #E8F3D0;
+  --success-ink: #2E5000;
+  --warning-bg: #FFF1CC;
+  --warning-ink: #8A5A00;
+  --danger-bg: #FDE7E4;
+  --danger-ink: #B42318;
+  --particle: rgba(18,44,79,0.25);
+  --particle-line: rgba(18,44,79,0.06);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-24: 96px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 2px 12px rgba(18,44,79,0.08);
+  --shadow-lg: 0 20px 60px rgba(18,44,79,0.16);
+  --font-sans: Outfit, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --ocean: #6FA8DC;
+  --avocado: #4FB286;
+  --bg: #0B1A2C;
+  --surface: #12263E;
+  --surface-sub: #17304D;
+  --sidebar: #08172A;
+  --selected: #16314F;
+  --ink: #EEF3F8;
+  --ink-muted: #A9BDD1;
+  --ink-hint: #7F9AB5;
+  --line: rgba(168,200,224,0.14);
+  --action: #2E7D5B;
+  --action-hover: #276B4E;
+  --chart-bar: #28496B;
+  --chart-peak: #6FA8DC;
+  --success-bg: #12332A;
+  --success-ink: #4FB286;
+  --warning-bg: #362A10;
+  --warning-ink: #D9A93A;
+  --danger-bg: #2E1214;
+  --danger-ink: #E5534B;
+  --particle: rgba(111,168,220,0.7);
+  --particle-line: rgba(111,168,220,0.12);
+}</pre>
+<!-- CSS-SRC:FIM -->
+ <p class="mt"><strong>PDV (JavaFX):</strong> cole no CSS da aplicação. O JavaFX não aceita <code>var()</code>, então usa variáveis <code>-mo-*</code> no <code>.root</code>; o modo escuro é a classe <code>dark</code> no nó raiz.</p>
+ <button class="btn bs copy" data-c="fx">Copiar JavaFX</button>
+<!-- FX-SRC:INICIO -->
+<pre id="fx">/* Gerado de docs/marca/tokens.json (v2). Não edite à mão. */
+.root {
+  -mo-midnight: #122C4F;
+  -mo-ocean: #5B8BB2;
+  -mo-avocado: #4A7A00;
+  -mo-pearl: #F7F5EE;
+  -mo-bg: #F7F5EE;
+  -mo-surface: #FFFFFF;
+  -mo-surface-sub: #F0EDE0;
+  -mo-sidebar: #FFFFFF;
+  -mo-selected: #E8EFF6;
+  -mo-ink: #122C4F;
+  -mo-ink-muted: #3D5470;
+  -mo-ink-hint: #52697F;
+  -mo-line: rgba(18,44,79,0.12);
+  -mo-action: #4A7A00;
+  -mo-action-hover: #3F6A00;
+  -mo-chart-bar: #C9D9E7;
+  -mo-chart-peak: #122C4F;
+  -mo-success-bg: #E8F3D0;
+  -mo-success-ink: #2E5000;
+  -mo-warning-bg: #FFF1CC;
+  -mo-warning-ink: #8A5A00;
+  -mo-danger-bg: #FDE7E4;
+  -mo-danger-ink: #B42318;
+  -mo-particle: rgba(18,44,79,0.25);
+  -mo-particle-line: rgba(18,44,79,0.06);
+  -fx-font-family: "Outfit";
+  -fx-base: -mo-bg;
+  -fx-background: -mo-bg;
+  -fx-text-base-color: -mo-ink;
+  -fx-accent: -mo-ocean;
+  -fx-focus-color: -mo-ocean;
+}
+.root.dark {
+  -mo-ocean: #6FA8DC;
+  -mo-avocado: #4FB286;
+  -mo-bg: #0B1A2C;
+  -mo-surface: #12263E;
+  -mo-surface-sub: #17304D;
+  -mo-sidebar: #08172A;
+  -mo-selected: #16314F;
+  -mo-ink: #EEF3F8;
+  -mo-ink-muted: #A9BDD1;
+  -mo-ink-hint: #7F9AB5;
+  -mo-line: rgba(168,200,224,0.14);
+  -mo-action: #2E7D5B;
+  -mo-action-hover: #276B4E;
+  -mo-chart-bar: #28496B;
+  -mo-chart-peak: #6FA8DC;
+  -mo-success-bg: #12332A;
+  -mo-success-ink: #4FB286;
+  -mo-warning-bg: #362A10;
+  -mo-warning-ink: #D9A93A;
+  -mo-danger-bg: #2E1214;
+  -mo-danger-ink: #E5534B;
+  -mo-particle: rgba(111,168,220,0.7);
+  -mo-particle-line: rgba(111,168,220,0.12);
+}
+.button.primary { -fx-background-color: -mo-action; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-min-height: 44; }
+.button.primary:hover { -fx-background-color: -mo-action-hover; }
+.button.secondary { -fx-background-color: transparent; -fx-border-color: -mo-line; -fx-border-width: 1.5; -fx-border-radius: 10; -fx-text-fill: -mo-ink; -fx-min-height: 44; }
+.card { -fx-background-color: -mo-surface; -fx-border-color: -mo-line; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 24; }
+.sidebar { -fx-background-color: -mo-sidebar; -fx-border-color: transparent -mo-line transparent transparent; }
+.sidebar .selected { -fx-background-color: -mo-selected; -fx-border-color: transparent transparent transparent -mo-ocean; -fx-border-width: 0 0 0 3; }
+.pill-ok { -fx-background-color: -mo-success-bg; -fx-text-fill: -mo-success-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
+.pill-warn { -fx-background-color: -mo-warning-bg; -fx-text-fill: -mo-warning-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
+.pill-danger { -fx-background-color: -mo-danger-bg; -fx-text-fill: -mo-danger-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
+.chart-bar { -fx-bar-fill: -mo-chart-bar; }
+.chart-peak { -fx-bar-fill: -mo-chart-peak; }</pre>
+<!-- FX-SRC:FIM -->
+</div></section>
+</div>
+
+<footer>mercadoOne · Identidade visual v2 · novembro de 2026</footer>
+
+<script>
+{
+const $=s=>document.querySelector(s),R=document.documentElement;
+const names=['bg','surface','surface-sub','sidebar','selected','ink','ink-muted','ink-hint','ocean','avocado','action','chart-bar','chart-peak','success-bg','success-ink','warning-bg','warning-ink','danger-bg','danger-ink'];
+let pDot=[18,44,79,.25],pLine=.06;
+const rgba=s=>{const m=s.match(/rgba?\(([^)]+)\)/);if(!m)return[18,44,79,.25];const v=m[1].split(',').map(Number);return[v[0],v[1],v[2],v[3]??1]};
+function readTheme(){const cs=getComputedStyle(R);
+ $('#chips').innerHTML=names.map(n=>{const v=cs.getPropertyValue('--'+n).trim();return `<div class="chip"><i style="background:${v}"></i><span>${n}<b>${v}</b></span></div>`}).join('');
+ pDot=rgba(cs.getPropertyValue('--particle'));pLine=rgba(cs.getPropertyValue('--particle-line'))[3]}
+const setTheme=t=>{R.dataset.theme=t;$('#tb').textContent=t==='dark'?'Modo claro':'Modo escuro';try{localStorage.setItem('mo-theme',t)}catch(e){}readTheme()};
+let saved=null;try{saved=localStorage.getItem('mo-theme')}catch(e){}
+setTheme(saved||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+$('#tb').addEventListener('click',()=>setTheme(R.dataset.theme==='dark'?'light':'dark'));
+
+const types=[['display','56px · 900','Caixa, estoque e vendas',56,900],['h1','40px · 800','Título de seção do site',40,800],['h2','28px · 800','Título de tela do sistema',28,800],['h3','19px · 700','Título de card',19,700],['kpi','28px · 800','R$ 4.218,30',28,800],['body','16px · 400','Texto corrido das telas e do site.',16,400],['small','14px · 400','Tabelas e textos de apoio.',14,400],['label','13px · 600','Rótulo de campo',13,600],['mono','13px · JetBrains Mono','7891000100103',13,400]];
+$('#types').innerHTML=types.map(t=>`<div class="trow"><div><strong>${t[0]}</strong><small>${t[1]}</small></div><div style="font-size:${t[3]}px;font-weight:${t[4]};line-height:1.15;letter-spacing:${t[3]>30?'-.02em':'0'};${t[0]==='mono'?'font-family:var(--font-mono)':''};font-variant-numeric:tabular-nums">${t[2]}</div></div>`).join('');
+
+const h=[['8h',12],['9h',24],['10h',31],['11h',38],['12h',29],['13h',18]],mx=38;
+$('#bars').innerHTML=h.map(x=>`<div>${x[1]===mx?`<b>${x[1]}</b>`:''}<i class="${x[1]===mx?'pk':''}" style="height:${x[1]/mx*78}%"></i><span>${x[0]}</span></div>`).join('');
+
+document.querySelectorAll('.copy').forEach(b=>b.addEventListener('click',async()=>{const src=$('#'+b.dataset.c);if(!src||!src.textContent.trim()){b.textContent='Rode o gerador';return}try{await navigator.clipboard.writeText(src.textContent);b.textContent='Copiado'}catch(e){b.textContent='Selecione e copie'}}));
+
+const c=$('#pc'),x=c.getContext('2d');let P=[],W=0,H=0;
+const size=()=>{W=c.width=innerWidth;H=c.height=innerHeight;const n=Math.min(Math.floor(W*H/8000),120);
+ P=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.5+.5,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,a:Math.random()*.5+.15}))};
+size();addEventListener('resize',size);
+const loop=()=>{const [r,g,b,A]=pDot;x.clearRect(0,0,W,H);
+ for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fillStyle=`rgba(${r},${g},${b},${p.a*A})`;x.fill()}
+ for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const s=Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y);if(s<120){x.strokeStyle=`rgba(${r},${g},${b},${(1-s/120)*pLine})`;x.lineWidth=.8;x.beginPath();x.moveTo(P[i].x,P[i].y);x.lineTo(P[j].x,P[j].y);x.stroke()}}
+ requestAnimationFrame(loop)};
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

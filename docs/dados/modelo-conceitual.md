@@ -6,9 +6,9 @@ Cada visão é um grafo conectado: uma entidade aparece apenas uma vez nela. Pro
 
 ## Cadastros e vendas
 
-![MER conceitual de cadastros e vendas: categorias classificam produtos; usuários operam vendas; clientes identificam vendas opcionalmente; vendas contêm itens e recebem pagamentos.](assets/mer-conceitual-vendas.svg)
+![MER conceitual de cadastros e vendas: categorias classificam produtos; usuários operam vendas; clientes identificam vendas opcionalmente; vendas contêm itens e recebem pagamentos.](mer-conceitual-vendas.svg)
 
-[Fonte PlantUML desta visão](assets/mer-conceitual-vendas.puml).
+[Fonte PlantUML desta visão](mer-conceitual-vendas.puml).
 
 - Cada Venda é operada por um Usuário e contém um ou mais Itens de Venda e um ou mais Pagamentos.
 - Cada Item de Venda pertence a uma Venda e refere-se a um Produto. Quantidade, preço praticado e total são atributos do Item, pois podem variar entre vendas do mesmo Produto.
@@ -16,9 +16,9 @@ Cada visão é um grafo conectado: uma entidade aparece apenas uma vez nela. Pro
 
 ## Estoque
 
-![MER conceitual de estoque: produto possui saldo e movimentações; fornecedor pode ser informado e usuário pode registrar movimentação.](assets/mer-conceitual-estoque.svg)
+![MER conceitual de estoque: produto possui saldo e movimentações; fornecedor pode ser informado e usuário pode registrar movimentação.](mer-conceitual-estoque.svg)
 
-[Fonte PlantUML desta visão](assets/mer-conceitual-estoque.puml).
+[Fonte PlantUML desta visão](mer-conceitual-estoque.puml).
 
 - Cada Saldo de Estoque pertence a um Produto; um Produto pode não ter saldo criado ainda.
 - Cada Movimentação altera um Produto e guarda a variação e os saldos anterior e posterior. Fornecedor e Usuário autor podem estar ausentes conforme a origem da movimentação.
@@ -28,9 +28,9 @@ Cada visão é um grafo conectado: uma entidade aparece apenas uma vez nela. Pro
 
 ## Sincronização e auditoria
 
-![MER conceitual de sincronização e auditoria: venda local, itens, produto, pagamentos, tentativas de sincronização, conflitos, venda confirmada, usuário e evento de auditoria.](assets/mer-conceitual-offline.svg)
+![MER conceitual de sincronização e auditoria: venda local, itens, produto, pagamentos, tentativas de sincronização, conflitos, venda confirmada, usuário e evento de auditoria.](mer-conceitual-offline.svg)
 
-[Fonte PlantUML desta visão](assets/mer-conceitual-offline.puml).
+[Fonte PlantUML desta visão](mer-conceitual-offline.puml).
 
 - A Venda Local preserva os Itens de Venda e Pagamentos registrados no PDV antes de qualquer tentativa de rede. Ela pode acumular tentativas de sincronização e gerar, no fluxo atual, no máximo um Conflito.
 - Cada Item de Venda local referencia um Produto do catálogo central; o PDV usa uma cópia local desse catálogo quando necessário.
@@ -43,4 +43,4 @@ Cada visão é um grafo conectado: uma entidade aparece apenas uma vez nela. Pro
 
 As cardinalidades `1,N` de Item de Venda e Pagamento expressam a regra de finalização da aplicação; o armazenamento, isoladamente, não impõe esse mínimo. Os vínculos `Venda Local — Conflito` e `Venda Local — Venda` cruzam o PDV e o servidor e são associações conceituais, sem integridade referencial entre bancos. A cardinalidade máxima de uma Venda confirmada por Venda Local é garantida no servidor pelo índice único de `sales.client_sale_id`, que recebe o identificador local. Não há conceito de Mercado multiloja persistido no estado atual.
 
-Fontes: [glossário de domínio](../CONTEXT.md), [migrações do servidor](../backend-api/src/main/resources/db/migration/), [fila local do PDV](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineSaleQueue.java), [catálogo local](../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineCatalogStore.java) e [regras de sincronização](offline-pdv-sync.md).
+Fontes: [glossário de domínio](../../CONTEXT.md), [migrações do servidor](../../backend-api/src/main/resources/db/migration/), [fila local do PDV](../../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineSaleQueue.java), [catálogo local](../../pdv-desktop/src/main/java/com/mercadoone/pdv/offline/OfflineCatalogStore.java) e [regras de sincronização](../arquitetura/offline-pdv-sync.md).

@@ -1,6 +1,6 @@
 # Uso do admin web
 
-Este guia descreve o que cada pessoa da loja faz no administrativo. A instalação do ambiente fica em [Desenvolvimento local](desenvolvimento-local.md). O que o sistema ainda não faz fica em [Backlog MVP](backlog-mvp.md).
+Este guia descreve o que cada pessoa da loja faz no administrativo. A instalação do ambiente fica em [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md). O que o sistema ainda não faz fica em [Backlog MVP](backlog-mvp.md).
 
 ## Quem entra
 
@@ -25,7 +25,7 @@ No tablet e no celular, use **Menu** para abrir as áreas do administrativo. O m
 4. Se a API não responder, a tela avisa que não foi possível conectar.
 5. Depois do acesso, o painel inferior mostra o nome, o perfil e o botão **Sair**.
 
-No ambiente de desenvolvimento, o campo de login já vem preenchido com `admin`. A senha desse ambiente está em [Desenvolvimento local](desenvolvimento-local.md), não neste guia.
+No ambiente de desenvolvimento, o campo de login já vem preenchido com `admin`. A senha desse ambiente está em [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md), não neste guia.
 
 ## Início
 

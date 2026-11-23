@@ -1,6 +1,6 @@
 # Modelo lógico relacional
 
-Este MLR deriva do schema real do PostgreSQL, obtido aplicando as migrations Flyway V1–V8 e extraindo o resultado com `pg_dump`. O modelo físico completo (tipos, defaults, índices e constraints) está em [assets/modelo-fisico.sql](assets/modelo-fisico.sql). O significado de cada campo está no [dicionário de dados](dicionario-de-dados.md) e os conceitos de negócio, no [MER conceitual](modelo-conceitual.md).
+Este MLR deriva do schema real do PostgreSQL, obtido aplicando as migrations Flyway V1–V8 e extraindo o resultado com `pg_dump`. O modelo físico completo (tipos, defaults, índices e constraints) está em [modelo-fisico.sql](modelo-fisico.sql). O significado de cada campo está no [dicionário de dados](dicionario-de-dados.md) e os conceitos de negócio, no [MER conceitual](modelo-conceitual.md).
 
 Notação: **sublinhado** = chave primária; `#campo` = chave estrangeira (→ tabela referenciada); `[U]` = valor único; `?` = aceita nulo.
 

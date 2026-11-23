@@ -2,7 +2,7 @@
 
 Cliente desktop do PDV Mercado One em JavaFX 25. Venda presencial com fila local em SQLite.
 
-Uso do caixa: [Uso do PDV](../docs/uso-pdv.md). Fila, sync e conflitos: [Offline PDV e sync](../docs/offline-pdv-sync.md).
+Uso do caixa: [Uso do PDV](../docs/produto/uso-pdv.md). Fila, sync e conflitos: [Offline PDV e sync](../docs/arquitetura/offline-pdv-sync.md).
 
 O PDV confirma online por `POST /api/sales` (idempotente por `clientSaleId`) depois de gravar a venda no SQLite; sem API, a venda fica na fila e sincroniza por `POST /api/offline/sales/sync`. O campo de login vem preenchido com `operador`; o seed local cria `admin` / `admin123`. A URL padrão da API é `http://localhost:8080`. O SQLite fica em `~/.mercado-one/pdv-offline.sqlite3`.
 
@@ -15,6 +15,6 @@ mvn test
 
 ## Documentação relacionada
 
-- [Offline PDV e sync](../docs/offline-pdv-sync.md)
-- [Dados e migrações](../docs/dados-e-migracoes.md)
-- [Testes e verificação](../docs/testes-e-verificacao.md)
+- [Offline PDV e sync](../docs/arquitetura/offline-pdv-sync.md)
+- [Dados e migrações](../docs/dados/dados-e-migracoes.md)
+- [Testes e verificação](../docs/desenvolvimento/testes-e-verificacao.md)

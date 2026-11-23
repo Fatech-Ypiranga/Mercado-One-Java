@@ -69,4 +69,4 @@ Flyway é a fonte de verdade para mudanças no schema servidor. O Hibernate vali
 
 ## Escopo
 
-O piloto na Azure fica em [Infraestrutura](../infra/README.md): API no App Service, PostgreSQL Flexible Server e admin no Static Web Apps. Não há fila de mensageria, worker separado nem aplicação mobile neste repositório.
+O piloto na Azure fica em [Infraestrutura](../../infra/README.md): API no App Service, PostgreSQL Flexible Server e admin no Static Web Apps. Não há fila de mensageria, worker separado nem aplicação mobile neste repositório.

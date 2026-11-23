@@ -1,10 +1,10 @@
 # Uso do PDV
 
-Este guia descreve a venda presencial no caixa. A instalação fica em [Desenvolvimento local](desenvolvimento-local.md). O que acontece com a fila e os conflitos, em detalhe técnico, fica em [Offline PDV e sync](offline-pdv-sync.md).
+Este guia descreve a venda presencial no caixa. A instalação fica em [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md). O que acontece com a fila e os conflitos, em detalhe técnico, fica em [Offline PDV e sync](../arquitetura/offline-pdv-sync.md).
 
 ## Quem usa
 
-O operador de caixa usa uma conta cadastrada no admin, em geral com perfil de operador de caixa. O campo **Login** abre preenchido com `operador`; troque pelo login do usuário real. No ambiente de desenvolvimento, a senha do usuário inicial está em [Desenvolvimento local](desenvolvimento-local.md).
+O operador de caixa usa uma conta cadastrada no admin, em geral com perfil de operador de caixa. O campo **Login** abre preenchido com `operador`; troque pelo login do usuário real. No ambiente de desenvolvimento, a senha do usuário inicial está em [Desenvolvimento local](../desenvolvimento/desenvolvimento-local.md).
 
 A tela também pede a **API**. O valor inicial é `http://localhost:8080`, ou o endereço da variável `MERCADO_ONE_API_URL`. Só altere se o administrador indicar outro endereço.
 
