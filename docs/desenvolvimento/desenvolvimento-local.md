@@ -111,7 +111,7 @@ O envio fica **desligado por padrão**. Com ele desligado, a tela `/esqueci-senh
 
 Só recebe o e-mail quem tem **e-mail cadastrado** (campo opcional na tela Usuários). As regras de segurança (resposta igual para conta existente ou não, link de uso único, hash do token no banco, 3 pedidos por hora) estão em [Contratos da API](api-contratos.md).
 
-Para testar localmente sem provedor, suba um SMTP de captura, por exemplo `docker run -p 1025:1025 -p 8025:8025 mailhog/mailhog`, aponte `MERCADO_ONE_MAIL_HOST=localhost`, `MERCADO_ONE_MAIL_PORT=1025`, `MERCADO_ONE_MAIL_STARTTLS=false` e `MERCADO_ONE_MAIL_FROM=nao-responda@mercado.test`, e leia os e-mails em `http://localhost:8025`.
+Na Azure, o passo a passo (Azure Communication Services e App Settings) está em [Infraestrutura](../../infra/README.md#redefinição-de-senha-por-e-mail-na-azure). Para testar localmente sem provedor, suba um SMTP de captura, por exemplo `docker run -p 1025:1025 -p 8025:8025 mailhog/mailhog`, aponte `MERCADO_ONE_MAIL_HOST=localhost`, `MERCADO_ONE_MAIL_PORT=1025`, `MERCADO_ONE_MAIL_STARTTLS=false` e `MERCADO_ONE_MAIL_FROM=nao-responda@mercado.test`, e leia os e-mails em `http://localhost:8025`.
 
 ### Build de produção
 

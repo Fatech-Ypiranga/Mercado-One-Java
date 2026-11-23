@@ -14,7 +14,7 @@ Se o Render atribuir um domínio diferente dos nomes `mercado-one-api` ou `merca
 
 ## Redefinição de senha por e-mail (opcional)
 
-Sem configuração, a tela **Esqueci a senha** orienta falar com o administrador do mercado, e nenhum e-mail sai. Para ligar o envio, no serviço `mercado-one-api` defina `MERCADO_ONE_MAIL_HOST`, `MERCADO_ONE_MAIL_USER`, `MERCADO_ONE_MAIL_PASSWORD` e `MERCADO_ONE_MAIL_FROM` (e `MERCADO_ONE_MAIL_PORT`, padrão 587) com os dados do seu provedor de SMTP, e confira `MERCADO_ONE_APP_URL` (o endereço público do painel, usado no link). O envio só liga quando host **e** remetente estão preenchidos. Detalhes e variáveis em [Desenvolvimento local](desenvolvimento-local.md#redefinição-de-senha-por-e-mail).
+Este guia é do Render. O piloto na Azure está em [Infraestrutura](../../infra/README.md#redefinição-de-senha-por-e-mail-na-azure). Sem configuração, a tela **Esqueci a senha** orienta falar com o administrador do mercado, e nenhum e-mail sai. Para ligar o envio, no serviço `mercado-one-api` defina `MERCADO_ONE_MAIL_HOST`, `MERCADO_ONE_MAIL_USER`, `MERCADO_ONE_MAIL_PASSWORD` e `MERCADO_ONE_MAIL_FROM` (e `MERCADO_ONE_MAIL_PORT`, padrão 587) com os dados do seu provedor de SMTP, e confira `MERCADO_ONE_APP_URL` (o endereço público do painel, usado no link). O envio só liga quando host **e** remetente estão preenchidos. Detalhes e variáveis em [Desenvolvimento local](desenvolvimento-local.md#redefinição-de-senha-por-e-mail).
 
 ## Canais de suporte do painel (opcional)
 
