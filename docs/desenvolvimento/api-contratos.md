@@ -43,6 +43,8 @@ Em erro:
 - `BUSINESS_RULE`: regra de negócio violada, como login duplicado ou estoque insuficiente. HTTP 400.
 - `MALFORMED_REQUEST`: corpo ou parâmetro em formato inválido. HTTP 400.
 - `INVALID_CREDENTIALS`: login ou senha inválidos. HTTP 401.
+- `UNAUTHENTICATED`: requisição sem token ou cookie válido (sessão ausente ou expirada). HTTP 401. Os clientes encerram a sessão local.
+- `FORBIDDEN`: usuário autenticado sem permissão para a operação, ou origem não confiável em escrita por cookie. HTTP 403. Os clientes **não** encerram a sessão.
 - `NOT_FOUND`: entidade ou rota inexistente. HTTP 404.
 - `DATA_CONFLICT`: valor duplicado ou referência inválida no banco. HTTP 409.
 - `INTERNAL_ERROR`: erro inesperado sem detalhe sensível para o cliente. HTTP 500.

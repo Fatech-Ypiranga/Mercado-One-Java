@@ -35,6 +35,8 @@ mvn test
 
 Os testes do PDV cobrem fila offline, catálogo local e checkout; a interface JavaFX (tema, fonte, layout) não tem teste automatizado e se confere abrindo o app com `mvn javafx:run`.
 
+Verificação integrada com PostgreSQL real: veja [infra/verificacao](../../infra/verificacao/README.md).
+
 Identidade visual: depois de editar `docs/marca/tokens.json`, rode `node docs/marca/gerar-tokens.mjs` na raiz. Ele atualiza o manual (`docs/marca/identidade-visual.html`), `admin-web/src/brand-tokens.css` e os `brand-tokens*.css` do PDV; confira o diff antes de commitar.
 
 ## Testes existentes
@@ -52,6 +54,7 @@ Identidade visual: depois de editar `docs/marca/tokens.json`, rode `node docs/ma
 - Backend (`OfflineStatusTests`): reenvio sem duplicar venda, venda offline com desconto, desconto acima do limite virando conflito e consulta de status após resolução.
 - Backend (`AuditControllerTests`): auditoria de produto, consulta restrita a `ADMIN` e nota de entrada multi-item atômica.
 - Backend (`PasswordAndOriginTests`): redefinição de senha pelo admin, troca da própria senha, admin impedido de se desativar ou rebaixar e recusa de escrita por cookie de origem não confiável.
+- Backend (`SecurityErrorResponseTests`, servidor HTTP real em porta aleatória): usuário autenticado sem permissão recebe 403 `FORBIDDEN` (e não 401, que o admin web trata como sessão expirada) e requisição sem token recebe 401 `UNAUTHENTICATED`, ambos no envelope da API. O MockMvc não repete o despacho de erro do contêiner e não enxerga esse defeito.
 - Backend (`ModuleBoundaryTests`, ArchUnit): módulos não dependem de `api` nem de `infrastructure` de outros módulos.
 - Backend (`PostgresMigrationTests`, Testcontainers): migrations Flyway V1–V8 aplicadas em PostgreSQL real, validação das entidades e fluxo básico de venda. Ignorado sem Docker.
 - Admin web: testes de raiz/shell, `AuthService` (cookie/`sessionStorage`, sem JWT em `localStorage`), `AccessService`, `InventoryService`, `CustomerService`, `SalesService`, `CatalogService`, `SupplierService`, `OfflineService`, interceptor com `withCredentials`, validação/erro do login, timeout de requisição sem resposta, dashboard, vendas e formulários/páginas de usuários, estoque, categorias, produtos, clientes, fornecedores e conflitos offline.
@@ -60,9 +63,22 @@ Identidade visual: depois de editar `docs/marca/tokens.json`, rode `node docs/ma
 
 O CI (`.github/workflows/ci.yml`) roda `mvn -B test` no backend e no PDV e `npm test` e `npm run build` no admin web, em pull requests e em push na `main`. Os testes e2e (Playwright) não rodam no CI.
 
-## Estado de verificação desta atualização
+## Estado de verificação
 
-Na refatoração do admin web, `npm test -- --code-coverage` passou com 71 specs: 80,94% de statements, 85,29% de linhas, 75,17% de funções e 62,65% de branches. `npm run build` passou com bundle inicial de 349,26 kB (orçamento de 500 kB), `npm run test:e2e` passou com 10 cenários em Chromium desktop e celular e `npm audit` encontrou 0 vulnerabilidades. Os testes de backend e PDV não foram executados nesta refatoração de interface.
+Última verificação completa: 23/11/2026, com JDK 25, na `main`.
+
+| Camada | Resultado |
+| --- | --- |
+| Backend (`mvn test`) | 59 testes, 0 falhas, nenhum ignorado. Inclui `PostgresMigrationTests` (Testcontainers), com as migrations V1–V8 em PostgreSQL real |
+| Admin web (`npm test`) | 71 specs. `npm run build` ok. `npm run test:e2e`: 10 cenários em Chromium desktop e celular |
+| PDV (`mvn test`) | 17 testes, 0 falhas |
+| Roteiro integrado ([infra/verificacao](../../infra/verificacao/README.md)) | 71 verificações contra a API real com PostgreSQL: permissões por perfil, cadastros, estoque, venda online, cancelamento, offline com conflito, relatórios, auditoria e senha |
+| Admin web real × API real | As 10 telas carregam dados reais pelo navegador, com login por cookie, sem resposta de erro e sem erro no console |
+| PDV real × API real | `CheckoutService` e fila SQLite reais: venda online, fila sem API, sincronização, conflito de preço e aceite no admin. O estoque do servidor fechou exatamente |
+
+A verificação integrada encontrou um defeito que nenhum teste anterior pegava: negação de permissão devolvia 401 em vez de 403 no servidor real. Corrigido em `SecurityErrorHandlers` e coberto por `SecurityErrorResponseTests`.
+
+O CI roda os testes de backend, PDV e admin (unitários e build). O roteiro integrado, o e2e e a verificação de PDV e admin contra a API real são manuais.
 
 ## Diretrizes
 

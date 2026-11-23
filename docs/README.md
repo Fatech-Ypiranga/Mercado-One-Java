@@ -94,3 +94,4 @@ docs/
 | [../admin-web/README.md](../admin-web/README.md) | Rotas, sessão e comandos Angular |
 | [../pdv-desktop/README.md](../pdv-desktop/README.md) | Comandos do PDV JavaFX |
 | [../infra/README.md](../infra/README.md) | PostgreSQL local via Compose e piloto Azure |
+| [../infra/verificacao/README.md](../infra/verificacao/README.md) | Roteiro integrado do MVP contra a API real com PostgreSQL descartável |
