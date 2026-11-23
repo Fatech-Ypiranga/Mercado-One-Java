@@ -95,6 +95,24 @@ Saída em `output/admin-web-dist` (pasta `output/` ignorada pelo git). Cache do 
 MERCADO_ONE_API_BASE_URL=https://exemplo.azurewebsites.net npm run build:production
 ```
 
+### Redefinição de senha por e-mail
+
+O envio fica **desligado por padrão**. Com ele desligado, a tela `/esqueci-senha` explica que o administrador redefine a senha em **Usuários**. Para ligar, defina no ambiente da API (`.env` ou variáveis do processo):
+
+| Variável | Para que serve | Padrão |
+| --- | --- | --- |
+| `MERCADO_ONE_MAIL_HOST` | Servidor SMTP. Vazio mantém o envio desligado | vazio |
+| `MERCADO_ONE_MAIL_FROM` | Remetente. Vazio mantém o envio desligado | vazio |
+| `MERCADO_ONE_MAIL_PORT` | Porta do SMTP | `587` |
+| `MERCADO_ONE_MAIL_USER`, `MERCADO_ONE_MAIL_PASSWORD` | Credenciais do SMTP, se o provedor exigir | vazio |
+| `MERCADO_ONE_MAIL_STARTTLS` | Usa STARTTLS | `true` |
+| `MERCADO_ONE_APP_URL` | Endereço público do painel, usado no link do e-mail | `http://localhost:4200` |
+| `MERCADO_ONE_PASSWORD_RESET_MINUTES` | Validade do link | `60` |
+
+Só recebe o e-mail quem tem **e-mail cadastrado** (campo opcional na tela Usuários). As regras de segurança (resposta igual para conta existente ou não, link de uso único, hash do token no banco, 3 pedidos por hora) estão em [Contratos da API](api-contratos.md).
+
+Para testar localmente sem provedor, suba um SMTP de captura, por exemplo `docker run -p 1025:1025 -p 8025:8025 mailhog/mailhog`, aponte `MERCADO_ONE_MAIL_HOST=localhost`, `MERCADO_ONE_MAIL_PORT=1025`, `MERCADO_ONE_MAIL_STARTTLS=false` e `MERCADO_ONE_MAIL_FROM=nao-responda@mercado.test`, e leia os e-mails em `http://localhost:8025`.
+
 ### Build de produção
 
 Além da URL da API, o painel aceita, de forma opcional, os canais da tela **Fale com o suporte** (`/suporte`):

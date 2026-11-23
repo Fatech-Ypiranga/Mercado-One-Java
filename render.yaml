@@ -34,6 +34,21 @@ services:
         value: https://mercado-one-admin.onrender.com
       - key: MERCADO_ONE_COOKIE_SECURE
         value: "true"
+      # Redefinicao de senha por e-mail: endereco publico do painel, usado no link do e-mail.
+      - key: MERCADO_ONE_APP_URL
+        value: https://mercado-one-admin.onrender.com
+      # Envio de e-mail (SMTP). Sem host e remetente o envio fica desligado e a tela de
+      # "Esqueci a senha" orienta falar com o administrador. Preencha no painel do Render.
+      - key: MERCADO_ONE_MAIL_HOST
+        sync: false
+      - key: MERCADO_ONE_MAIL_PORT
+        value: "587"
+      - key: MERCADO_ONE_MAIL_USER
+        sync: false
+      - key: MERCADO_ONE_MAIL_PASSWORD
+        sync: false
+      - key: MERCADO_ONE_MAIL_FROM
+        sync: false
       - key: MERCADO_ONE_SEED_ADMIN_ENABLED
         value: "true"
       - key: MERCADO_ONE_SEED_ADMIN_NAME

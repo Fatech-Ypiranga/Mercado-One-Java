@@ -6,7 +6,7 @@ O PDV registra toda venda no SQLite local antes de acessar a rede. A venda local
 
 - Caminho padrão: `~/.mercado-one/pdv-offline.sqlite3` (`OfflineStorageConfig`).
 - Fila: `offline_sales`, `offline_sale_items`, `offline_sale_payments` e `offline_sale_sync_attempts` (histórico de tentativas).
-- Credenciais: `operator_credentials` (login, nome, sal, hash PBKDF2-HMAC-SHA256, iterações). Nunca guarda a senha. Permite a entrada offline de quem já entrou online neste computador (`OperatorCredentialStore`, `OperatorAccess`).
+- Credenciais: `operator_credentials` (login, nome, sal, hash PBKDF2-HMAC-SHA256, iterações). Nunca guarda a senha. Vale 30 dias desde a última entrada online (`updated_at`). Permite a entrada offline de quem já entrou online neste computador (`OperatorCredentialStore`, `OperatorAccess`).
 - Operador da venda: `offline_sales.operator_login`, gravado no checkout e enviado como `operatorLogin` na sincronização. Vendas anteriores a esta coluna ficam sem valor e valem para quem as enviar.
 - Catálogo: `local_catalog_products`, substituído por completo no login, na busca vazia bem-sucedida e no botão de atualizar catálogo. Usado quando a API não responde ou não há sessão.
 

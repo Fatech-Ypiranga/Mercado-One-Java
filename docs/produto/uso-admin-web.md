@@ -27,12 +27,22 @@ No tablet e no celular, use **Menu** para abrir as áreas do administrativo. O m
 
 ### Esqueci a senha
 
-O sistema **não envia link de redefinição por e-mail**. Quem redefine a senha é o administrador do mercado:
+A tela `/esqueci-senha` tem dois modos, conforme o servidor esteja ou não configurado para enviar e-mail.
+
+**Com e-mail configurado** (veja [Redefinição de senha por e-mail](../desenvolvimento/desenvolvimento-local.md#redefinição-de-senha-por-e-mail)):
+
+1. Informe o **login ou o e-mail** e use **Enviar link**. A tela responde sempre igual, exista ou não a conta, para não revelar quem é usuário.
+2. Abra o e-mail, que vale por 60 minutos e só pode ser usado uma vez, e crie a senha nova. Veja a caixa de spam.
+3. Se o link vencer ou já tiver sido usado, a tela mostra **Este link não vale mais** e leva a um pedido novo. Cada pedido novo invalida os anteriores, e cada conta aceita até 3 pedidos por hora.
+
+Só recebe o e-mail quem tem **e-mail cadastrado** em Usuários (campo opcional) e está ativo.
+
+**Sem e-mail configurado**, ou quando a conta não tem e-mail cadastrado, quem redefine a senha é o administrador do mercado:
 
 1. Peça ao administrador para abrir **Usuários**, escolher o seu cadastro e usar **Redefinir senha**.
 2. Entre com a senha nova e, em **Minha conta**, troque por uma só sua.
 
-Se quem perdeu o acesso é o próprio administrador, use **Fale com o suporte**. A tela `/esqueci-senha` mostra esses passos.
+Se quem perdeu o acesso é o próprio administrador, use **Fale com o suporte**.
 
 ### Fale com o suporte
 

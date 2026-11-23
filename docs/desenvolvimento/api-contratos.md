@@ -86,6 +86,27 @@ Exemplo de payload:
 - Response: `ApiEnvelope<{ accessToken, tokenType, expiresAt, user }>` com `user.id`, `user.nome`, `user.login` e `user.perfil`.
 - Também emite cookie `mercado_one_admin_session` (HttpOnly, Path=/, SameSite=Lax no ambiente local ou Secure e SameSite=None com `MERCADO_ONE_COOKIE_SECURE=true`). O PDV usa o `accessToken` como Bearer; o admin web usa o cookie.
 
+`GET /api/auth/password-reset/status`
+
+- Público. Retorna `ApiEnvelope<{ enabled }>`: o servidor tem SMTP configurado (`MERCADO_ONE_MAIL_HOST` e `MERCADO_ONE_MAIL_FROM`)? A tela usa isto para escolher entre o formulário de e-mail e a orientação de falar com o administrador.
+
+`POST /api/auth/password-reset/request`
+
+- Público. Request: `{ "identifier": "login ou e-mail" }` (máx. 180).
+- Responde `200` sempre igual, exista ou não a conta, esteja ela ativa ou tenha ou não e-mail. Não revela quem é usuário. O envio roda depois do commit e em outra thread, para o tempo de resposta também não revelar.
+- Gera um token aleatório de 256 bits, vale `MERCADO_ONE_PASSWORD_RESET_MINUTES` (padrão 60), uso único. O banco guarda só o hash SHA-256. Um pedido novo invalida os links abertos do mesmo usuário. Máximo de 3 pedidos por hora por usuário; acima disso a resposta continua igual e nada é enviado.
+- Sem SMTP configurado responde `503` com `error.code="RESET_UNAVAILABLE"`.
+
+`POST /api/auth/password-reset/check`
+
+- Público. Request: `{ "token": "..." }`. Retorna `ApiEnvelope<{ valid }>`. Não gasta o link.
+
+`POST /api/auth/password-reset/confirm`
+
+- Público. Request: `{ "token": "...", "password": "..." }` (6 a 120 caracteres).
+- Link inexistente, vencido ou já usado: `400` com `error.code="RESET_LINK_INVALID"`, sem dizer qual dos três. Senha inválida não gasta o link.
+- Auditoria: `PASSWORD_RESET_REQUESTED` e `USER_PASSWORD_RESET_BY_EMAIL`.
+
 `GET /api/auth/me`
 
 - Protegido por `Authorization: Bearer <token>` ou cookie `mercado_one_admin_session`.
@@ -113,19 +134,19 @@ Exemplo de payload:
 
 - Protegido.
 - Filtros opcionais: `search`, `role`, `active`.
-- Retorna `ApiEnvelope<Array<{ id, nome, login, perfil, status, createdAt, updatedAt }>>`.
+- Retorna `ApiEnvelope<Array<{ id, nome, login, email, perfil, status, createdAt, updatedAt }>>`. `email` é nulo quando não cadastrado.
 - Não retorna senha nem hash de senha.
 
 `POST /api/access/users`
 
 - Protegido.
 - Cria usuário com senha obrigatória.
-- Request: `{ "nome": "Gerente Loja", "login": "gerente", "password": "senha123", "perfil": "GERENTE", "active": true }`.
+- Request: `{ "nome": "Gerente Loja", "login": "gerente", "password": "senha123", "perfil": "GERENTE", "active": true, "email": "gerente@seumercado.com.br" }`. `email` é opcional, precisa ser válido e não pode repetir entre usuários (sem diferenciar maiúsculas); é o que habilita a redefinição de senha por e-mail.
 
 `PUT /api/access/users/{id}`
 
 - Protegido.
-- Atualiza nome, login, perfil e status.
+- Atualiza nome, login, e-mail, perfil e status. `email` vazio ou `null` remove o e-mail cadastrado.
 - `password` é opcional; quando omitido ou `null`, a senha atual é preservada.
 
 `POST /api/access/users/{id}/password`

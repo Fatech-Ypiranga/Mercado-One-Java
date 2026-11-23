@@ -12,6 +12,10 @@ O Blueprint da raiz (`render.yaml`) cria a API Spring Boot, um PostgreSQL e o pa
 
 Se o Render atribuir um domínio diferente dos nomes `mercado-one-api` ou `mercado-one-admin`, ajuste `MERCADO_ONE_API_BASE_URL` no serviço estático e `MERCADO_ONE_CORS_ALLOWED_ORIGINS` no serviço da API para os domínios exibidos no Dashboard; salve e faça novo deploy dos serviços afetados.
 
+## Redefinição de senha por e-mail (opcional)
+
+Sem configuração, a tela **Esqueci a senha** orienta falar com o administrador do mercado, e nenhum e-mail sai. Para ligar o envio, no serviço `mercado-one-api` defina `MERCADO_ONE_MAIL_HOST`, `MERCADO_ONE_MAIL_USER`, `MERCADO_ONE_MAIL_PASSWORD` e `MERCADO_ONE_MAIL_FROM` (e `MERCADO_ONE_MAIL_PORT`, padrão 587) com os dados do seu provedor de SMTP, e confira `MERCADO_ONE_APP_URL` (o endereço público do painel, usado no link). O envio só liga quando host **e** remetente estão preenchidos. Detalhes e variáveis em [Desenvolvimento local](desenvolvimento-local.md#redefinição-de-senha-por-e-mail).
+
 ## Canais de suporte do painel (opcional)
 
 A tela **Fale com o suporte** do painel mostra os canais definidos no build. No serviço estático `mercado-one-admin`, adicione as variáveis de ambiente `MERCADO_ONE_SUPPORT_WHATSAPP` (só dígitos, com 55 e DDD), `MERCADO_ONE_SUPPORT_EMAIL` e `MERCADO_ONE_SUPPORT_HOURS` e refaça o deploy. Sem elas, a tela avisa que os canais ainda não foram configurados. Detalhes em [Desenvolvimento local](desenvolvimento-local.md#build-de-produção).
