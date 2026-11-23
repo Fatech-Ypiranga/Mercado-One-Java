@@ -1,53 +1,86 @@
-<main class="login-layout">
-  <section class="login-intro">
-    <div class="brand-row">
-      <img class="brand-mark brand-mark-light" src="brand/mercadoone-simbolo.svg" alt="" width="44" height="35" />
-      <img class="brand-mark brand-mark-dark" src="brand/mercadoone-simbolo-negativa.svg" alt="" width="44" height="35" />
-      <span>
-        <strong class="wordmark" aria-label="Mercado One">mercado<span>One</span></strong>
-        <small>Administrativo</small>
-      </span>
+<form class="login-card" [formGroup]="form" (ngSubmit)="submit()" novalidate aria-labelledby="login-title">
+  <div class="login-head">
+    <h1 class="login-title" id="login-title" tabindex="-1" #heading>Bem-vindo de volta</h1>
+    <p class="login-subtitle">Entre para abrir o administrativo do seu mercado.</p>
+  </div>
+
+  @if (errorMessage) {
+    <div class="login-alert" id="login-erro" role="alert">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
+      <span>{{ errorMessage }}</span>
     </div>
-    <p class="eyebrow">Operação do mercado</p>
-    <p class="display">Tudo em ordem, em um só lugar.</p>
-    <p>Cadastros, estoque e vendas para quem cuida da operação todos os dias.</p>
-  </section>
+  }
 
-  <section class="login-panel" aria-labelledby="login-title">
-    <header>
-      <p class="eyebrow">Acesso</p>
-      <h1 id="login-title">Acesse sua conta</h1>
-      <p class="login-subtitle">Entre com suas credenciais do Mercado One.</p>
-    </header>
-
-    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
-      <label>
-        Login ou email
-        <input type="text" formControlName="login" autocomplete="username" [attr.aria-invalid]="form.controls.login.touched && form.controls.login.invalid" aria-describedby="login-validation" />
-      </label>
-      @if (form.controls.login.touched && form.controls.login.invalid) {
-        <p id="login-validation" class="field-error">Informe o login.</p>
-      }
-
-      <label>
-        Senha
-        <input type="password" formControlName="password" autocomplete="current-password" [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid" aria-describedby="password-validation" />
-      </label>
-      @if (form.controls.password.touched && form.controls.password.invalid) {
-        <p id="password-validation" class="field-error">Informe a senha.</p>
-      }
-
-      @if (errorMessage) {
-        <p class="form-error" role="alert">{{ errorMessage }}</p>
-      }
-
-      <button type="submit" class="primary-button" [disabled]="loading">
-        {{ loading ? 'Entrando...' : 'Entrar' }}
-      </button>
-    </form>
-
-    @if (!production) {
-      <p class="login-hint">Admin inicial de desenvolvimento: admin</p>
+  <div class="login-field">
+    <label class="login-label" for="login">Login ou e-mail</label>
+    <input
+      class="login-input"
+      id="login"
+      type="text"
+      formControlName="login"
+      autocomplete="username"
+      autocapitalize="none"
+      spellcheck="false"
+      [readOnly]="loading"
+      [attr.aria-invalid]="(form.controls.login.touched && form.controls.login.invalid) || errorMessage ? 'true' : null"
+      [attr.aria-describedby]="form.controls.login.touched && form.controls.login.invalid ? 'login-validation' : null"
+    />
+    @if (form.controls.login.touched && form.controls.login.invalid) {
+      <p class="login-field-error" id="login-validation">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
+        <span>Informe o login.</span>
+      </p>
     }
-  </section>
-</main>
+  </div>
+
+  <div class="login-field">
+    <div class="login-label-row">
+      <label class="login-label" for="senha">Senha</label>
+      <a class="login-link" routerLink="/esqueci-senha">Esqueci a senha</a>
+    </div>
+    <div class="login-input-wrap">
+      <input
+        class="login-input login-input--password"
+        id="senha"
+        [type]="showPassword ? 'text' : 'password'"
+        formControlName="password"
+        autocomplete="current-password"
+        [readOnly]="loading"
+        [attr.aria-invalid]="(form.controls.password.touched && form.controls.password.invalid) || errorMessage ? 'true' : null"
+        [attr.aria-describedby]="form.controls.password.touched && form.controls.password.invalid ? 'password-validation' : (errorMessage ? 'login-erro' : null)"
+      />
+      <button
+        class="login-eye"
+        type="button"
+        [attr.aria-label]="showPassword ? 'Ocultar senha' : 'Mostrar senha'"
+        [attr.aria-pressed]="showPassword"
+        aria-controls="senha"
+        (click)="togglePassword()"
+      >
+        @if (showPassword) {
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18" /><path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.5 0 10 7 10 7a17 17 0 0 1-3.2 4.2M6.3 6.3A17 17 0 0 0 2 12s3.5 7 10 7a10 10 0 0 0 4.2-.9" /><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" /></svg>
+        } @else {
+          <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></svg>
+        }
+      </button>
+    </div>
+    @if (form.controls.password.touched && form.controls.password.invalid) {
+      <p class="login-field-error" id="password-validation">
+        <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5v5.5M12 16.5h.01" /></svg>
+        <span>Informe a senha.</span>
+      </p>
+    }
+  </div>
+
+  <button class="login-submit" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+    @if (loading) {
+      <span class="login-spinner" aria-hidden="true"></span>
+    }
+    <span>{{ loading ? 'Entrando...' : 'Entrar' }}</span>
+  </button>
+
+  <p class="login-help">Precisa de ajuda? <a routerLink="/suporte">Fale com o suporte</a></p>
+  @if (!production) {
+    <p class="login-help">Admin inicial de desenvolvimento: admin</p>
+  }
+</form>

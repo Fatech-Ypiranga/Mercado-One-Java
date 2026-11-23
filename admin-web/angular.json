@@ -45,7 +45,10 @@
           "configurations": {
             "production": {
               "define": {
-                "MERCADO_ONE_API_BASE_URL": "\"\""
+                "MERCADO_ONE_API_BASE_URL": "\"\"",
+                "MERCADO_ONE_SUPPORT_WHATSAPP": "\"\"",
+                "MERCADO_ONE_SUPPORT_EMAIL": "\"\"",
+                "MERCADO_ONE_SUPPORT_HOURS": "\"\""
               },
               "fileReplacements": [
                 {

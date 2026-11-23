@@ -95,6 +95,18 @@ Saída em `output/admin-web-dist` (pasta `output/` ignorada pelo git). Cache do 
 MERCADO_ONE_API_BASE_URL=https://exemplo.azurewebsites.net npm run build:production
 ```
 
+### Build de produção
+
+Além da URL da API, o painel aceita, de forma opcional, os canais da tela **Fale com o suporte** (`/suporte`):
+
+| Variável | Formato | Exemplo |
+| --- | --- | --- |
+| `MERCADO_ONE_SUPPORT_WHATSAPP` | só dígitos, com 55 e DDD | `5517999999999` |
+| `MERCADO_ONE_SUPPORT_EMAIL` | e-mail | `suporte@seumercado.com.br` |
+| `MERCADO_ONE_SUPPORT_HOURS` | texto livre | `segunda a sexta, das 8h às 18h` |
+
+Sem elas, a tela de suporte avisa que os canais ainda não foram configurados. O script recusa WhatsApp ou e-mail inválidos antes de compilar. Em desenvolvimento os valores ficam em `admin-web/src/environments/environment.ts`.
+
 ## PDV desktop
 
 ```bash

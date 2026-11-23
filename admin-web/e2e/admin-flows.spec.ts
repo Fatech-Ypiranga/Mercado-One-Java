@@ -184,3 +184,49 @@ test('barcode scanner Enter does not submit the product form', async ({ page, is
   await page.waitForTimeout(300);
   expect(posted).toBe(false);
 });
+
+test('access screens link to each other and keep focus on the screen title', async ({ page }) => {
+  await setupApi(page);
+  await page.goto('/login');
+  await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible();
+
+  await page.getByRole('link', { name: 'Esqueci a senha' }).click();
+  await expect(page).toHaveURL(/\/esqueci-senha$/);
+  await expect(page.getByRole('heading', { name: 'Esqueceu a senha?' })).toBeFocused();
+  await expect(page.locator('form')).toHaveCount(0); // sem formulário falso de "enviar link por e-mail"
+
+  await page.getByRole('link', { name: 'Fale com o suporte' }).click();
+  await expect(page).toHaveURL(/\/suporte$/);
+  await expect(page.getByRole('heading', { name: 'Fale com o suporte' })).toBeFocused();
+  await expect(page.getByRole('link', { name: /WhatsApp/ })).toHaveAttribute('href', /^https:\/\/wa\.me\/55\d{10,11}$/);
+
+  await page.getByRole('link', { name: 'Voltar para o login' }).click();
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeFocused();
+});
+
+test('protected areas still send an unauthenticated visitor to the login', async ({ page }) => {
+  await setupApi(page);
+  await page.goto('/produtos');
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeVisible();
+});
+
+test('wrong credentials show one generic alert and keep the form usable', async ({ page }) => {
+  await setupApi(page, async (route) => {
+    if (new URL(route.request().url()).pathname !== '/api/auth/login') return false;
+    await route.fulfill({
+      status: 401, contentType: 'application/json',
+      headers: { 'access-control-allow-origin': route.request().headers()['origin'] ?? 'http://127.0.0.1:4200', 'access-control-allow-credentials': 'true' },
+      body: JSON.stringify({ success: false, data: null, error: { code: 'INVALID_CREDENTIALS', message: 'Login ou senha invalidos.', details: [] }, timestamp: now }),
+    });
+    return true;
+  });
+  await page.goto('/login');
+  await page.locator('input[formcontrolname="login"]').fill('alguem');
+  await page.locator('input[formcontrolname="password"]').fill('errada');
+  await page.getByRole('button', { name: 'Entrar', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('Login ou senha incorretos. Confira os dados e tente de novo.');
+  await expect(page).toHaveURL(/\/login$/);
+  await expect(page.getByRole('button', { name: 'Entrar', exact: true })).toBeEnabled();
+});

@@ -287,10 +287,7 @@ main {
   margin: 0 0 8px;
 }
 
-.page-header h1,
-.login-intro h1,
-.login-intro .display,
-.login-panel h1 {
+.page-header h1 {
   color: var(--color-foreground);
   font-family: var(--font-display);
   font-size: 2.2rem;
@@ -300,8 +297,7 @@ main {
   margin: 0;
 }
 
-.page-header span,
-.login-intro p:last-child {
+.page-header span {
   color: var(--color-muted);
   display: block;
   margin-top: 8px;
@@ -621,46 +617,6 @@ tbody tr.interactive.selected:hover td {
   border-left: 3px solid var(--color-success);
 }
 
-.login-layout {
-  min-height: 100dvh;
-  display: grid;
-  grid-template-columns: minmax(280px, 1.15fr) minmax(320px, 0.85fr);
-}
-
-.login-intro {
-  display: grid;
-  align-content: end;
-  gap: var(--space-4);
-  padding: var(--space-7);
-  border-right: 1px solid var(--color-border-strong);
-}
-
-.login-intro .brand-row {
-  margin-bottom: var(--space-5);
-}
-
-.login-panel {
-  display: grid;
-  align-content: center;
-  gap: var(--space-5);
-  max-width: 420px;
-  padding: var(--space-7);
-  width: 100%;
-  background: transparent;
-  border: 0;
-}
-
-.login-panel form {
-  display: grid;
-  gap: 14px;
-}
-
-.login-hint {
-  color: var(--color-muted);
-  font-size: 0.88rem;
-  margin: 0;
-}
-
 .duty-line {
   display: flex;
   flex-wrap: wrap;
@@ -841,7 +797,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--ocean); }
 .app-shell > main { width: 100%; max-width: 1600px; padding: 36px 48px 64px; margin-inline: auto; }
 
 .page-header { border-bottom: 0; margin-bottom: 24px; padding-bottom: 0; }
-.page-header h1, .login-panel h1, .login-intro .display { font-family: var(--font-sans); font-weight: 800; letter-spacing: -0.02em; }
+.page-header h1 { font-family: var(--font-sans); font-weight: 800; letter-spacing: -0.02em; }
 .page-header h1 { font-size: 2rem; }
 .page-header span { max-width: 60rem; }
 .page-header p, .eyebrow { color: var(--color-hint); }
@@ -887,24 +843,6 @@ tbody tr.interactive:hover td { background: var(--color-surface-sub); }
 .field-error, .form-error, .form-success { border-radius: 8px; }
 .state-message { line-height: 1.55; }
 
-.login-layout { grid-template-columns: minmax(0, 1fr) minmax(370px, 500px); background: var(--color-background); }
-.login-intro {
-  align-content: center;
-  gap: 20px;
-  padding: 80px;
-  border: 0;
-  background: var(--color-background);
-}
-.login-intro .brand-row { margin: 0 0 64px; }
-.login-intro .display { font-size: 4.5rem; line-height: 1.04; max-width: 750px; }
-.login-intro p:last-child { font-size: 1.06rem; max-width: 540px; }
-.login-panel { align-content: center; max-width: none; padding: 48px; background: var(--color-surface); border-left: 1px solid var(--color-border); }
-.login-panel form { gap: 16px; }
-.login-panel h1 { font-size: 2rem; }
-.login-subtitle { margin: 8px 0 0; color: var(--color-muted); }
-.login-panel .primary-button { margin-top: 8px; }
-.login-layout { padding: 0; }
-
 .dashboard-page .duty-line { margin-bottom: 24px; }
 .dashboard-page .briefing { gap: 20px; }
 .dashboard-page .briefing-block { min-height: 260px; }
@@ -940,12 +878,7 @@ tbody tr.interactive:hover td { background: var(--color-surface-sub); }
   .app-shell > main { padding: 24px 20px 48px; }
   .workspace, .content-grid, .content-grid.wide, .briefing, .conflict-workspace { grid-template-columns: 1fr; }
   .record-sheet, .form-panel { border-left: 1px solid var(--color-border); }
-  .login-layout { grid-template-columns: 1fr; }
-  .login-intro { padding: 32px; border-bottom: 1px solid var(--color-border); }
-  .login-intro .brand-row { margin-bottom: 12px; }
-  .login-intro .display { font-size: 2.5rem; }
   .page-header h1 { font-size: 2.1rem; }
-  .login-panel { padding: 32px; }
 }
 @media (max-width: 719px) {
   .sidebar { padding-inline: 16px; }
@@ -955,9 +888,6 @@ tbody tr.interactive:hover td { background: var(--color-surface-sub); }
   .filter-rule, .toolbar { padding: 14px; }
   .filter-rule label, .toolbar label { max-width: none; }
   .form-grid { grid-template-columns: 1fr; }
-  .login-intro { padding: 24px 20px; }
-  .login-intro .display { font-size: 2rem; }
   .page-header h1 { font-size: 1.9rem; }
-  .login-panel { padding: 32px 20px; }
   .dashboard-page .department-index { grid-template-columns: 1fr; }
 }

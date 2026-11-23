@@ -1,0 +1,31 @@
+<div class="login-page">
+  <!-- Fundo decorativo -->
+  <div class="login-bg" aria-hidden="true">
+    <div class="login-bg__gradient"></div>
+    <div class="login-bg__ui">
+      <div class="login-bg__side">
+        <div class="login-bg__logo"></div>
+        <div class="login-bg__nav"><i style="width: 150px"></i><i style="width: 120px"></i><i style="width: 140px"></i><i style="width: 100px"></i></div>
+      </div>
+      <div class="login-bg__main">
+        <div class="login-bg__title"></div>
+        <div class="login-bg__stats"><i></i><i></i><i></i></div>
+        <div class="login-bg__table">
+          @for (row of rows; track row) {
+            <div class="login-bg__row"><i></i><i></i><i></i><i></i></div>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="login-bg__vignette"></div>
+  </div>
+
+  <header class="login-brand">
+    <img class="login-logo" src="brand/mercadoone-simbolo-negativa.svg" alt="" width="46" height="37" />
+    <span class="login-wordmark" aria-label="mercadoOne">mercado<span>One</span></span>
+  </header>
+
+  <main>
+    <router-outlet />
+  </main>
+</div>

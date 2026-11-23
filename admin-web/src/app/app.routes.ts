@@ -3,7 +3,6 @@ import { Routes } from '@angular/router';
 import { AdminShellComponent } from './admin-shell.component';
 import { authChildGuard, authGuard } from './core/auth.guard';
 export const routes: Routes = [
-  { path: 'login', loadComponent: () => import('./features/account/login-page.component').then((m) => m.LoginPageComponent) },
   {
     path: '',
     component: AdminShellComponent,
@@ -22,6 +21,18 @@ export const routes: Routes = [
       { path: 'auditoria', loadComponent: () => import('./features/audit/audit-page.component').then((m) => m.AuditPageComponent), data: { roles: ['ADMIN'] } },
       { path: 'meu-caixa', loadComponent: () => import('./features/sales/my-cash-page.component').then((m) => m.MyCashPageComponent), data: { roles: ['ADMIN', 'GERENTE', 'OPERADOR_CAIXA'] } },
       { path: 'minha-conta', loadComponent: () => import('./features/account/my-account-page.component').then((m) => m.MyAccountPageComponent) },
+    ],
+  },
+  {
+    // Telas de acesso, sob a mesma moldura (fundo, marca e card).
+    // Fica DEPOIS do shell logado de propósito: uma rota de caminho vazio com componente e filhos casa também com "/",
+    // e se viesse antes, "/" mostraria só esta moldura em vez do painel.
+    path: '',
+    loadComponent: () => import('./features/account/auth-shell.component').then((m) => m.AuthShellComponent),
+    children: [
+      { path: 'login', title: 'Entrar · mercadoOne', loadComponent: () => import('./features/account/login-page.component').then((m) => m.LoginPageComponent) },
+      { path: 'esqueci-senha', title: 'Esqueci a senha · mercadoOne', loadComponent: () => import('./features/account/forgot-password-page.component').then((m) => m.ForgotPasswordPageComponent) },
+      { path: 'suporte', title: 'Suporte · mercadoOne', loadComponent: () => import('./features/account/support-page.component').then((m) => m.SupportPageComponent) },
     ],
   },
   { path: '**', redirectTo: '' },

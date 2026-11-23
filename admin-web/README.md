@@ -10,6 +10,8 @@ Credencial inicial de desenvolvimento: `admin` / `admin123`.
 
 ```text
 /login        Login do admin web
+/esqueci-senha Como redefinir a senha: o administrador faz isso (público)
+/suporte      Canais de suporte configurados no ambiente (público)
 /             Início (ADMIN, GERENTE, ESTOQUISTA)
 /usuarios     Usuários e perfis (ADMIN)
 /produtos     Produtos (ADMIN, GERENTE)
@@ -39,7 +41,9 @@ npm run build
 MERCADO_ONE_API_BASE_URL=https://exemplo.azurewebsites.net npm run build:production
 ```
 
-`npm test` já inclui `--watch=false` e usa Karma `ChromeHeadlessNoGpu`. Para `npm run test:e2e`, mantenha `npm start` em outro terminal; os testes Playwright simulam as respostas da API. O build grava em `../output/admin-web-dist`. `build:production` grava a URL pública da API no bundle.
+Telas de acesso (`/login`, `/esqueci-senha`, `/suporte`): `src/app/features/account/auth-shell.component.*` traz a moldura e o estilo compartilhados (fundo, marca, card), com as cores dos tokens da marca. A tela de esqueci a senha explica o fluxo real (redefinição pelo administrador) em vez de simular envio de e-mail.
+
+`npm test` já inclui `--watch=false` e usa Karma `ChromeHeadlessNoGpu`. Para `npm run test:e2e`, mantenha `npm start` em outro terminal; os testes Playwright simulam as respostas da API. O build grava em `../output/admin-web-dist`. `build:production` grava a URL pública da API no bundle e, se definidas, os canais da tela de suporte: `MERCADO_ONE_SUPPORT_WHATSAPP` (só dígitos, com 55 e DDD, ex.: `5517999999999`), `MERCADO_ONE_SUPPORT_EMAIL` e `MERCADO_ONE_SUPPORT_HOURS` (texto livre). Todas são opcionais; o que ficar vazio não aparece. O script recusa WhatsApp ou e-mail em formato inválido. Em desenvolvimento os valores ficam em `src/environments/environment.ts`, com um WhatsApp de teste que deve ser trocado.
 
 ## Visual
 
