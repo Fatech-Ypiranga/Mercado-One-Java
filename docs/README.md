@@ -31,6 +31,7 @@ docs/
 | [produto/backlog-mvp.md](produto/backlog-mvp.md) | Entregue e pendente |
 | [produto/uso-admin-web.md](produto/uso-admin-web.md) | Tarefas do administrador, gerente e estoquista |
 | [produto/uso-pdv.md](produto/uso-pdv.md) | Jornada do operador de caixa |
+| [produto/roteiro-teste-campo.md](produto/roteiro-teste-campo.md) | Roteiro de uma página para o primeiro dia do piloto |
 
 ## Arquitetura
 
