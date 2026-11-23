@@ -1,67 +1,108 @@
+/*
+  Visual do PDV. As cores vêm de styles/brand-tokens.css (variáveis -mo-*),
+  gerado de docs/marca/tokens.json por node docs/marca/gerar-tokens.mjs.
+  Não ponha cor fixa aqui. Regra da marca: estrutura em azul, ação em verde,
+  alerta só quando há problema. O modo escuro aplica as variáveis de styles/brand-tokens-dark.css no nó raiz (setStyle).
+*/
+
 .root {
-  -fx-background-color: #f5f7f8;
-  -fx-font-family: "Segoe UI", Arial, sans-serif;
+  -fx-background-color: -mo-bg;
+  /* Outfit é carregada pelo app (resources/fonts); sem ela, o JavaFX usa a fonte do sistema. */
+  -fx-font-family: "Outfit";
+  -fx-font-size: 14px;
 }
 
 .header {
-  -fx-background-color: #ffffff;
-  -fx-border-color: transparent transparent #d9e0e2 transparent;
+  -fx-background-color: -mo-surface;
+  -fx-border-color: transparent transparent -mo-line transparent;
   -fx-border-width: 0 0 1 0;
 }
+
 
 .brand {
   -fx-font-size: 22px;
   -fx-font-weight: bold;
-  -fx-text-fill: #202527;
+  -fx-text-fill: -mo-ink;
 }
 
-.status {
-  -fx-background-color: #e7f2ee;
-  -fx-background-radius: 8;
-  -fx-padding: 7 12;
-  -fx-text-fill: #0d4f3b;
+.brand-one {
+  -fx-font-size: 22px;
   -fx-font-weight: bold;
+  -fx-text-fill: -mo-ocean;
+}
+
+.brand-suffix {
+  -fx-font-size: 14px;
+  -fx-text-fill: -mo-ink-muted;
+  -fx-padding: 0 0 0 8;
+}
+
+/* Selo de sincronização: sempre com texto, cor só para o estado. */
+.status {
+  -fx-background-radius: 999;
+  -fx-padding: 5 14;
+  -fx-font-size: 13px;
+  -fx-font-weight: bold;
+}
+
+.status-online {
+  -fx-background-color: -mo-success-bg;
+  -fx-text-fill: -mo-success-ink;
+}
+
+.status-offline,
+.status-pending {
+  -fx-background-color: -mo-warning-bg;
+  -fx-text-fill: -mo-warning-ink;
+}
+
+.status-failed {
+  -fx-background-color: -mo-danger-bg;
+  -fx-text-fill: -mo-danger-ink;
 }
 
 .title {
   -fx-font-size: 28px;
   -fx-font-weight: bold;
-  -fx-text-fill: #202527;
+  -fx-text-fill: -mo-ink;
 }
 
 .subtitle {
   -fx-font-size: 14px;
-  -fx-text-fill: #667478;
-}
-
-.button {
-  -fx-background-radius: 8;
-  -fx-padding: 10 18;
+  -fx-text-fill: -mo-ink-muted;
 }
 
 .hint {
-  -fx-font-size: 12px;
-  -fx-text-fill: #7a878b;
+  -fx-font-size: 13px;
+  -fx-text-fill: -mo-ink-hint;
+}
+
+.label {
+  -fx-text-fill: -mo-ink;
+}
+
+.check-box {
+  -fx-text-fill: -mo-ink;
 }
 
 .feedback {
   -fx-font-size: 14px;
-  -fx-text-fill: #202527;
-  -fx-background-color: #ffffff;
-  -fx-border-color: #d9e0e2 transparent transparent transparent;
+  -fx-text-fill: -mo-ink;
+  -fx-background-color: -mo-surface;
+  -fx-border-color: -mo-line transparent transparent transparent;
 }
 
 .panel {
-  -fx-background-color: #ffffff;
-  -fx-background-radius: 10;
-  -fx-border-color: #d9e0e2;
-  -fx-border-radius: 10;
+  -fx-background-color: -mo-surface;
+  -fx-background-radius: 16;
+  -fx-border-color: -mo-line;
+  -fx-border-radius: 16;
 }
 
 .panel-title {
   -fx-font-size: 16px;
   -fx-font-weight: bold;
-  -fx-text-fill: #202527;
+  -fx-text-fill: -mo-ink;
 }
 
 .column, .column > .viewport {
@@ -69,43 +110,151 @@
   -fx-background: transparent;
 }
 
+/* Totais: número em destaque na cor do texto, nunca verde decorativo. */
 .total {
   -fx-font-size: 18px;
   -fx-font-weight: bold;
-  -fx-text-fill: #0d4f3b;
+  -fx-text-fill: -mo-ink;
 }
 
 .receipt {
-  -fx-font-family: "Consolas", "Courier New", monospace;
+  -fx-font-family: "Consolas";
+}
+
+/* ── Controles ── */
+
+.button {
+  -fx-background-color: transparent;
+  -fx-border-color: -mo-line;
+  -fx-border-width: 1.5;
+  -fx-border-radius: 10;
+  -fx-background-radius: 10;
+  -fx-text-fill: -mo-ink;
+  -fx-font-weight: bold;
+  -fx-padding: 10 18;
+  -fx-min-height: 40;
+  -fx-cursor: hand;
+}
+
+.button:hover {
+  -fx-border-color: -mo-ocean;
+}
+
+.button:focused {
+  -fx-border-color: -mo-ocean;
+  -fx-border-width: 2;
 }
 
 .button.primary {
-  -fx-background-color: #1d7a5a;
-  -fx-text-fill: #ffffff;
-  -fx-font-weight: bold;
+  -fx-border-color: transparent;
+  -fx-text-fill: white;
+}
+
+.button.primary:hover,
+.button.primary:focused {
+  -fx-background-color: -mo-action-hover;
+  -fx-border-color: transparent;
 }
 
 .button.danger {
-  -fx-background-color: #fbeaea;
-  -fx-text-fill: #8a1c1c;
+  -fx-background-color: -mo-danger-bg;
+  -fx-border-color: transparent;
+  -fx-text-fill: -mo-danger-ink;
 }
 
-.status-online {
-  -fx-background-color: #e7f2ee;
-  -fx-text-fill: #0d4f3b;
+.button.danger:hover,
+.button.danger:focused {
+  -fx-border-color: -mo-danger-ink;
 }
 
-.status-offline {
-  -fx-background-color: #eef1f3;
-  -fx-text-fill: #3d4a4e;
+.button:disabled {
+  -fx-opacity: 0.55;
 }
 
-.status-pending {
-  -fx-background-color: #fff4dc;
-  -fx-text-fill: #7a5200;
+.text-field,
+.password-field,
+.text-area,
+.combo-box {
+  -fx-background-color: -mo-surface;
+  -fx-border-color: -mo-line;
+  -fx-border-width: 1.5;
+  -fx-border-radius: 10;
+  -fx-background-radius: 10;
+  -fx-text-fill: -mo-ink;
+  -fx-prompt-text-fill: -mo-ink-hint;
+  -fx-highlight-fill: -mo-selected;
+  -fx-highlight-text-fill: -mo-ink;
 }
 
-.status-failed {
-  -fx-background-color: #fbeaea;
-  -fx-text-fill: #8a1c1c;
+.text-field,
+.password-field {
+  -fx-padding: 8 12;
+}
+
+.text-field:focused,
+.password-field:focused,
+.text-area:focused,
+.combo-box:focused {
+  -fx-border-color: -mo-ocean;
+}
+
+.text-area .content {
+  -fx-background-color: -mo-surface;
+  -fx-background-radius: 10;
+}
+
+.combo-box .list-cell {
+  -fx-text-fill: -mo-ink;
+  -fx-background-color: transparent;
+}
+
+.combo-box-popup .list-view {
+  -fx-background-color: -mo-surface;
+  -fx-border-color: -mo-line;
+}
+
+.list-view {
+  -fx-background-color: -mo-surface;
+  -fx-border-color: -mo-line;
+  -fx-border-radius: 10;
+  -fx-background-radius: 10;
+  -fx-padding: 4;
+}
+
+.list-cell {
+  -fx-background-color: transparent;
+  -fx-text-fill: -mo-ink;
+  -fx-padding: 8 10;
+}
+
+.list-cell:filled:hover {
+  -fx-background-color: -mo-surface-sub;
+}
+
+/* Item selecionado: azul suave com barra ocean, como no admin. */
+.list-cell:filled:selected,
+.list-cell:filled:selected:hover {
+  -fx-background-color: -mo-ocean, -mo-selected;
+  -fx-background-insets: 0, 0 0 0 3;
+  -fx-text-fill: -mo-ink;
+}
+
+.scroll-bar {
+  -fx-background-color: transparent;
+}
+
+.scroll-bar .thumb {
+  -fx-background-color: -mo-line;
+  -fx-background-radius: 99;
+}
+
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+  -fx-padding: 0;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+  -fx-shape: " ";
+  -fx-padding: 0;
 }
