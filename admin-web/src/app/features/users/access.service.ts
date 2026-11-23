@@ -14,6 +14,7 @@ export interface ManagedUser {
   id: number;
   nome: string;
   login: string;
+  email: string | null;
   perfil: UserRole;
   status: UserStatus;
   createdAt: string;
@@ -32,6 +33,7 @@ export interface CreateUserRequest {
   password: string;
   perfil: UserRole;
   active: boolean;
+  email: string | null;
 }
 
 export interface UpdateUserRequest {
@@ -40,6 +42,7 @@ export interface UpdateUserRequest {
   password: string | null;
   perfil: UserRole;
   active: boolean;
+  email: string | null;
 }
 
 @Injectable({ providedIn: 'root' })

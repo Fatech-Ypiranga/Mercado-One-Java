@@ -45,6 +45,7 @@ describe('AccessService', () => {
       nome: 'Gerente Loja',
       login: 'gerente',
       password: 'senha123',
+      email: null,
       perfil: 'GERENTE',
       active: true,
     }).subscribe((response) => {

@@ -891,3 +891,6 @@ tbody tr.interactive:hover td { background: var(--color-surface-sub); }
   .page-header h1 { font-size: 1.9rem; }
   .dashboard-page .department-index { grid-template-columns: 1fr; }
 }
+
+.form-grid .span-all { grid-column: 1 / -1; }
+.field-hint { display: block; margin-top: 4px; color: var(--color-hint); font-size: 0.82rem; font-weight: 400; }
