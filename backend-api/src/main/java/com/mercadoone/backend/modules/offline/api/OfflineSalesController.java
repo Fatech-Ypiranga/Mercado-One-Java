@@ -88,7 +88,9 @@ public class OfflineSalesController {
             Long customerId,
             @NotEmpty List<@Valid OfflineSaleItemRequest> items,
             @NotEmpty List<@Valid OfflineSalePaymentRequest> payments,
-            @DecimalMin("0.00") BigDecimal discountAmount
+            @DecimalMin("0.00") BigDecimal discountAmount,
+            /** Login do operador que fez a venda no caixa. Vazio: vale quem esta enviando. */
+            @Size(max = 80) String operatorLogin
     ) {
         OfflineSaleData toData() {
             return new OfflineSaleData(
@@ -97,7 +99,8 @@ public class OfflineSalesController {
                     customerId,
                     items.stream().map(OfflineSaleItemRequest::toData).toList(),
                     payments.stream().map(OfflineSalePaymentRequest::toData).toList(),
-                    discountAmount
+                    discountAmount,
+                    operatorLogin
             );
         }
     }
