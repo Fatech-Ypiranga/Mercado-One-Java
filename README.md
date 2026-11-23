@@ -19,6 +19,7 @@ O PDV confirma online por `POST /api/sales` (idempotente por `clientSaleId`) dep
 backend-api/   API REST e domínio servidor
 admin-web/     Administrativo web Angular
 pdv-desktop/   Cliente desktop JavaFX para PDV
+site/          Página institucional (HTML estático)
 infra/         Infraestrutura local de desenvolvimento
 docs/          Guias por assunto: produto, arquitetura, desenvolvimento, dados, marca
 CONTEXT.md     Glossário de domínio

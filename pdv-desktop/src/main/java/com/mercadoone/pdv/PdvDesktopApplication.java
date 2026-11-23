@@ -33,11 +33,15 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
@@ -49,10 +53,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import java.util.prefs.Preferences;
 
 public class PdvDesktopApplication extends Application {
 
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("dd/MM HH:mm");
+    private static final String DARK_THEME_KEY = "temaEscuro";
 
     private final OfflineStorageConfig storageConfig = OfflineStorageConfig.defaultConfig();
     private final OfflineSaleQueue offlineSaleQueue = new OfflineSaleQueue(storageConfig);
@@ -64,6 +70,9 @@ public class PdvDesktopApplication extends Application {
     private final List<LocalSalePayment> payments = new ArrayList<>();
     private volatile String bearerToken = "";
 
+    private final Image logoColor = new Image(getClass().getResource("/brand/mercadoone-simbolo-192.png").toExternalForm());
+    private final Image logoNegative = new Image(getClass().getResource("/brand/mercadoone-simbolo-negativa-192.png").toExternalForm());
+    private final ImageView headerLogo = new ImageView();
     private final TextField apiUrl = new TextField(defaultApiUrl());
     private final Label statusBadge = new Label();
     private final Label operatorLabel = new Label("Sem operador");
@@ -83,17 +92,27 @@ public class PdvDesktopApplication extends Application {
         launch(args);
     }
 
+    /** Modo escuro escolhido pelo operador neste computador (padrão: claro). */
+    private static boolean darkTheme() {
+        return Preferences.userNodeForPackage(PdvDesktopApplication.class).getBoolean(DARK_THEME_KEY, false);
+    }
+
     @Override
     public void start(Stage stage) {
         offlineSaleQueue.initialize();
         offlineCatalogStore.initialize();
-        stage.setTitle("Mercado One PDV");
+        loadBrandFonts();
+        stage.setTitle("mercadoOne PDV");
+        stage.getIcons().add(new Image(getClass().getResource("/brand/icone-512.png").toExternalForm()));
         BorderPane root = new BorderPane();
         root.getStyleClass().add("root");
-        root.setTop(createHeader());
-        root.setCenter(createBody());
         Scene scene = new Scene(root, 1280, 780);
-        scene.getStylesheets().add(getClass().getResource("/styles/pdv.css").toExternalForm());
+        root.setTop(createHeader(root));
+        root.setCenter(createBody());
+        // Tokens da marca (gerados de docs/marca/tokens.json), depois o visual do PDV.
+        scene.getStylesheets().add(stylesheet("brand-tokens.css"));
+        scene.getStylesheets().add(stylesheet("pdv.css"));
+        applyTheme(root, darkTheme());
         stage.setScene(scene);
         stage.setMinWidth(1100);
         stage.setMinHeight(680);
@@ -103,16 +122,72 @@ public class PdvDesktopApplication extends Application {
         startBackgroundSync();
     }
 
-    private HBox createHeader() {
-        Label brand = new Label("Mercado One PDV");
-        brand.getStyleClass().add("brand");
+    /** Outfit, a fonte da marca (licença OFL em resources/fonts). Sem ela, o JavaFX cai na fonte do sistema. */
+    private void loadBrandFonts() {
+        for (String weight : List.of("Regular", "SemiBold", "Bold")) {
+            try (var in = getClass().getResourceAsStream("/fonts/Outfit-" + weight + ".ttf")) {
+                if (in != null) Font.loadFont(in, 14);
+            } catch (java.io.IOException exception) {
+                // Fonte ausente não impede o caixa de vender.
+            }
+        }
+    }
+
+    private String stylesheet(String name) {
+        return getClass().getResource("/styles/" + name).toExternalForm();
+    }
+
+    /**
+     * Modo escuro: as variáveis -mo-* de styles/brand-tokens-dark.css (gerado de docs/marca/tokens.json)
+     * vão como estilo direto no nó raiz. Folha de estilo extra ou classe ".dark" não redefinem
+     * variáveis de forma confiável no JavaFX; o estilo direto tem prioridade sobre qualquer folha.
+     */
+    private void applyTheme(Node root, boolean dark) {
+        root.setStyle(dark ? darkTokens() : "");
+        // Logo sem fundo: versão negativa (branca) no modo escuro.
+        headerLogo.setImage(dark ? logoNegative : logoColor);
+    }
+
+    private String darkTokens() {
+        try (var in = getClass().getResourceAsStream("/styles/brand-tokens-dark.css")) {
+            String css = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            css = css.replaceAll("(?s)/\\*.*?\\*/", "");
+            return css.substring(css.indexOf('{') + 1, css.lastIndexOf('}')).replaceAll("\\s+", " ").trim();
+        } catch (java.io.IOException | RuntimeException exception) {
+            return "";
+        }
+    }
+
+    private HBox createHeader(Node root) {
+        headerLogo.setFitHeight(32);
+        headerLogo.setPreserveRatio(true);
+        headerLogo.setSmooth(true);
+        headerLogo.setImage(darkTheme() ? logoNegative : logoColor);
+        Label brandMercado = new Label("mercado");
+        brandMercado.getStyleClass().add("brand");
+        Label brandOne = new Label("One");
+        brandOne.getStyleClass().add("brand-one");
+        Label brandSuffix = new Label("PDV");
+        brandSuffix.getStyleClass().add("brand-suffix");
+        HBox brand = new HBox(0, brandMercado, brandOne, brandSuffix);
+        brand.setAlignment(Pos.BASELINE_LEFT);
+        brand.setAccessibleText("Mercado One PDV");
+        HBox brandRow = new HBox(10, headerLogo, brand);
+        brandRow.setAlignment(Pos.CENTER_LEFT);
         statusBadge.getStyleClass().add("status");
         operatorLabel.getStyleClass().add("subtitle");
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         Label storage = new Label("Base local: " + storageConfig.databasePath());
         storage.getStyleClass().add("hint");
-        HBox header = new HBox(16, brand, statusBadge, operatorLabel, spacer, storage);
+        Button themeButton = new Button(darkTheme() ? "Modo claro" : "Modo escuro");
+        themeButton.setOnAction(event -> {
+            boolean dark = root.getStyle().isEmpty();
+            applyTheme(root, dark);
+            themeButton.setText(dark ? "Modo claro" : "Modo escuro");
+            Preferences.userNodeForPackage(PdvDesktopApplication.class).putBoolean(DARK_THEME_KEY, dark);
+        });
+        HBox header = new HBox(16, brandRow, statusBadge, operatorLabel, spacer, storage, themeButton);
         header.setPadding(new Insets(14, 22, 14, 22));
         header.setAlignment(Pos.CENTER_LEFT);
         header.getStyleClass().add("header");
@@ -310,7 +385,8 @@ public class PdvDesktopApplication extends Application {
         });
         discountHint.getStyleClass().add("hint");
         totals.getStyleClass().add("total");
-        return panel("Carrinho", cartView, new HBox(8, removeSelected, newQuantity, changeQuantity),
+        totals.setWrapText(true);
+        return panel("Carrinho", cartView, wrapRow(removeSelected, newQuantity, changeQuantity),
                 labeled("Desconto (R$)", discount), discountHint, totals, cancelSale);
     }
 
@@ -340,7 +416,18 @@ public class PdvDesktopApplication extends Application {
         });
         Button finalizeSale = primary("Finalizar venda");
         finalizeSale.setOnAction(event -> finalizeSale(finalizeSale));
-        return panel("Pagamento", new HBox(8, method, paymentAmount, addPayment), paymentsView, removePayment, finalizeSale);
+        method.setMinWidth(150);
+        return panel("Pagamento", wrapRow(method, paymentAmount, addPayment), paymentsView, removePayment, finalizeSale);
+    }
+
+    /** Linha de controles que quebra para a próxima linha em vez de cortar o texto dos botões. */
+    private FlowPane wrapRow(Node... nodes) {
+        for (Node node : nodes) {
+            if (node instanceof Button button) button.setMinWidth(Region.USE_PREF_SIZE);
+        }
+        FlowPane row = new FlowPane(8, 8, nodes);
+        row.setPrefWrapLength(0);
+        return row;
     }
 
     private VBox receiptPanel() {

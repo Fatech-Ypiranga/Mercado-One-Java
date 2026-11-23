@@ -3,9 +3,10 @@
   <aside class="sidebar" aria-label="Navegação principal" (keydown.escape)="closeNavigation(true)">
     <div class="sidebar-heading">
       <a class="brand" [routerLink]="auth.homePath()" (click)="closeNavigation()">
-        <span class="brand-mark" aria-hidden="true">M1</span>
+        <img class="brand-mark brand-mark-light" src="brand/mercadoone-simbolo.svg" alt="" width="44" height="35" />
+        <img class="brand-mark brand-mark-dark" src="brand/mercadoone-simbolo-negativa.svg" alt="" width="44" height="35" />
         <span>
-          <strong>Mercado One</strong>
+          <strong class="wordmark" aria-label="Mercado One">mercado<span>One</span></strong>
           <small>Administrativo</small>
         </span>
       </a>
@@ -33,6 +34,9 @@
     <section class="user-panel" [class.mobile-collapsed]="!navigationOpen" aria-label="Usuário autenticado">
       <span>{{ auth.session()?.user?.nome ?? 'Sessão ativa' }}</span>
       <small>{{ auth.session()?.user?.perfil ?? 'ADMIN' }}</small>
+      <button type="button" class="ghost-button" (click)="theme.toggle()" [attr.aria-pressed]="theme.theme() === 'dark'">
+        {{ theme.theme() === 'dark' ? 'Modo claro' : 'Modo escuro' }}
+      </button>
       <button type="button" class="ghost-button" (click)="logout()">Sair</button>
     </section>
   </aside>

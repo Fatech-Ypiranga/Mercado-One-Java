@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mercadoOne — caixa, estoque e vendas do seu mercado</title>
+<meta name="description" content="Sistema de gestão para mercados de bairro: PDV que vende mesmo sem internet, controle de estoque e relatórios de vendas no navegador.">
+<link rel="icon" type="image/svg+xml" href="brand/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="brand/favicon-32.png">
+<link rel="apple-touch-icon" href="brand/apple-touch-icon.png">
+<link rel="stylesheet" href="brand-tokens.css">
+<style>
+/* Tokens (cores e medidas) vêm de brand-tokens.css, gerado de docs/marca/tokens.json. Fonte Outfit hospedada aqui (licença OFL em fonts/). */
+@font-face{font-family:Outfit;font-weight:400;font-display:swap;src:url(fonts/Outfit-Regular.ttf) format("truetype")}
+@font-face{font-family:Outfit;font-weight:600;font-display:swap;src:url(fonts/Outfit-SemiBold.ttf) format("truetype")}
+@font-face{font-family:Outfit;font-weight:800;font-display:swap;src:url(fonts/Outfit-ExtraBold.ttf) format("truetype")}
+*{box-sizing:border-box;min-width:0}
+html{scroll-padding-top:84px}
+@media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--font-sans);overflow-x:clip;transition:background .3s,color .3s}
+#pc{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:0}
+.wrap{position:relative;z-index:1}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--ocean);outline-offset:3px}
+.in{max-width:1180px;margin:0 auto}
+section{padding:clamp(56px,8vw,104px) max(5vw,18px)}
+.alt{background:color-mix(in srgb,var(--surface-sub) 72%,transparent)}
+.dark-band{background:var(--midnight);color:#EEF3F8}
+.dark-band p,.dark-band li{color:#B8CADB}
+h1{font-size:clamp(38px,5.6vw,60px);line-height:1.04;letter-spacing:-.03em;font-weight:800;margin:0 0 20px;text-wrap:balance}
+h2{font-size:clamp(28px,3.6vw,40px);line-height:1.1;letter-spacing:-.02em;font-weight:800;margin:0 0 14px;text-wrap:balance}
+h3{font-size:19px;margin:0 0 6px;font-weight:600}
+p{margin:0 0 14px;color:var(--ink-muted);max-width:62ch}
+.lead{font-size:19px}
+/* topo */
+header{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header .in{display:flex;align-items:center;gap:20px;padding:12px max(5vw,18px)}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex:none}
+.logo img{display:block;height:32px;width:auto}.logo .ln{display:none}[data-theme=dark] .logo .lc{display:none}[data-theme=dark] .logo .ln{display:block}footer .logo .lc{display:none!important}footer .logo .ln{display:block!important}
+.wm{font-weight:800;font-size:24px;letter-spacing:-.02em}.wm b{color:var(--ocean);font-weight:800}
+nav{display:flex;gap:26px;margin-left:auto}nav a{text-decoration:none;color:var(--ink-muted);font-size:15px;font-weight:600;padding:6px 0}nav a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 24px;border-radius:var(--radius-sm);font:600 16px var(--font-sans);border:1.5px solid transparent;cursor:pointer;text-decoration:none;white-space:nowrap}
+.bp{background:var(--action);color:#fff}.bp:hover{background:var(--action-hover)}
+.bs{background:transparent;color:var(--ink);border-color:var(--line)}.bs:hover{border-color:var(--ocean)}
+.tbtn{min-height:40px;padding:0 14px;font-size:14px}
+/* herói */
+.hero .in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:clamp(28px,5vw,64px);align-items:center}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin:26px 0 22px}
+.facts{display:flex;gap:10px 24px;flex-wrap:wrap;padding:0;margin:0;list-style:none;color:var(--ink-muted);font-size:15px}
+.facts li::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ocean);margin-right:8px;vertical-align:middle}
+.shot{border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:var(--shadow-lg)}
+.shot .bar{display:flex;gap:6px;padding:10px 14px;background:var(--surface-sub);border-bottom:1px solid var(--line)}
+.shot .bar i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.shot img{display:block;width:100%;height:auto}
+.shot .d{display:none}[data-theme=dark] .shot .l{display:none}[data-theme=dark] .shot .d{display:block}
+.cap{font-size:14px;color:var(--ink-hint);margin:10px 0 0}
+/* grades */
+.grid{display:grid;gap:18px;margin-top:36px}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);padding:26px}
+.card p{margin:0;font-size:16px}
+.card ul{margin:10px 0 0;padding-left:18px;color:var(--ink-muted);font-size:16px}.card li{margin-bottom:4px}
+.ic{width:28px;height:28px;fill:none;stroke:var(--ocean);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-bottom:12px}
+.steps{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.steps li{display:flex;gap:14px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--radius-md);padding:16px}
+.steps b{flex:none;width:34px;height:34px;border-radius:50%;background:var(--ocean);color:#0B1A2C;display:flex;align-items:center;justify-content:center}
+.steps strong{color:#fff;display:block}.steps span{font-size:15px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(28px,5vw,64px);align-items:center}
+/* tabela */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius-md);background:var(--surface);margin-top:30px}
+table{width:100%;border-collapse:collapse;font-size:16px;min-width:620px}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--line)}tr:last-child td{border:0}
+th{font-size:14px;color:var(--ink-hint);font-weight:600;background:var(--surface-sub)}
+.y{color:var(--success-ink);font-weight:600}.n{color:var(--ink-hint)}
+.later{display:flex;flex-wrap:wrap;gap:10px;padding:0;margin:20px 0 0;list-style:none}
+.later li{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 16px;font-size:15px;color:var(--ink-muted)}
+/* formulário */
+form{display:grid;gap:14px}
+label{display:grid;gap:6px;font-size:15px;font-weight:600}
+input,select,textarea{width:100%;min-height:48px;font:16px var(--font-sans);padding:10px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--ocean)}
+.msg{padding:12px 14px;border-radius:var(--radius-sm);font-size:15px;background:var(--warning-bg);color:var(--warning-ink)}
+.msg.ok{background:var(--success-bg);color:var(--success-ink)}
+.hint{font-size:14px;color:var(--ink-hint);margin:0}
+footer{background:var(--midnight);color:#B8CADB;padding:44px max(5vw,18px) 30px;position:relative;z-index:1}
+footer .in{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:flex-start}
+footer p{color:#B8CADB;font-size:15px;margin:8px 0 0}
+footer .wm{color:#fff}footer .wm b{color:#A8C8E0}
+@media(max-width:900px){.hero .in,.two{grid-template-columns:1fr}.g3{grid-template-columns:1fr}.g2{grid-template-columns:1fr}nav{display:none}header .in{justify-content:space-between}.tbtn{margin-left:auto}}
+@media(max-width:560px){header .in{gap:10px}.wm{font-size:20px}.logo img{height:28px}.tbtn{padding:0 10px}header .bp{display:none}.cta .btn{flex:1 1 100%}}
+</style>
+</head>
+<body>
+<canvas id="pc" aria-hidden="true"></canvas>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-monitor" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></symbol>
+<symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+<symbol id="i-server" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></symbol>
+<symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11.5L22 7H6"/></symbol>
+<symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/></symbol>
+<symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 3h8l10 10-8 8L3 11z"/><circle cx="7.5" cy="7.5" r="1.5"/></symbol>
+<symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M21.5 20a6.5 6.5 0 0 0-4-6"/></symbol>
+<symbol id="i-truck" viewBox="0 0 24 24"><path d="M2 6h12v10H2zM14 10h4l3 3v3h-7"/><circle cx="6" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
+<symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15v3M12 10v8M17 6v12"/></symbol>
+<symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+<header><div class="in">
+ <a class="logo" href="#topo"><img class="lc" src="brand/mercadoone-simbolo.svg" alt="" width="40" height="32"><img class="ln" src="brand/mercadoone-simbolo-negativa.svg" alt="" width="40" height="32"><span class="wm" aria-label="mercadoOne">mercado<b>One</b></span></a>
+ <nav aria-label="Seções"><a href="#sistema">O sistema</a><a href="#recursos">O que faz</a><a href="#offline">Sem internet</a><a href="#telas">Telas</a><a href="#perfis">Perfis</a></nav>
+ <button class="btn bs tbtn" id="tb" type="button">Modo escuro</button>
+ <a class="btn bp tbtn" href="#contato">Falar com a equipe</a>
+</div></header>
+
+<section class="hero" id="topo"><div class="in">
+ <div>
+  <h1>Caixa, estoque e vendas do seu mercado no mesmo sistema</h1>
+  <p class="lead">O caixa vende no PDV, mesmo quando a internet cai. Você acompanha vendas, estoque e clientes pelo navegador, em qualquer computador ou celular.</p>
+  <div class="cta"><a class="btn bp" href="#contato">Quero conhecer o sistema</a><a class="btn bs" href="#telas">Ver as telas</a></div>
+  <ul class="facts"><li>Vende sem internet</li><li>Cada pessoa vê só o que precisa</li><li>Dinheiro, cartão, PIX e fiado</li></ul>
+ </div>
+ <div>
+  <div class="shot"><div class="bar"><i></i><i></i><i></i></div>
+   <img class="l" src="img/admin-inicio-light.png" width="1360" height="860" alt="Tela Início do administrativo, com vendas do dia e exceções">
+   <img class="d" src="img/admin-inicio-dark.png" width="1360" height="860" alt="Tela Início do administrativo no modo escuro">
+  </div>
+  <p class="cap">Tela Início do administrativo. Dados de exemplo.</p>
+ </div>
+</div></section>
+
+<section id="sistema" class="alt"><div class="in">
+ <h2>Três partes, um só cadastro</h2>
+ <p class="lead">Produto, preço e cliente são cadastrados uma vez no administrativo e chegam ao caixa.</p>
+ <div class="grid g3">
+  <div class="card"><svg class="ic"><use href="#i-monitor"/></svg><h3>PDV no caixa</h3><p>Programa instalado no computador do caixa.</p><ul><li>Busca por código de barras, SKU ou nome</li><li>Mais de uma forma de pagamento na mesma venda</li><li>Comprovante simples, sem valor fiscal</li></ul></div>
+  <div class="card"><svg class="ic"><use href="#i-globe"/></svg><h3>Administrativo web</h3><p>Abre no navegador do escritório, do tablet ou do celular.</p><ul><li>Produtos, categorias e fornecedores</li><li>Estoque e movimentações</li><li>Vendas, clientes, usuários e auditoria</li></ul></div>
+  <div class="card"><svg class="ic"><use href="#i-server"/></svg><h3>Servidor central</h3><p>Guarda os dados e confere cada venda recebida.</p><ul><li>Venda nunca é registrada duas vezes</li><li>Preço e estoque conferidos na entrada</li><li>Divergência vai para o gerente decidir</li></ul></div>
+ </div>
+</div></section>
+
+<section id="recursos"><div class="in">
+ <h2>O que o sistema faz hoje</h2>
+ <p class="lead">Só listamos o que já funciona. O que ainda não existe está no fim desta seção.</p>
+ <div class="grid g3">
+  <div class="card"><svg class="ic"><use href="#i-cart"/></svg><h3>Venda no caixa</h3><p>Carrinho com troca de quantidade, desconto dentro do limite do perfil e identificação opcional do cliente.</p></div>
+  <div class="card"><svg class="ic"><use href="#i-box"/></svg><h3>Estoque</h3><p>Saldo por produto, entrada com fornecedor opcional e ajuste manual com justificativa. Cada alteração fica no histórico e não pode ser apagada.</p></div>
+  <div class="card"><svg class="ic"><use href="#i-tag"/></svg><h3>Produtos e preços</h3><p>Código de barras, SKU, categoria e preço de venda. Produto inativo não é vendido.</p></div>
+  <div class="card"><svg class="ic"><use href="#i-users"/></svg><h3>Clientes</h3><p>Cadastro rápido no próprio caixa, com o registro de quem aceita receber contato, e histórico de compras.</p></div>
+  <div class="card"><svg class="ic"><use href="#i-truck"/></svg><h3>Fornecedores</h3><p>Cadastro de fornecedores e vínculo opcional com cada entrada de estoque.</p></div>
+  <div class="card"><svg class="ic"><use href="#i-chart"/></svg><h3>Relatórios</h3><p>Vendas por período, operador e cliente, produtos mais vendidos e exportação em CSV.</p></div>
+ </div>
+ <p class="mt" style="margin-top:28px"><strong>Ainda não faz:</strong></p>
+ <ul class="later"><li>Nota fiscal (NFC-e e NF-e)</li><li>Máquina de cartão integrada e PIX integrado</li><li>Controle de validade e de lote</li><li>Mais de uma loja</li><li>Aplicativo para celular</li></ul>
+</div></section>
+
+<section id="offline" class="dark-band"><div class="in two">
+ <div><h2>A internet caiu. O caixa continua.</h2><p class="lead">O PDV grava cada venda no próprio computador antes de enviar ao servidor. Quando a conexão volta, as vendas pendentes seguem sozinhas, sem contar nada em dobro.</p></div>
+ <ol class="steps">
+  <li><b>1</b><div><strong>A venda fica salva no caixa</strong><span>Com ou sem internet, ela é guardada primeiro no computador.</span></div></li>
+  <li><b>2</b><div><strong>Entra na fila de envio</strong><span>Sem conexão, o selo do PDV mostra "Offline pronto" e a venda espera.</span></div></li>
+  <li><b>3</b><div><strong>O servidor confere e confirma</strong><span>Com a rede de volta, preço e estoque são conferidos. Se algo não bate, o gerente decide no administrativo e a venda original nunca se perde.</span></div></li>
+ </ol>
+</div></section>
+
+<section id="telas" class="alt"><div class="in">
+ <h2>Telas do administrativo</h2>
+ <p class="lead">Mesmo visual no claro e no escuro, no computador e no celular.</p>
+ <div class="grid g2">
+  <div><div class="shot"><div class="bar"><i></i><i></i><i></i></div><img class="l" src="img/admin-vendas-light.png" width="1360" height="860" loading="lazy" alt="Relatório de vendas com totais e lista de vendas"><img class="d" src="img/admin-vendas-dark.png" width="1360" height="860" loading="lazy" alt="Relatório de vendas no modo escuro"></div><p class="cap">Relatório de vendas, com totais do período e forma de pagamento.</p></div>
+  <div><div class="shot"><div class="bar"><i></i><i></i><i></i></div><img class="l" src="img/admin-estoque-light.png" width="1360" height="860" loading="lazy" alt="Saldos de estoque e formulário de movimentação"><img class="d" src="img/admin-estoque-dark.png" width="1360" height="860" loading="lazy" alt="Saldos de estoque no modo escuro"></div><p class="cap">Saldos atuais e registro de entrada ou ajuste.</p></div>
+ </div>
+ <p class="hint" style="margin-top:14px">Produtos, nomes e valores das imagens são exemplos.</p>
+</div></section>
+
+<section id="perfis"><div class="in">
+ <h2>Cada pessoa vê o que precisa</h2>
+ <p class="lead">O menu muda conforme o perfil de quem entra. Usuário inativo não consegue entrar.</p>
+ <div class="tbl"><table>
+  <thead><tr><th>Área</th><th>Administrador</th><th>Gerente</th><th>Estoquista</th><th>Operador de caixa</th></tr></thead>
+  <tbody id="perm"></tbody>
+ </table></div>
+</div></section>
+
+<section id="contato" class="alt"><div class="in two">
+ <div>
+  <h2>Quer ver funcionando no seu mercado?</h2>
+  <p class="lead">O sistema está em fase piloto. Conte um pouco do seu mercado e a equipe responde para combinar uma demonstração.</p>
+  <p class="hint">Usamos estas informações só para responder ao seu contato. Veja a <a href="privacidade.html">política de privacidade</a>.</p>
+ </div>
+ <form class="card" id="lead" novalidate>
+  <label>Seu nome<input id="ln" autocomplete="name" required></label>
+  <label>Nome do mercado<input id="lm" autocomplete="organization" required></label>
+  <label>Quantos caixas?<select id="lc"><option>1 caixa</option><option>2 ou 3 caixas</option><option>4 ou mais caixas</option></select></label>
+  <label>Como prefere ser chamado?<select id="lp"><option>WhatsApp</option><option>Ligação</option></select></label>
+  <button class="btn bp" type="submit">Enviar pelo WhatsApp</button>
+  <div class="msg" id="lmsg" role="status" hidden></div>
+ </form>
+</div></section>
+</div>
+
+<footer><div class="in">
+ <div><a class="logo" href="#topo" style="margin-bottom:6px"><img class="lc" src="brand/mercadoone-simbolo.svg" alt="" width="40" height="32"><img class="ln" src="brand/mercadoone-simbolo-negativa.svg" alt="" width="40" height="32"><span class="wm" aria-label="mercadoOne">mercado<b>One</b></span></a><p>Sistema de gestão para mercados de bairro.</p></div>
+ <p>© 2026 mercadoOne · Projeto em fase piloto<br><a href="privacidade.html" style="color:#fff">Política de privacidade</a> · <a href="termos.html" style="color:#fff">Termos de uso</a></p>
+</div></footer>
+
+<script>
+{
+const $=s=>document.querySelector(s),R=document.documentElement;
+/* ── Contato: preencha o número (só dígitos, com 55 e DDD) para o formulário abrir o WhatsApp. ── */
+const WHATSAPP='5517992072135';
+
+/* tema */
+let pDot=[18,44,79,.25],pLine=.06;
+const rgba=s=>{const m=s.match(/rgba?\(([^)]+)\)/);if(!m)return[18,44,79,.25];const v=m[1].split(',').map(Number);return[v[0],v[1],v[2],v[3]??1]};
+const readTheme=()=>{const cs=getComputedStyle(R);pDot=rgba(cs.getPropertyValue('--particle'));pLine=rgba(cs.getPropertyValue('--particle-line'))[3]};
+const setTheme=t=>{R.dataset.theme=t;$('#tb').textContent=t==='dark'?'Modo claro':'Modo escuro';try{localStorage.setItem('mo-theme',t)}catch(e){}readTheme()};
+let saved=null;try{saved=localStorage.getItem('mo-theme')}catch(e){}
+setTheme(saved||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'));
+$('#tb').addEventListener('click',()=>setTheme(R.dataset.theme==='dark'?'light':'dark'));
+
+/* perfis (iguais aos de docs/produto/uso-admin-web.md) */
+const rows=[['Início',1,1,1,0],['Meu caixa',1,1,0,1],['Vendas e conflitos offline',1,1,0,0],['Produtos e categorias',1,1,0,0],['Estoque',1,1,1,0],['Fornecedores e clientes',1,1,0,0],['Usuários e auditoria',1,0,0,0],['Vender no PDV',0,0,0,1]];
+$('#perm').innerHTML=rows.map(r=>`<tr><td><strong>${r[0]}</strong></td>${r.slice(1).map(v=>v?'<td class="y">Sim</td>':'<td class="n">—</td>').join('')}</tr>`).join('');
+
+/* formulário */
+$('#lead').addEventListener('submit',e=>{e.preventDefault();
+ const m=$('#lmsg'),nome=$('#ln').value.trim(),mercado=$('#lm').value.trim();m.hidden=false;m.className='msg';
+ if(!nome||!mercado){m.textContent='Preencha seu nome e o nome do mercado.';return}
+ const texto=`Olá! Sou ${nome}, do mercado ${mercado} (${$('#lc').value}). Quero conhecer o mercadoOne. Prefiro contato por ${$('#lp').value}.`;
+ if(!WHATSAPP){m.textContent='O número de contato ainda não foi configurado neste site. Mensagem pronta: '+texto;return}
+ m.className='msg ok';m.textContent='Abrindo o WhatsApp...';
+ location.href='https://wa.me/'+WHATSAPP+'?text='+encodeURIComponent(texto)});
+
+/* partículas */
+const c=$('#pc'),x=c.getContext('2d');let P=[],W=0,H=0;
+const size=()=>{W=c.width=innerWidth;H=c.height=innerHeight;const n=Math.min(Math.floor(W*H/8000),120);
+ P=Array.from({length:n},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*2.5+.5,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,a:Math.random()*.5+.15}))};
+size();addEventListener('resize',size);
+const loop=()=>{const[r,g,b,A]=pDot;x.clearRect(0,0,W,H);
+ for(const p of P){p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>W)p.vx*=-1;if(p.y<0||p.y>H)p.vy*=-1;x.beginPath();x.arc(p.x,p.y,p.r,0,7);x.fillStyle=`rgba(${r},${g},${b},${p.a*A})`;x.fill()}
+ for(let i=0;i<P.length;i++)for(let j=i+1;j<P.length;j++){const s=Math.hypot(P[i].x-P[j].x,P[i].y-P[j].y);if(s<120){x.strokeStyle=`rgba(${r},${g},${b},${(1-s/120)*pLine})`;x.lineWidth=.8;x.beginPath();x.moveTo(P[i].x,P[i].y);x.lineTo(P[j].x,P[j].y);x.stroke()}}
+ requestAnimationFrame(loop)};
+requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

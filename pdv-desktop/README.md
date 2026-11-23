@@ -13,6 +13,10 @@ mvn javafx:run
 mvn test
 ```
 
+## Visual
+
+Cores e medidas seguem a [identidade visual](../docs/marca/identidade-visual.html). `src/main/resources/styles/brand-tokens.css` (variáveis `-mo-*`) e `brand-tokens-dark.css` são gerados de `docs/marca/tokens.json` por `node docs/marca/gerar-tokens.mjs` (na raiz) e não devem ser editados à mão. `styles/pdv.css` usa só essas variáveis. O botão **Modo escuro / Modo claro** do cabeçalho aplica as variáveis do modo escuro no nó raiz e guarda a escolha nas preferências do usuário do Windows. A fonte é a Outfit, carregada de `src/main/resources/fonts` (licença OFL em `OFL-Outfit.txt`).
+
 ## Documentação relacionada
 
 - [Offline PDV e sync](../docs/arquitetura/offline-pdv-sync.md)

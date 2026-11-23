@@ -1,0 +1,45 @@
+/* Gerado de docs/marca/tokens.json (v2). Não edite à mão. */
+.root {
+  -mo-midnight: #122C4F;
+  -mo-ocean: #5B8BB2;
+  -mo-avocado: #2E7D5B;
+  -mo-pearl: #F7F5EE;
+  -mo-bg: #F7F5EE;
+  -mo-surface: #FFFFFF;
+  -mo-surface-sub: #F0EDE0;
+  -mo-sidebar: #FFFFFF;
+  -mo-selected: #E8EFF6;
+  -mo-ink: #122C4F;
+  -mo-ink-muted: #3D5470;
+  -mo-ink-hint: #52697F;
+  -mo-line: rgba(18,44,79,0.12);
+  -mo-action: #2E7D5B;
+  -mo-action-hover: #276B4E;
+  -mo-chart-bar: #C9D9E7;
+  -mo-chart-peak: #122C4F;
+  -mo-success-bg: #DDF1E8;
+  -mo-success-ink: #1B5E3F;
+  -mo-warning-bg: #FFF1CC;
+  -mo-warning-ink: #8A5A00;
+  -mo-danger-bg: #FDE7E4;
+  -mo-danger-ink: #B42318;
+  -mo-particle: rgba(18,44,79,0.25);
+  -mo-particle-line: rgba(18,44,79,0.06);
+  /* Fonte: a Outfit só funciona se o app carregar o arquivo TTF (Font.loadFont); o CSS do app define a família. */
+  -fx-base: -mo-bg;
+  -fx-background: -mo-bg;
+  -fx-text-base-color: -mo-ink;
+  -fx-accent: -mo-ocean;
+  -fx-focus-color: -mo-ocean;
+}
+.button.primary { -fx-background-color: -mo-action; -fx-text-fill: white; -fx-font-weight: bold; -fx-background-radius: 10; -fx-min-height: 44; }
+.button.primary:hover { -fx-background-color: -mo-action-hover; }
+.button.secondary { -fx-background-color: transparent; -fx-border-color: -mo-line; -fx-border-width: 1.5; -fx-border-radius: 10; -fx-text-fill: -mo-ink; -fx-min-height: 44; }
+.card { -fx-background-color: -mo-surface; -fx-border-color: -mo-line; -fx-border-radius: 16; -fx-background-radius: 16; -fx-padding: 24; }
+.sidebar { -fx-background-color: -mo-sidebar; -fx-border-color: transparent -mo-line transparent transparent; }
+.sidebar .selected { -fx-background-color: -mo-selected; -fx-border-color: transparent transparent transparent -mo-ocean; -fx-border-width: 0 0 0 3; }
+.pill-ok { -fx-background-color: -mo-success-bg; -fx-text-fill: -mo-success-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
+.pill-warn { -fx-background-color: -mo-warning-bg; -fx-text-fill: -mo-warning-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
+.pill-danger { -fx-background-color: -mo-danger-bg; -fx-text-fill: -mo-danger-ink; -fx-background-radius: 999; -fx-padding: 3 10; -fx-font-size: 13; }
+.chart-bar { -fx-bar-fill: -mo-chart-bar; }
+.chart-peak { -fx-bar-fill: -mo-chart-peak; }

@@ -41,6 +41,10 @@ MERCADO_ONE_API_BASE_URL=https://exemplo.azurewebsites.net npm run build:product
 
 `npm test` já inclui `--watch=false` e usa Karma `ChromeHeadlessNoGpu`. Para `npm run test:e2e`, mantenha `npm start` em outro terminal; os testes Playwright simulam as respostas da API. O build grava em `../output/admin-web-dist`. `build:production` grava a URL pública da API no bundle.
 
+## Visual
+
+Cores, fontes e medidas seguem a [identidade visual](../docs/marca/identidade-visual.html). `src/brand-tokens.css` é gerado de `docs/marca/tokens.json` por `node docs/marca/gerar-tokens.mjs` (na raiz) e não deve ser editado à mão. `src/styles.css` só liga as variáveis dos componentes (`--color-*`) a esses tokens. O modo claro/escuro fica em `ThemeService` (`data-theme` no `<html>`, escolha salva em `localStorage` como `mo-theme`).
+
 ## Documentação relacionada
 
 - [Contratos de API](../docs/desenvolvimento/api-contratos.md)

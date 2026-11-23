@@ -1,0 +1,24 @@
+/* Gerado de docs/marca/tokens.json (v2). Não edite à mão. Modo escuro: aplique estas variáveis no nó raiz (setStyle). */
+.root {
+  -mo-ocean: #6FA8DC;
+  -mo-avocado: #4FB286;
+  -mo-bg: #0B1A2C;
+  -mo-surface: #12263E;
+  -mo-surface-sub: #17304D;
+  -mo-sidebar: #08172A;
+  -mo-selected: #16314F;
+  -mo-ink: #EEF3F8;
+  -mo-ink-muted: #A9BDD1;
+  -mo-ink-hint: #7F9AB5;
+  -mo-line: rgba(168,200,224,0.14);
+  -mo-chart-bar: #28496B;
+  -mo-chart-peak: #6FA8DC;
+  -mo-success-bg: #12332A;
+  -mo-success-ink: #4FB286;
+  -mo-warning-bg: #362A10;
+  -mo-warning-ink: #D9A93A;
+  -mo-danger-bg: #2E1214;
+  -mo-danger-ink: #E5534B;
+  -mo-particle: rgba(111,168,220,0.7);
+  -mo-particle-line: rgba(111,168,220,0.12);
+}

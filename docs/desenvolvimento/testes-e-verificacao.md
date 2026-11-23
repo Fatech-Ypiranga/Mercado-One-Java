@@ -20,6 +20,8 @@ npm run build
 npm run test:e2e
 ```
 
+Se o Karma falhar com `Cannot start ChromeHeadless` (Chrome fora do caminho padrão), aponte `CHROME_BIN` para qualquer Chromium, por exemplo o do Playwright: `$env:CHROME_BIN = "$env:LOCALAPPDATA\ms-playwright\chromium-1248\chrome-win64\chrome.exe"` (o número da pasta muda com a versão instalada).
+
 O script `npm test` em `admin-web/package.json` já passa `--watch=false` e usa o hook `scripts/angular-karma-output-hook.cjs`. O browser é `ChromeHeadlessNoGpu` (`admin-web/karma.conf.cjs`).
 Para medir cobertura no PowerShell, execute `$env:MERCADO_ONE_COVERAGE='1'; npm test -- --code-coverage`. O relatório aplica o mínimo de 80% a statements e linhas; os arquivos são gravados em `output/admin-web-test-out/output/admin-web-coverage/`.
 Os testes Playwright em `admin-web/e2e/` exercitam login, navegação por perfil, cadastro de categoria, entrada de estoque e confirmação de conflito em Chromium desktop e celular. Eles interceptam a API com respostas determinísticas: verificam a jornada do navegador e o corpo enviado, mas não substituem uma verificação integrada com backend e banco. Inicie `npm start` em outro terminal antes de `npm run test:e2e`. `MERCADO_ONE_E2E_BASE_URL` pode apontar para outro admin web de teste já iniciado; `MERCADO_ONE_E2E_LOGIN` e `MERCADO_ONE_E2E_PASSWORD` definem os dados usados no formulário de teste.
@@ -30,6 +32,10 @@ PDV desktop:
 cd pdv-desktop
 mvn test
 ```
+
+Os testes do PDV cobrem fila offline, catálogo local e checkout; a interface JavaFX (tema, fonte, layout) não tem teste automatizado e se confere abrindo o app com `mvn javafx:run`.
+
+Identidade visual: depois de editar `docs/marca/tokens.json`, rode `node docs/marca/gerar-tokens.mjs` na raiz. Ele atualiza o manual (`docs/marca/identidade-visual.html`), `admin-web/src/brand-tokens.css` e os `brand-tokens*.css` do PDV; confira o diff antes de commitar.
 
 ## Testes existentes
 
