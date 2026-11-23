@@ -98,10 +98,11 @@ public class UserController {
             @NotBlank @Size(max = 120) String login,
             @NotBlank @Size(min = 6, max = 120) String password,
             @NotNull UserRole perfil,
-            boolean active
+            boolean active,
+            @Size(max = 180) @jakarta.validation.constraints.Email String email
     ) {
         UserData toData() {
-            return new UserData(nome, login, password, perfil, active);
+            return new UserData(nome, login, password, perfil, active, email);
         }
     }
 
@@ -110,10 +111,11 @@ public class UserController {
             @NotBlank @Size(max = 120) String login,
             @Size(min = 6, max = 120) String password,
             @NotNull UserRole perfil,
-            boolean active
+            boolean active,
+            @Size(max = 180) @jakarta.validation.constraints.Email String email
     ) {
         UserData toData() {
-            return new UserData(nome, login, password, perfil, active);
+            return new UserData(nome, login, password, perfil, active, email);
         }
     }
 
@@ -121,6 +123,7 @@ public class UserController {
             Long id,
             String nome,
             String login,
+            String email,
             UserRole perfil,
             UserStatus status,
             Instant createdAt,
@@ -131,6 +134,7 @@ public class UserController {
                     user.getId(),
                     user.getName(),
                     user.getLogin(),
+                    user.getEmail(),
                     user.getRole(),
                     user.isActive() ? UserStatus.ACTIVE : UserStatus.INACTIVE,
                     user.getCreatedAt(),

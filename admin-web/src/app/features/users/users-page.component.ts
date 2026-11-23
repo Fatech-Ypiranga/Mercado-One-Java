@@ -1,10 +1,16 @@
 import { ChangeDetectorRef, Component, DestroyRef, ElementRef, inject } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { AccessService, ManagedUser, RoleOption } from './access.service';
 import { ApiClientService } from '../../core/api-client.service';
 import { UserRole } from '../../core/auth.service';
+
+/** Validador de e-mail que ignora espaços nas pontas (quem cola ou digita costuma deixar um). */
+function trimmedEmail(control: AbstractControl): ValidationErrors | null {
+  const value = typeof control.value === 'string' ? control.value.trim() : control.value;
+  return value ? Validators.email({ value } as AbstractControl) : null;
+}
 
 @Component({
   selector: 'mo-users-page',
@@ -65,6 +71,7 @@ export class UsersPageComponent {
   protected readonly form = this.fb.nonNullable.group({
     nome: ['', [Validators.required, Validators.maxLength(120)]],
     login: ['', [Validators.required, Validators.maxLength(120)]],
+    email: ['', [trimmedEmail, Validators.maxLength(180)]],
     password: ['', [Validators.minLength(6), Validators.maxLength(120)]],
     perfil: ['GERENTE' as UserRole, Validators.required],
     active: [true],
@@ -120,6 +127,7 @@ export class UsersPageComponent {
           password: value.password.trim() ? value.password : null,
           perfil: value.perfil,
           active: value.active,
+          email: value.email.trim() || null,
         })
       : this.access.createUser({
           nome: value.nome,
@@ -127,6 +135,7 @@ export class UsersPageComponent {
           password: value.password,
           perfil: value.perfil,
           active: value.active,
+          email: value.email.trim() || null,
         });
 
     operation.pipe(finalize(() => {
@@ -184,6 +193,7 @@ export class UsersPageComponent {
     this.form.reset({
       nome: user.nome,
       login: user.login,
+      email: user.email ?? '',
       password: '',
       perfil: user.perfil,
       active: user.status === 'ACTIVE',
@@ -202,6 +212,7 @@ export class UsersPageComponent {
     this.form.reset({
       nome: '',
       login: '',
+      email: '',
       password: '',
       perfil: 'GERENTE',
       active: true,

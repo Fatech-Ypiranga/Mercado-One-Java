@@ -34,6 +34,7 @@ describe('UsersPageComponent', () => {
     fixture.componentInstance['form'].setValue({
       nome: 'Gerente Loja',
       login: 'gerente',
+      email: '',
       password: '',
       perfil: 'GERENTE',
       active: true,
@@ -59,6 +60,7 @@ describe('UsersPageComponent', () => {
         id: 2,
         nome: 'Gerente Loja',
         login: 'gerente',
+        email: null,
         perfil: 'GERENTE',
         status: 'ACTIVE',
         createdAt: new Date().toISOString(),
@@ -74,6 +76,7 @@ describe('UsersPageComponent', () => {
       id: 2,
       nome: 'Gerente Loja',
       login: 'gerente',
+      email: null,
       perfil: 'GERENTE',
       status: 'ACTIVE',
       createdAt: new Date().toISOString(),
@@ -100,6 +103,7 @@ describe('UsersPageComponent', () => {
     fixture.componentInstance['form'].setValue({
       nome: 'Gerente Loja',
       login: 'gerente',
+      email: '',
       password: 'senha123',
       perfil: 'GERENTE',
       active: true,
@@ -110,5 +114,44 @@ describe('UsersPageComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Revise os dados do usuário.');
+  });
+
+  it('sends the e-mail typed on the form, or null when it is left empty', () => {
+    const access = TestBed.inject(AccessService);
+    spyOn(access, 'roles').and.returnValue(of({
+      success: true,
+      data: [{ value: 'GERENTE', label: 'Gerente' }],
+      error: null,
+      timestamp: new Date().toISOString(),
+    }));
+    spyOn(access, 'listUsers').and.returnValue(of({ success: true, data: [], error: null, timestamp: new Date().toISOString() }));
+    const create = spyOn(access, 'createUser').and.returnValue(throwError(() => new HttpErrorResponse({ status: 400 })));
+    const fixture = TestBed.createComponent(UsersPageComponent);
+    fixture.detectChanges();
+    const submit = () => fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
+
+    fixture.componentInstance['form'].setValue({ nome: 'Ana', login: 'ana', email: ' Ana@Mercado.Test ', password: 'senha123', perfil: 'GERENTE', active: true });
+    submit();
+    fixture.componentInstance['form'].setValue({ nome: 'Bia', login: 'bia', email: '', password: 'senha123', perfil: 'GERENTE', active: true });
+    submit();
+
+    expect(create.calls.argsFor(0)[0].email).toBe('Ana@Mercado.Test');
+    expect(create.calls.argsFor(1)[0].email).toBeNull();
+  });
+
+  it('refuses a malformed e-mail before calling the API', () => {
+    const access = TestBed.inject(AccessService);
+    spyOn(access, 'roles').and.returnValue(of({ success: true, data: [], error: null, timestamp: new Date().toISOString() }));
+    spyOn(access, 'listUsers').and.returnValue(of({ success: true, data: [], error: null, timestamp: new Date().toISOString() }));
+    const create = spyOn(access, 'createUser');
+    const fixture = TestBed.createComponent(UsersPageComponent);
+    fixture.detectChanges();
+
+    fixture.componentInstance['form'].setValue({ nome: 'Ana', login: 'ana', email: 'isto-nao-e-email', password: 'senha123', perfil: 'GERENTE', active: true });
+    fixture.nativeElement.querySelector('form.record-sheet').dispatchEvent(new Event('submit'));
+    fixture.detectChanges();
+
+    expect(create).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('e-mail, ele precisa ser válido');
   });
 });

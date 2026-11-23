@@ -33,6 +33,18 @@ mercado-one:
       login: ${MERCADO_ONE_SEED_ADMIN_LOGIN:}
       password: ${MERCADO_ONE_SEED_ADMIN_PASSWORD:}
 
+  # Redefinicao de senha por e-mail. Sem MERCADO_ONE_MAIL_HOST e MERCADO_ONE_MAIL_FROM o envio fica desligado.
+  mail:
+    host: ${MERCADO_ONE_MAIL_HOST:}
+    port: ${MERCADO_ONE_MAIL_PORT:587}
+    username: ${MERCADO_ONE_MAIL_USER:}
+    password: ${MERCADO_ONE_MAIL_PASSWORD:}
+    from: ${MERCADO_ONE_MAIL_FROM:}
+    starttls: ${MERCADO_ONE_MAIL_STARTTLS:true}
+  password-reset:
+    app-url: ${MERCADO_ONE_APP_URL:http://localhost:4200}
+    token-minutes: ${MERCADO_ONE_PASSWORD_RESET_MINUTES:60}
+
 management:
   endpoints:
     web:

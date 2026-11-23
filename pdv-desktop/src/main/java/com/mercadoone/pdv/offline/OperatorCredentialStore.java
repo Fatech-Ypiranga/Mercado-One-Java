@@ -25,16 +25,24 @@ import java.util.Optional;
  * Nunca guarda a senha. A credencial é gravada ou renovada a cada login online bem-sucedido, então uma
  * senha trocada no admin passa a valer aqui no próximo login online. Quem nunca entrou online neste
  * caixa não entra offline.
+ *
+ * <p>A credencial vale por {@link #DEFAULT_VALIDITY} desde o último login online. Passado esse prazo ela
+ * deixa de abrir o caixa offline: é o que limita o tempo em que um operador desativado ou demitido no admin
+ * ainda consegue entrar neste computador sem internet.
  */
 public class OperatorCredentialStore {
 
     /** Custo do PBKDF2 em produção. Os testes usam um valor menor. */
     public static final int DEFAULT_ITERATIONS = 210_000;
+    /** Prazo da credencial local, contado do último login online. */
+    public static final java.time.Duration DEFAULT_VALIDITY = java.time.Duration.ofDays(30);
     private static final int SALT_BYTES = 16;
     private static final int KEY_BITS = 256;
 
     private final OfflineStorageConfig config;
     private final int iterations;
+    private final java.time.Duration validity;
+    private final java.time.Clock clock;
     private final SecureRandom random = new SecureRandom();
 
     public OperatorCredentialStore(OfflineStorageConfig config) {
@@ -42,8 +50,14 @@ public class OperatorCredentialStore {
     }
 
     public OperatorCredentialStore(OfflineStorageConfig config, int iterations) {
+        this(config, iterations, DEFAULT_VALIDITY, java.time.Clock.systemUTC());
+    }
+
+    public OperatorCredentialStore(OfflineStorageConfig config, int iterations, java.time.Duration validity, java.time.Clock clock) {
         this.config = config;
         this.iterations = iterations;
+        this.validity = validity;
+        this.clock = clock;
     }
 
     public void initialize() {
@@ -86,7 +100,7 @@ public class OperatorCredentialStore {
             statement.setString(3, Base64.getEncoder().encodeToString(salt));
             statement.setString(4, Base64.getEncoder().encodeToString(hash));
             statement.setInt(5, iterations);
-            statement.setString(6, Instant.now().toString());
+            statement.setString(6, Instant.now(clock).toString());
             statement.executeUpdate();
         } catch (SQLException exception) {
             throw new IllegalStateException("Nao foi possivel guardar a credencial local.", exception);
@@ -100,10 +114,10 @@ public class OperatorCredentialStore {
         }
         try (Connection connection = connect();
              PreparedStatement statement = connection.prepareStatement(
-                     "select display_name, salt, hash, iterations from operator_credentials where login = ?")) {
+                     "select display_name, salt, hash, iterations, updated_at from operator_credentials where login = ?")) {
             statement.setString(1, normalize(login));
             try (ResultSet rows = statement.executeQuery()) {
-                if (!rows.next()) {
+                if (!rows.next() || expired(rows.getString("updated_at"))) {
                     return Optional.empty();
                 }
                 byte[] expected = Base64.getDecoder().decode(rows.getString("hash"));
@@ -129,6 +143,26 @@ public class OperatorCredentialStore {
         } catch (SQLException exception) {
             throw new IllegalStateException("Nao foi possivel ler a credencial local.", exception);
         }
+    }
+
+    /** O operador entrou online neste computador, mas há mais tempo que a validade da credencial? */
+    public boolean isExpired(String login) {
+        if (login == null || login.isBlank()) {
+            return false;
+        }
+        try (Connection connection = connect();
+             PreparedStatement statement = connection.prepareStatement("select updated_at from operator_credentials where login = ?")) {
+            statement.setString(1, normalize(login));
+            try (ResultSet rows = statement.executeQuery()) {
+                return rows.next() && expired(rows.getString("updated_at"));
+            }
+        } catch (SQLException exception) {
+            throw new IllegalStateException("Nao foi possivel ler a credencial local.", exception);
+        }
+    }
+
+    private boolean expired(String updatedAt) {
+        return Instant.parse(updatedAt).plus(validity).isBefore(Instant.now(clock));
     }
 
     private static String normalize(String login) {

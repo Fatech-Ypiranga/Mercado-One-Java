@@ -27,6 +27,9 @@ public class AppUser {
     @Column(name = "login", nullable = false, unique = true, length = 120)
     private String login;
 
+    @Column(name = "email", length = 180)
+    private String email;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -80,6 +83,15 @@ public class AppUser {
 
     public String getPasswordHash() {
         return passwordHash;
+    }
+
+    /** E-mail para a redefinicao de senha; nulo quando nao foi cadastrado. */
+    public String getEmail() {
+        return email;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
     }
 
     public UserRole getRole() {

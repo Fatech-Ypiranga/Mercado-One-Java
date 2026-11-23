@@ -205,6 +205,49 @@ test('access screens link to each other and keep focus on the screen title', asy
   await expect(page.getByRole('heading', { name: 'Bem-vindo de volta' })).toBeFocused();
 });
 
+test('forgot password with e-mail on: request, new password from the link, link is single use', async ({ page }) => {
+  let used = false;
+  const confirmBodies: unknown[] = [];
+  await setupApi(page, async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/auth/password-reset/status') { await json(route, envelope({ enabled: true })); return true; }
+    if (path === '/api/auth/password-reset/request') { await json(route, envelope(null)); return true; }
+    if (path === '/api/auth/password-reset/check') { await json(route, envelope({ valid: !used })); return true; }
+    if (path === '/api/auth/password-reset/confirm') {
+      confirmBodies.push(route.request().postDataJSON());
+      used = true;
+      await json(route, envelope(null));
+      return true;
+    }
+    return false;
+  });
+
+  await page.goto('/esqueci-senha');
+  await page.getByLabel('Login ou e-mail').fill('rosa@mercado.test');
+  await page.getByRole('button', { name: 'Enviar link' }).click();
+  await expect(page.getByRole('heading', { name: 'Confira o seu e-mail' })).toBeVisible();
+
+  await page.goto('/nova-senha?token=abc123');
+  await expect(page.getByRole('heading', { name: 'Crie uma senha nova' })).toBeVisible();
+  await expect(page).not.toHaveURL(/token=/); // o token sai da barra de endereços
+  await page.getByLabel('Senha nova', { exact: true }).fill('senha-nova-77');
+  await page.getByLabel('Repita a senha').fill('senha-nova-77');
+  await page.getByRole('button', { name: 'Salvar senha nova' }).click();
+  await expect(page.getByRole('heading', { name: 'Senha alterada' })).toBeVisible();
+  expect(confirmBodies).toEqual([{ token: 'abc123', password: 'senha-nova-77' }]);
+
+  await page.goto('/nova-senha?token=abc123');
+  await expect(page.getByRole('heading', { name: 'Este link não vale mais' })).toBeVisible();
+  await page.getByRole('link', { name: 'Pedir um link novo' }).click();
+  await expect(page).toHaveURL(/\/esqueci-senha$/);
+});
+
+test('a link with no token shows the expired screen', async ({ page }) => {
+  await setupApi(page);
+  await page.goto('/nova-senha');
+  await expect(page.getByRole('heading', { name: 'Este link não vale mais' })).toBeVisible();
+});
+
 test('protected areas still send an unauthenticated visitor to the login', async ({ page }) => {
   await setupApi(page);
   await page.goto('/produtos');

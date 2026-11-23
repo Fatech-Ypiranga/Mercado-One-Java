@@ -107,15 +107,17 @@ O caixa não pode parar quando a internet cai. Por isso a entrada funciona em do
 | --- | --- |
 | API no ar | O servidor confere login e senha. Se estiverem certos, o operador entra e o PDV guarda neste computador uma credencial local (veja abaixo). |
 | API fora do ar, operador **já entrou online neste computador** | A senha é conferida contra a credencial local. O operador entra com o aviso `Entrou sem conexão...` e `(sem conexão)` ao lado do nome. As vendas vão para a fila. |
+| API fora do ar, última entrada online **há mais de 30 dias** | Recusado: `Faz muito tempo que você não entra neste caixa com internet. Conecte o caixa à internet para entrar.` |
 | API fora do ar, operador **nunca entrou online neste computador** | Recusado: `Sem conexão com o sistema. Sem internet só entra quem já entrou neste caixa com internet.` |
 | API no ar e **senha errada** | Recusado, sem plano B. Senha errada é senha errada, com ou sem internet. |
 
+- **A credencial vale 30 dias** desde a última entrada online. É o que limita o tempo em que alguém desativado no admin ainda abre o caixa sem internet. Qualquer entrada online renova o prazo.
 - **A credencial local não guarda a senha.** Guarda um hash com sal (PBKDF2-HMAC-SHA256, 210 mil iterações) em `~/.mercado-one/pdv-offline.sqlite3`. Ela é renovada a cada entrada online, então uma senha trocada no admin passa a valer offline na próxima vez que o operador entrar com internet.
 - Quem entrou offline mantém a senha digitada só na memória da sessão. A cada 2 minutos, e em **Sincronizar agora**, o PDV tenta obter o acesso à API com ela. Quando consegue, envia a fila sozinho. **Sair** apaga a senha da memória.
 - **Cada venda guarda quem vendeu.** O PDV grava o login do operador na venda local e o envia à API. A API credita a venda a esse operador, mesmo que outra pessoa entre depois e sincronize a fila. O limite de desconto também segue o perfil de quem vendeu.
 - Se o login gravado na venda não existir ou estiver inativo no servidor, a venda vira conflito `OPERATOR_NOT_FOUND` e o gerente decide na tela **Offline** do admin.
 - Sem internet não há desconto: o limite do perfil vem da API. A dica no campo mostra `Sem conexão: o desconto só vale depois que o sistema voltar.`
-- Esqueci a senha: o sistema não envia e-mail. O administrador redefine em **Usuários, Redefinir senha** e a pessoa troca a senha em **Minha conta**. A nova senha vale offline depois da próxima entrada com internet.
+- Esqueci a senha: quem tem e-mail cadastrado usa **Esqueci a senha** no painel administrativo e segue o link recebido (quando o envio de e-mail está configurado). Os demais pedem ao administrador, que redefine em **Usuários, Redefinir senha**. A nova senha vale offline depois da próxima entrada com internet.
 
 ## O que o caixa não faz
 

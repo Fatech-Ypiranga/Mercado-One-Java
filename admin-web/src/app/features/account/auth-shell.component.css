@@ -66,6 +66,7 @@
   box-shadow: 0 30px 80px rgba(3, 11, 22, 0.45);
 }
 
+.login-form { display: flex; flex-direction: column; gap: 20px; }
 .login-head { display: flex; flex-direction: column; gap: 6px; text-align: center; margin-bottom: 4px; }
 .login-title { margin: 0; font-size: 26px; line-height: 32px; font-weight: 700; letter-spacing: -0.005em; color: var(--ink); }
 .login-title:focus { outline: none; }
@@ -118,6 +119,7 @@
   border: 0; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.12s;
 }
 .login-submit:hover { background: var(--action-hover); }
+.login-submit--link { text-decoration: none; }
 .login-submit:disabled { cursor: progress; background: var(--action-hover); }
 .login-spinner { width: 18px; height: 18px; border: 2.5px solid rgba(255, 255, 255, 0.4); border-top-color: #fff; border-radius: 50%; animation: login-spin 0.8s linear infinite; }
 @keyframes login-spin { to { transform: rotate(360deg); } }

@@ -32,6 +32,7 @@ export const routes: Routes = [
     children: [
       { path: 'login', title: 'Entrar · mercadoOne', loadComponent: () => import('./features/account/login-page.component').then((m) => m.LoginPageComponent) },
       { path: 'esqueci-senha', title: 'Esqueci a senha · mercadoOne', loadComponent: () => import('./features/account/forgot-password-page.component').then((m) => m.ForgotPasswordPageComponent) },
+      { path: 'nova-senha', title: 'Nova senha · mercadoOne', loadComponent: () => import('./features/account/reset-password-page.component').then((m) => m.ResetPasswordPageComponent) },
       { path: 'suporte', title: 'Suporte · mercadoOne', loadComponent: () => import('./features/account/support-page.component').then((m) => m.SupportPageComponent) },
     ],
   },

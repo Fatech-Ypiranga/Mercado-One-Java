@@ -91,6 +91,7 @@ Aceite mínimo:
 - [x] Registrar venda offline com identificador local.
 - [x] Persistir venda em fila offline.
 - [x] Enviar vendas pendentes quando a comunicação retornar (no login e a cada 2 minutos; reenvia `PENDING` e `ERROR`).
+- [x] Entrada obrigatória do operador no PDV, com entrada offline por credencial local (hash, validade de 30 dias) e venda creditada a quem vendeu.
 - [x] Registrar conflitos de preço, produto, pagamento ou estoque.
 - [x] Preservar venda offline original em conflito ou falha.
 - [x] Indicador de sincronização no PDV (`SyncStatus`) calculado a partir da fila local.
