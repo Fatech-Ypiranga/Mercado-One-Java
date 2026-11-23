@@ -4,12 +4,13 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { ApiClientService } from '../../core/api-client.service';
+import { ScanFieldDirective } from '../../core/scan-field.directive';
 import { CatalogService, Category, Product, ProductRequest } from './catalog.service';
 
 @Component({
   selector: 'mo-products-page',
   standalone: true,
-  imports: [CurrencyPipe, ReactiveFormsModule],
+  imports: [CurrencyPipe, ReactiveFormsModule, ScanFieldDirective],
   styles: [`
     .catalog-heading { display: flex; align-items: end; justify-content: space-between; gap: 1rem; }
     .section-heading { display: flex; align-items: center; justify-content: space-between; gap: .75rem; margin-bottom: 1rem; }

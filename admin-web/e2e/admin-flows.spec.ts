@@ -158,3 +158,29 @@ test('offline conflict requires confirmation before resolution', async ({ page }
   await page.getByRole('button', { name: 'Confirmar aceite' }).click();
   await expect.poll(() => resolution).toMatchObject({ action: 'ACCEPT', note: null });
 });
+
+test('barcode scanner Enter does not submit the product form', async ({ page, isMobile }) => {
+  // O leitor de código de barras "digita" o código e termina com Enter. Isso não pode salvar o cadastro pela metade.
+  let posted = false;
+  await setupApi(page, async (route) => {
+    const path = new URL(route.request().url()).pathname;
+    if (path === '/api/catalog/products' && route.request().method() === 'POST') {
+      posted = true;
+      await json(route, envelope({}));
+      return true;
+    }
+    return false;
+  });
+  await signIn(page);
+  await page.goto('/produtos');
+  if (isMobile) await page.getByRole('button', { name: 'Novo', exact: true }).click();
+  await page.locator('input[formcontrolname="name"]').fill('Arroz');
+  const barcode = page.locator('input[formcontrolname="barcode"]');
+  await barcode.focus();
+  await page.keyboard.type('7891000100103', { delay: 5 });
+  await page.keyboard.press('Enter');
+  await expect(page.locator('input[formcontrolname="sku"]')).toBeFocused();
+  await expect(barcode).toHaveValue('7891000100103');
+  await page.waitForTimeout(300);
+  expect(posted).toBe(false);
+});
