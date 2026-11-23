@@ -2,7 +2,7 @@
 
 Administrativo web do Mercado One em Angular 22. Interface de administrador, gerente e estoquista. `OPERADOR_CAIXA` acessa apenas "Meu caixa" e "Minha conta".
 
-O que as telas fazem: [Uso do admin web](../docs/uso-admin-web.md). Entregue e pendente: [Backlog MVP](../docs/backlog-mvp.md).
+O que as telas fazem: [Uso do admin web](../docs/produto/uso-admin-web.md). Entregue e pendente: [Backlog MVP](../docs/produto/backlog-mvp.md).
 
 Credencial inicial de desenvolvimento: `admin` / `admin123`.
 
@@ -43,6 +43,6 @@ MERCADO_ONE_API_BASE_URL=https://exemplo.azurewebsites.net npm run build:product
 
 ## Documentação relacionada
 
-- [Contratos de API](../docs/api-contratos.md)
-- [Segurança](../docs/seguranca.md)
-- [Testes e verificação](../docs/testes-e-verificacao.md)
+- [Contratos de API](../docs/desenvolvimento/api-contratos.md)
+- [Segurança](../docs/arquitetura/seguranca.md)
+- [Testes e verificação](../docs/desenvolvimento/testes-e-verificacao.md)

@@ -2,7 +2,7 @@
 
 Este documento reúne diagramas versionáveis em Mermaid para explicar a arquitetura, o modelo de domínio e os fluxos críticos do Mercado One. Os diagramas refletem o estado atual do projeto: monorepo com administrativo web, API central, PDV desktop offline-first, PostgreSQL servidor e SQLite local do PDV.
 
-Use estes diagramas como ponto de entrada antes de abrir o código. Para detalhes normativos, consulte também `README.md`, `CONTEXT.md`, `docs/arquitetura.md`, `docs/api-contratos.md`, `docs/dados-e-migracoes.md` e `docs/offline-pdv-sync.md`.
+Use estes diagramas como ponto de entrada antes de abrir o código. Para detalhes normativos, consulte também `README.md`, `CONTEXT.md`, `docs/arquitetura/arquitetura.md`, `docs/desenvolvimento/api-contratos.md`, `docs/dados/dados-e-migracoes.md` e `docs/arquitetura/offline-pdv-sync.md`.
 
 A fonte normativa dos fluxos é o Mermaid deste arquivo.
 
@@ -566,5 +566,5 @@ flowchart TB
 
 - Casos de uso detalhados: o backlog MVP já comunica esse escopo com mais precisão.
 - Deployment: o piloto na Azure (App Service, PostgreSQL Flexible Server e Static Web Apps) está descrito em `infra/README.md`, sem diagrama próprio.
-- Diagramas de telas Angular ou JavaFX: o uso das telas está em `docs/uso-admin-web.md` e `docs/uso-pdv.md`.
+- Diagramas de telas Angular ou JavaFX: o uso das telas está em `docs/produto/uso-admin-web.md` e `docs/produto/uso-pdv.md`.
 - Módulos fora do MVP, como NFC-e, NF-e, TEF, financeiro completo, multi-loja, e-commerce ou aplicativo mobile.

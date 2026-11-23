@@ -2,7 +2,7 @@
 
 Mercado One é um ERP em scaffold funcional para pequenos mercados varejistas, com administrativo web, API Java e PDV desktop offline-first. O objetivo do repositório é evoluir o MVP de loja física: cadastros, estoque simples, vendas presenciais, operação offline parcial, clientes e relatórios operacionais.
 
-Entregue e pendente: [Backlog MVP](docs/backlog-mvp.md). Uso da loja: [Admin web](docs/uso-admin-web.md) e [PDV](docs/uso-pdv.md).
+Entregue e pendente: [Backlog MVP](docs/produto/backlog-mvp.md). Uso da loja: [Admin web](docs/produto/uso-admin-web.md) e [PDV](docs/produto/uso-pdv.md).
 
 O PDV confirma online por `POST /api/sales` (idempotente por `clientSaleId`) depois de gravar a venda no SQLite; sem API, a venda fica na fila e sincroniza por `POST /api/offline/sales/sync`.
 
@@ -20,11 +20,11 @@ backend-api/   API REST e domínio servidor
 admin-web/     Administrativo web Angular
 pdv-desktop/   Cliente desktop JavaFX para PDV
 infra/         Infraestrutura local de desenvolvimento
-docs/          Guias transversais, contratos e decisões
+docs/          Guias por assunto: produto, arquitetura, desenvolvimento, dados, marca
 CONTEXT.md     Glossário de domínio
 ```
 
-Componentes, fronteiras e fluxo de venda: [Arquitetura](docs/arquitetura.md).
+Componentes, fronteiras e fluxo de venda: [Arquitetura](docs/arquitetura/arquitetura.md).
 
 ## Desenvolvimento local
 
@@ -68,11 +68,11 @@ mvn javafx:run
 
 O campo de login do PDV vem preenchido com `operador`; use um usuário real cadastrado (o seed cria `admin`). A URL padrão da API no PDV é `http://localhost:8080`.
 
-Detalhes de variáveis, portas e troubleshooting: [Desenvolvimento local](docs/desenvolvimento-local.md).
+Detalhes de variáveis, portas e troubleshooting: [Desenvolvimento local](docs/desenvolvimento/desenvolvimento-local.md).
 
 ## Publicação no Render
 
-O arquivo `render.yaml` configura a API, o PostgreSQL e o painel web. Consulte [Publicar no Render](docs/deploy-render.md) para conectar o repositório e concluir a publicação.
+O arquivo `render.yaml` configura a API, o PostgreSQL e o painel web. Consulte [Publicar no Render](docs/desenvolvimento/deploy-render.md) para conectar o repositório e concluir a publicação.
 
 ## Verificações
 
@@ -89,17 +89,17 @@ O CI (`.github/workflows/ci.yml`) executa as três suítes em cada pull request 
 Índice: [docs/README.md](docs/README.md).
 
 - [Glossário de domínio](CONTEXT.md)
-- [Uso do admin web](docs/uso-admin-web.md)
-- [Uso do PDV](docs/uso-pdv.md)
-- [Arquitetura](docs/arquitetura.md)
-- [Backlog MVP](docs/backlog-mvp.md)
-- [Desenvolvimento local](docs/desenvolvimento-local.md)
-- [Testes e verificação](docs/testes-e-verificacao.md)
-- [Contratos de API](docs/api-contratos.md)
-- [Dados e migrações](docs/dados-e-migracoes.md)
-- [Segurança](docs/seguranca.md)
-- [Offline PDV e sync](docs/offline-pdv-sync.md)
-- [Diagramas](docs/diagramas.md)
-- [Requisitos MVP](docs/requisitos-mvp-mercado-one.md)
-- [Guia para agentes](docs/projeto.AGENTS.md)
-- [Manutenção por agentes](docs/manutencao.AGENTS.md)
+- [Uso do admin web](docs/produto/uso-admin-web.md)
+- [Uso do PDV](docs/produto/uso-pdv.md)
+- [Arquitetura](docs/arquitetura/arquitetura.md)
+- [Backlog MVP](docs/produto/backlog-mvp.md)
+- [Desenvolvimento local](docs/desenvolvimento/desenvolvimento-local.md)
+- [Testes e verificação](docs/desenvolvimento/testes-e-verificacao.md)
+- [Contratos de API](docs/desenvolvimento/api-contratos.md)
+- [Dados e migrações](docs/dados/dados-e-migracoes.md)
+- [Segurança](docs/arquitetura/seguranca.md)
+- [Offline PDV e sync](docs/arquitetura/offline-pdv-sync.md)
+- [Diagramas](docs/arquitetura/diagramas.md)
+- [Requisitos MVP](docs/produto/requisitos-mvp-mercado-one.md)
+- [Guia para agentes](docs/agentes/projeto.AGENTS.md)
+- [Manutenção por agentes](docs/agentes/manutencao.AGENTS.md)
