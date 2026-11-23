@@ -113,7 +113,7 @@ select,
 textarea {
   width: 100%;
   min-height: 44px;
-  border: 1px solid var(--color-border-strong);
+  border: 1px solid var(--field-border);
   border-radius: var(--radius-input);
   background: var(--color-surface-raised);
   color: var(--color-foreground);
@@ -235,7 +235,7 @@ textarea:hover {
 .brand-row small {
   color: var(--color-muted);
   margin-top: 2px;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
 }
 
 .nav-department {

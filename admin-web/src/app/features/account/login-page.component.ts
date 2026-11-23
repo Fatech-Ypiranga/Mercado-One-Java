@@ -44,6 +44,9 @@ export class LoginPageComponent implements AfterViewInit {
     if (this.loading) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      // Teclado e leitor de tela vão direto ao primeiro campo com problema.
+      const first = this.form.controls.login.invalid ? 'login' : 'senha';
+      document.getElementById(first)?.focus();
       return;
     }
 

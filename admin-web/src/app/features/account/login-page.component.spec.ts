@@ -33,6 +33,18 @@ describe('LoginPageComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Informe a senha.');
   });
 
+  it('moves focus to the first invalid field on an empty submit', () => {
+    const fixture = TestBed.createComponent(LoginPageComponent);
+    document.body.appendChild(fixture.nativeElement);
+    fixture.componentInstance['form'].setValue({ login: 'admin', password: '' });
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
+
+    expect(document.activeElement?.id).toBe('senha');
+    fixture.nativeElement.remove();
+  });
+
   it('shows a generic message for invalid credentials, without saying which field is wrong', () => {
     const auth = TestBed.inject(AuthService);
     spyOn(auth, 'login').and.returnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
